@@ -104,10 +104,8 @@ def _is_flash(feat: FrameFeatures, d: np.ndarray, t: int, p: CutParams, max_len:
     for j in range(t + 1, min(n, t + 1 + max_len)):          # onset: t-1 ~ t+j ?
         if feat.distance(t - 1, j) < limit:
             return True
-    for j in range(max(0, t - 1 - max_len), t - 1):          # end: t ~ t-2-k ?
-        if feat.distance(j, t) < limit:
-            return True
-    return False
+    # end: does t resemble a frame from just before the flash began?
+    return any(feat.distance(j, t) < limit for j in range(max(0, t - 1 - max_len), t - 1))
 
 
 def detect_cuts(feat: FrameFeatures, p: CutParams | None = None) -> list[Transition]:
@@ -210,7 +208,7 @@ def shots_from_transitions(transitions: list[Transition], n_frames: int,
                            times: np.ndarray) -> list[Shot]:
     bounds = [0] + [tr.frame for tr in transitions if 0 < tr.frame < n_frames] + [n_frames]
     shots = []
-    for i, (a, b) in enumerate(zip(bounds[:-1], bounds[1:], strict=True)):
+    for a, b in zip(bounds[:-1], bounds[1:], strict=True):
         if b <= a:
             continue
         shots.append(Shot(len(shots), a, b - 1, float(times[a]), float(times[b - 1])))

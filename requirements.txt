@@ -6,6 +6,11 @@ pillow>=10.0
 matplotlib>=3.8
 scipy>=1.11              # only used in tests as an independent reference
 
+# Phase 1 week 5 (ResNet-18). CPU wheels are enough for tests and inference:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# torch>=2.3
+# torchvision>=0.18
+
 # Dev
 pytest>=8.0
 ruff>=0.6

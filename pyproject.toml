@@ -14,6 +14,7 @@ dependencies = ["numpy>=1.26", "pillow>=10.0"]
 [project.optional-dependencies]
 video = ["av>=12.0"]
 cv = ["opencv-python>=4.9"]
+dl = ["torch>=2.3", "torchvision>=0.18", "matplotlib>=3.8"]
 dev = ["pytest>=8.0", "ruff>=0.6", "scipy>=1.11", "matplotlib>=3.8"]
 
 [tool.setuptools.packages.find]

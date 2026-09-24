@@ -60,7 +60,8 @@ def kmeans(x: np.ndarray, k: int, n_init: int = 4, max_iter: int = 100, tol: flo
     for _ in range(n_init):
         c = kmeans_pp_init(x, k, rng)
         labels = np.full(len(x), -1)
-        for it in range(1, max_iter + 1):
+        n_iter = 0
+        for n_iter in range(1, max_iter + 1):  # noqa: B007 — the count is reported below
             d = _sq_dists(x, c)
             new = d.argmin(1)
             moved = c.copy()
@@ -78,7 +79,7 @@ def kmeans(x: np.ndarray, k: int, n_init: int = 4, max_iter: int = 100, tol: flo
             labels = new
         inertia = float(_sq_dists(x, c)[np.arange(len(x)), labels].sum())
         if best is None or inertia < best.inertia:
-            best = KMeansResult(c, labels, inertia, it)
+            best = KMeansResult(c, labels, inertia, n_iter)
     assert best is not None
     return best
 

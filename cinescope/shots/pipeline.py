@@ -33,6 +33,7 @@ class Analysis:
     palettes: list[dict] = field(default_factory=list)      # per shot
     barcode: np.ndarray | None = None                      # (1, n_cols, 3) uint8
     camera: list[dict] = field(default_factory=list)       # per shot (Week 3)
+    framing: list[dict] = field(default_factory=list)      # per shot (Phase 1, needs a checkpoint)
     seconds: dict = field(default_factory=dict)
 
     def to_json(self) -> dict:
@@ -42,7 +43,8 @@ class Analysis:
             "shots": [
                 {**s.to_dict(),
                  **({"palette": self.palettes[i]} if i < len(self.palettes) else {}),
-                 **({"camera": self.camera[i]} if i < len(self.camera) else {})}
+                 **({"camera": self.camera[i]} if i < len(self.camera) else {}),
+                 **({"framing": self.framing[i]} if i < len(self.framing) else {})}
                 for i, s in enumerate(self.shots)
             ],
             "timing_s": self.seconds,

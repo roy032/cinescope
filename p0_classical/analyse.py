@@ -7,6 +7,7 @@ Writes to outputs/<clip>/:
   shots.json      every transition and shot, with palette and camera move
   barcode.png     the "movie barcode": one line per second, mean colour
   shots.jpg       one row per shot: middle frame, palette strip, camera label
+                  (and framing label with --framing, see p1_cnn/)
 """
 from __future__ import annotations
 
@@ -50,6 +51,9 @@ def shot_sheet(video: str, result, out: Path, width: int = 192, max_rows: int = 
         if cam:
             d.text((8, 24), f"{cam['label']} {cam['direction']}".strip(), fill=(140, 220, 160))
             d.text((8, 42), f"speed {cam['speed']:.1f}  zoom {cam['zoom_rate']:+.2f}", fill=(150, 150, 150))
+        fr = result.framing[s.index] if s.index < len(result.framing) else {}
+        if fr.get("label"):
+            d.text((8, 60), f"{fr['name']} ({fr['confidence']:.2f})", fill=(240, 200, 120))
         rows.append(np.concatenate([img, np.asarray(label), strip], 1))
     if rows:
         Image.fromarray(np.concatenate(rows, 0)).save(out / "shots.jpg", quality=85)
@@ -61,11 +65,20 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--out", default="outputs")
     ap.add_argument("--no-camera", action="store_true", help="skip camera-move classification")
     ap.add_argument("--k", type=int, default=5, help="colours per shot palette")
+    ap.add_argument("--framing", metavar="CKPT", help="label shot framing with a Phase 1 checkpoint")
     args = ap.parse_args(argv)
 
     out = Path(args.out) / Path(args.video).stem
     out.mkdir(parents=True, exist_ok=True)
     result = analyse(args.video, with_camera=not args.no_camera, k=args.k)
+    if args.framing:
+        import time
+
+        from cinescope.framing.classify import FramingClassifier
+
+        t = time.perf_counter()
+        result.framing = FramingClassifier(args.framing).label_shots(args.video, result.shots)
+        result.seconds["framing"] = round(time.perf_counter() - t, 2)
     result.save(out / "shots.json")
     if result.barcode is not None:
         Image.fromarray(np.repeat(result.barcode, 160, axis=0)).save(out / "barcode.png")
@@ -82,6 +95,11 @@ def main(argv: list[str] | None = None) -> None:
         for c in result.camera:
             moves[c["label"]] = moves.get(c["label"], 0) + 1
         print(f"camera moves: {moves}")
+    if result.framing:
+        scales: dict[str, int] = {}
+        for f in result.framing:
+            scales[f["label"]] = scales.get(f["label"], 0) + 1
+        print(f"framing: {scales}")
     print(f"timing: {result.seconds}")
     print(f"-> {out}")
 

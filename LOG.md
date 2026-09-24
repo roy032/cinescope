@@ -33,3 +33,27 @@ One entry per week: what I built, what broke, what I would explain in an intervi
 - Dark scenes: one practical lamp dominated the Harris response and a 1%
   quality cut-off left 4 corners. Contrast-normalising frames and a 0.1%
   cut-off fixed it.
+
+## Week 4 — backprop by hand
+
+- Scalar autograd engine: gradients accumulate (`+=`) because a value used
+  twice gets a contribution from each use; the backward order has to be a
+  topological sort. Made the sort iterative after a 5,000-step chain hit
+  Python's recursion limit.
+- NumPy Conv2d via im2col; its backward pass is col2im — scatter-add each
+  receptive field's gradient back onto the pixels it came from.
+- Every layer passes a central-difference gradient check (< 1e-6) and matches
+  `torch.nn` forward and backward to 1e-10.
+- A conv bias before BatchNorm has a gradient of exactly zero.
+- BatchNorm running statistics lag when the learning rate is high: train-mode
+  accuracy 0.74, eval-mode 0.55 on the same weights.
+
+## Week 5 — ResNet-18
+
+- ResNet-18 from scratch with torchvision's parameter names, so ImageNet
+  weights load straight in and the two networks can be compared output for
+  output. 11,689,512 parameters, as in torchvision.
+- Frames kept at 16:9 (224×384) instead of cropped square; crops in
+  augmentation keep ≥ 80% of the frame, or the label stops being true.
+- MovieShots splits by trailer to avoid leakage between shots of one trailer.
+- Training runs (ImageNet init vs. random init) go on Kaggle; results pending.
