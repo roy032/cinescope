@@ -1,0 +1,26 @@
+# Footage never goes in the repo (see README: Footage and copyright)
+data/
+trailers/
+outputs/
+*.mkv
+*.mp4
+*.avi
+*.mov
+*.webm
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.ipynb_checkpoints/
+
+# Models and caches
+*.pt
+*.pth
+*.onnx
+checkpoints/
