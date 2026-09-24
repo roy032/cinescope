@@ -57,3 +57,23 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   augmentation keep ≥ 80% of the frame, or the label stops being true.
 - MovieShots splits by trailer to avoid leakage between shots of one trailer.
 - Training runs (ImageNet init vs. random init) go on Kaggle; results pending.
+
+## Week 6 — measuring detectors
+
+- COCO evaluation re-implemented step by step: greedy matching per IoU
+  threshold with crowd/ignored ground truth, monotone precision envelope,
+  101 recall points. Precision is tp / (tp + fp + eps), so a "perfect" AP is
+  0.9999999999999999, in pycocotools too.
+- NMS deletes one of two real faces that overlap by IoU 0.6 at threshold 0.5;
+  Soft-NMS keeps it with a decayed score.
+- WIDER FACE's official protocol differs from COCO's: global score
+  normalisation, per-setting ignore lists, 1,000 thresholds, "+1" pixel widths.
+
+## Week 7 — CenterNet
+
+- The Gaussian radius in the CenterNet/CornerNet code takes the other root of
+  its quadratic: for a 20×20 box it returns 5.5 cells where the geometry gives
+  1.9. Implemented the exact radius and kept the original as an option.
+- Heatmap bias initialised to −2.19 (p = 0.1).
+- One random generator shared by DataLoader workers gives every worker the
+  same crops — each sample gets its own generator.

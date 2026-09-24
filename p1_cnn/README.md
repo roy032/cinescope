@@ -14,6 +14,11 @@ python p0_classical/analyse.py trailers/Ted_Lasso_120s.mkv --framing p1_cnn/chec
 python p1_cnn/week4_backprop.py        # ~10 s on a CPU; writes p1_cnn/results/week4.json
 ```
 
+Measured (`results/week4.json`): every layer's gradient check within 3.5e-10;
+the NumPy strided conv matches `torch.nn.Conv2d` to 2e-16 (forward), 4e-16
+(dL/dx) and 7e-15 (dL/dW); the tiny ResNet reaches 100% on the synthetic test
+set in 5 epochs.
+
 | Built | Module | Checked against |
 |---|---|---|
 | Scalar reverse-mode autograd (micrograd-style), tiny MLP | `cinescope/nn/autograd.py` | finite differences; PyTorch autograd |

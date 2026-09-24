@@ -28,7 +28,7 @@ My own implementation is how I learn the idea. The comparison with the library g
 |---|---|---|---|---|
 | [0](p0_classical/) | 1–3 | Shot cuts, camera moves, color palettes | Classical CV | 🚧 Built, awaiting test labels |
 | [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | 🚧 Built, awaiting MovieShots training runs |
-| [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | ⏳ Planned |
+| [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | 🚧 Built, awaiting WIDER FACE training |
 | [3](p3_tracking/) | 9–11 | Character timeline, who's talking | Tracking, metric learning, audio-visual | ⏳ Planned |
 | [4](p4_segmentation/) | 12–13 | Actor cutouts, object removal | Segmentation, matting, inpainting | ⏳ Planned |
 | [5](p5_3d/) | 14–17 | Camera path, 2D→3D, set fly-through | Calibration, SfM, depth, Gaussian splatting | ⏳ Planned |
