@@ -57,8 +57,15 @@ def _head(c_in: int, c_out: int, mid: int = 64, bias: float = 0.0) -> nn.Sequent
 class CenterNet(nn.Module):
     stride = 4
 
-    def __init__(self, n_classes: int = 1, pretrained_backbone: bool = False, fpn_channels: int = 128):
+    def __init__(self, n_classes: int = 1, pretrained_backbone: bool = False, fpn_channels: int = 128,
+                 size_mode: str = "linear"):
+        """size_mode "linear" regresses width/height in cells (the paper); "log"
+        regresses log(size), so a 2-cell error on a 100-cell face costs as much
+        as a 0.04-cell error on a 2-cell one — scale-invariant, as CenterFace does."""
         super().__init__()
+        if size_mode not in ("linear", "log"):
+            raise ValueError(f"size_mode must be 'linear' or 'log', not {size_mode!r}")
+        self.size_mode = size_mode
         self.backbone: ResNet = resnet18(1000, pretrained=pretrained_backbone)
         del self.backbone.fc
         self.fpn = FPN(out=fpn_channels)
@@ -106,16 +113,24 @@ def reg_l1(pred: torch.Tensor, ind: torch.Tensor, mask: torch.Tensor, target: to
 
 
 def centernet_loss(out: dict[str, torch.Tensor], batch: dict[str, torch.Tensor],
-                   w_size: float = 0.1, w_offset: float = 1.0) -> dict[str, torch.Tensor]:
+                   w_size: float | None = None, w_offset: float = 1.0, size_mode: str = "linear"
+                   ) -> dict[str, torch.Tensor]:
+    """w_size defaults to 0.1 for linear sizes (the paper: they are in cells, up to ~100)
+    and 1.0 for log sizes (errors of a few tenths)."""
+    if w_size is None:
+        w_size = 1.0 if size_mode == "log" else 0.1
     hm = focal_loss(out["heatmap"], batch["heatmap"])
-    size = reg_l1(out["size"], batch["ind"], batch["mask"], batch["wh"])
+    if size_mode == "log":
+        size = reg_l1(out["size"], batch["ind"], batch["mask"], torch.log(batch["wh"].clamp(min=1e-3)))
+    else:
+        size = reg_l1(out["size"], batch["ind"], batch["mask"], batch["wh"])
     off = reg_l1(out["offset"], batch["ind"], batch["mask"], batch["reg"])
     return {"loss": hm + w_size * size + w_offset * off, "heatmap": hm, "size": size, "offset": off}
 
 
 @torch.no_grad()
-def decode(out: dict[str, torch.Tensor], k: int = 100, stride: int = 4, threshold: float = 0.05
-           ) -> list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
+def decode(out: dict[str, torch.Tensor], k: int = 100, stride: int = 4, threshold: float = 0.05,
+           size_mode: str = "linear") -> list[tuple[torch.Tensor, torch.Tensor, torch.Tensor]]:
     """Per image: (xyxy boxes in input pixels, scores, classes). A 3x3 max-pool
     keeps local maxima only — CenterNet's replacement for NMS."""
     heat = out["heatmap"].float().sigmoid()
@@ -126,6 +141,8 @@ def decode(out: dict[str, torch.Tensor], k: int = 100, stride: int = 4, threshol
     rem = idx % (h * w)
     ys, xs = (rem // w).float(), (rem % w).float()
     size = gather(out["size"].float(), rem)
+    if size_mode == "log":
+        size = size.clamp(max=12).exp()
     off = gather(out["offset"].float(), rem)
     cx, cy = xs + off[..., 0], ys + off[..., 1]
     boxes = torch.stack([cx - size[..., 0] / 2, cy - size[..., 1] / 2,

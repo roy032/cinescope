@@ -70,7 +70,26 @@ CPU smoke test first: `python p2_detection/train_faces.py --synthetic --epochs 2
 
 | Model | Easy | Medium | Hard | ms/image |
 |---|---|---|---|---|
-| CenterNet-R18-FPN (ours), 512 px training, ≤1024 px test | — | — | — | — |
+| CenterNet-R18-FPN (ours), linear size, 60 epochs, 512 px training, ≤1024 px test, top-100 peaks | 0.633 | 0.740 | 0.687 | 54 (T4) |
+
+Training: 60 epochs × 402 steps, batch 32, AdamW 5e-4 with cosine decay, mixed
+precision, about 3.5 h on one Kaggle T4; loss 2.59 → 1.10.
+
+**Open question — Easy is the lowest of the three.** For almost every published
+detector Easy > Medium > Hard, because Easy contains only the large, clear
+faces. An inversion means the model loses points on large faces, and the
+aggregate AP cannot say how: missed, mislocalised (box too loose or tight for
+IoU 0.5), found with low confidence, or found twice. `diagnose_wider.py`
+answers that per face size; the second Kaggle run evaluates with it (and with
+top-1000 peaks, since the first evaluation kept only 100 per image, which caps
+recall on crowd images). The likely suspects and the fix for each:
+
+- sizes regressed linearly in cells, where a 5% error on a 100-cell face is a
+  5-cell loss — the loss is dominated by large faces yet still loose for them
+  in relative terms → `--size-mode log` (scale-invariant, as CenterFace does);
+- training crops that cut large faces, whose clipped boxes teach the model
+  undersized boxes;
+- duplicate peaks on large faces.
 
 ## Week 8 — against production detectors, on movie frames
 

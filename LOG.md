@@ -77,3 +77,16 @@ One entry per week: what I built, what broke, what I would explain in an intervi
 - Heatmap bias initialised to −2.19 (p = 0.1).
 - One random generator shared by DataLoader workers gives every worker the
   same crops — each sample gets its own generator.
+
+## Week 7 — first WIDER FACE run
+
+- 60 epochs on a Kaggle T4 (~3.5 h): WIDER val Easy 0.633 / Medium 0.740 /
+  Hard 0.687. Easy below Medium is the wrong way round: large faces are being
+  lost. Wrote a per-size diagnosis (found / mislocalised / missed / low score /
+  duplicates) before changing anything, and a log-size option to test the
+  most likely cause.
+- The first evaluation kept only the top 100 peaks per image; crowd images in
+  the Hard set have several hundred faces. Evaluation now keeps 1,000.
+- A test asserted the *mean* initial heatmap probability was 0.1; random head
+  weights plus a convex sigmoid make it ~0.15. The prior is in the bias —
+  the test now checks sigmoid(bias) = 0.1.

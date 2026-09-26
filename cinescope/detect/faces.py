@@ -10,7 +10,7 @@ from .wider import MEAN, STD
 
 class FaceDetector:
     def __init__(self, checkpoint: str | Path, device: str | None = None, threshold: float = 0.3,
-                 max_side: int = 1024):
+                 max_side: int = 1024, topk: int = 100):
         import torch
 
         from .centernet import CenterNet
@@ -18,10 +18,11 @@ class FaceDetector:
         self.torch = torch
         self.device = torch.device(device or ("cuda" if torch.cuda.is_available() else "cpu"))
         state = torch.load(checkpoint, map_location=self.device, weights_only=False)
-        self.model = CenterNet(n_classes=state.get("n_classes", 1))
+        self.size_mode = state.get("size_mode", "linear")
+        self.model = CenterNet(n_classes=state.get("n_classes", 1), size_mode=self.size_mode)
         self.model.load_state_dict(state["model"])
         self.model.to(self.device).eval()
-        self.threshold, self.max_side = threshold, max_side
+        self.threshold, self.max_side, self.topk = threshold, max_side, topk
 
     def _prep(self, rgb: np.ndarray) -> tuple[np.ndarray, float]:
         from PIL import Image
@@ -46,7 +47,7 @@ class FaceDetector:
         batch, scale = zip(*(self._prep(f) for f in frames), strict=True)
         x = self.torch.from_numpy(np.stack(batch)).to(self.device)
         with self.torch.no_grad():
-            dets = decode(self.model(x), threshold=self.threshold)
+            dets = decode(self.model(x), k=self.topk, threshold=self.threshold, size_mode=self.size_mode)
         out = []
         for (b, s, _), sc in zip(dets, scale, strict=True):
             b, s = b.cpu().numpy() / sc, s.cpu().numpy()

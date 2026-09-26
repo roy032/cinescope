@@ -35,6 +35,8 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--eval-tools", help="folder with wider_face_val.mat and wider_{easy,medium,hard}_val.mat")
     ap.add_argument("--max-side", type=int, default=1024)
     ap.add_argument("--threshold", type=float, default=0.02, help="keep low-score boxes: AP needs the whole PR curve")
+    ap.add_argument("--topk", type=int, default=1000,
+                    help="peaks kept per image; crowd images in the Hard set have hundreds of faces")
     ap.add_argument("--limit", type=int, help="first N images (smoke test)")
     ap.add_argument("--out", default=str(HERE / "results"))
     args = ap.parse_args(argv)
@@ -45,7 +47,7 @@ def main(argv: list[str] | None = None) -> dict:
 
     root = Path(args.wider)
     items = parse_annotations(root / "wider_face_split" / "wider_face_val_bbx_gt.txt")[: args.limit]
-    det = FaceDetector(args.ckpt, threshold=args.threshold, max_side=args.max_side)
+    det = FaceDetector(args.ckpt, threshold=args.threshold, max_side=args.max_side, topk=args.topk)
     preds, times = {}, []
     for k, it in enumerate(items):
         with Image.open(root / "WIDER_val" / "images" / it.path) as im:
@@ -59,7 +61,7 @@ def main(argv: list[str] | None = None) -> dict:
             print(f"{k + 1}/{len(items)} images, {np.mean(times) * 1000:.0f} ms/image")
 
     report = {"checkpoint": args.ckpt, "images": len(items), "ms_per_image": round(float(np.mean(times)) * 1000, 1),
-              "max_side": args.max_side}
+              "max_side": args.max_side, "topk": args.topk}
     if args.eval_tools:
         gts, keeps = load_ground_truth(args.eval_tools)
         if args.limit:
@@ -77,6 +79,9 @@ def main(argv: list[str] | None = None) -> dict:
     out = Path(args.out) / Path(args.ckpt).stem
     out.mkdir(parents=True, exist_ok=True)
     (out / "wider_val.json").write_text(json.dumps(report, indent=2))
+    # raw predictions, for p2_detection/diagnose_wider.py (a few MB compressed)
+    np.savez_compressed(out / "wider_val_preds.npz", keys=np.array(list(preds)),
+                        **{f"p{i}": v.astype(np.float32) for i, v in enumerate(preds.values())})
     return report
 
 

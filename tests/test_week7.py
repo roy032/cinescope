@@ -99,6 +99,32 @@ class TestWiderEval(unittest.TestCase):
         self.assertAlmostEqual(voc_ap(np.array([0.5, 0.5, 1.0]), np.array([1.0, 0.5, 2 / 3])), 0.5 + 0.5 * 2 / 3)
 
 
+class TestDiagnose(unittest.TestCase):
+    def test_failure_modes_by_size(self):
+        from cinescope.detect.diagnose import breakdown, per_face
+
+        gt = np.array([[0, 0, 10, 10], [100, 100, 200, 200], [400, 400, 50, 50]], float)
+        pred = np.array([[0, 0, 10, 10, 0.9],          # small face: found
+                         [100, 100, 120, 120, 0.8],    # large face: box far too small (IoU 0.36)
+                         [401, 401, 50, 50, 0.7],      # medium face: found ...
+                         [400, 400, 49, 51, 0.6]])     # ... twice (a duplicate)
+        r = per_face(gt, pred)
+        np.testing.assert_allclose(r["best_iou"][1], 120 * 120 / 200 / 200)
+        self.assertEqual(r["dups"].tolist(), [0, 0, 1])
+        rows = {row["size"]: row for row in breakdown({"a": gt}, {"a": pred})}
+        self.assertEqual(rows["0-16 px"]["found_any_score"], 1.0)
+        self.assertEqual(rows["128-256 px"]["mislocalised"], 1.0)
+        self.assertEqual(rows["32-64 px"]["duplicates_per_face"], 1.0)
+
+    def test_keep_list_selects_faces(self):
+        from cinescope.detect.diagnose import breakdown
+
+        gt = np.array([[0, 0, 10, 10], [100, 100, 200, 200]], float)
+        rows = breakdown({"a": gt}, {"a": np.zeros((0, 5))}, keep={"a": np.array([1])})
+        self.assertEqual([r["faces"] for r in rows], [1])
+        self.assertEqual(rows[0]["missed"], 1.0)
+
+
 @unittest.skipIf(torch is None, "PyTorch not installed")
 class TestCenterNet(unittest.TestCase):
     def test_shapes_and_prior(self):
@@ -109,7 +135,10 @@ class TestCenterNet(unittest.TestCase):
             out = m(torch.randn(2, 3, 128, 192))
         self.assertEqual(tuple(out["heatmap"].shape), (2, 1, 32, 48))
         self.assertEqual(tuple(out["size"].shape), (2, 2, 32, 48))
-        self.assertAlmostEqual(out["heatmap"].sigmoid().mean().item(), 0.1, delta=0.05)
+        # the prior lives in the bias: sigmoid(bias) = 0.1 exactly. The mean output is
+        # higher (random head weights add variance and sigmoid is convex), but far from 0.5.
+        self.assertAlmostEqual(torch.sigmoid(m.heatmap[-1].bias).item(), 0.1, places=5)
+        self.assertLess(out["heatmap"].sigmoid().mean().item(), 0.3)
 
     def test_torch_decode_matches_numpy(self):
         from cinescope.detect.centernet import decode as tdecode
@@ -123,6 +152,24 @@ class TestCenterNet(unittest.TestCase):
         b, s, _ = tdecode(out, threshold=0.5)[0]
         ref, _, _ = decode(hm, wh, reg, threshold=0.5)
         np.testing.assert_allclose(np.sort(b.numpy(), 0), np.sort(ref, 0), atol=1e-3)
+
+    def test_log_size_mode_round_trip(self):
+        from cinescope.detect.centernet import CenterNet, centernet_loss
+        from cinescope.detect.centernet import decode as tdecode
+
+        m = CenterNet(size_mode="log").eval()
+        self.assertEqual(m.size_mode, "log")
+        boxes = np.array([[40, 40, 120, 140]], float)
+        t = encode(boxes, np.zeros(1, int), (64, 64))
+        hm, wh, reg = perfect_outputs(t, (64, 64))
+        logits = torch.logit(torch.from_numpy(hm).clamp(1e-6, 1 - 1e-6))[None]
+        out = {"heatmap": logits, "size": torch.from_numpy(np.log(np.maximum(wh, 1e-3)))[None].float(),
+               "offset": torch.from_numpy(reg)[None].float()}
+        b, _, _ = tdecode(out, threshold=0.5, size_mode="log")[0]
+        np.testing.assert_allclose(b.numpy(), boxes, atol=1e-3)
+        batch = {k: torch.from_numpy(v)[None] for k, v in t.items()}
+        losses = centernet_loss(out, batch, size_mode="log")
+        self.assertLess(losses["size"].item(), 1e-4)
 
     def test_focal_loss_is_low_for_the_right_heatmap(self):
         from cinescope.detect.centernet import focal_loss

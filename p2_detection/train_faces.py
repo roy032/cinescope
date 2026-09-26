@@ -72,6 +72,8 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--wd", type=float, default=1e-4)
     ap.add_argument("--size", type=int, default=512)
     ap.add_argument("--no-pretrained", action="store_true", help="random-init backbone")
+    ap.add_argument("--size-mode", choices=["linear", "log"], default="linear",
+                    help="regress box size directly (paper) or its log (scale-invariant)")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--max-steps", type=int)
     ap.add_argument("--tag", default="centernet_r18")
@@ -111,7 +113,7 @@ def main(argv: list[str] | None = None) -> dict:
     dl = DataLoader(ds, args.bs, shuffle=True, drop_last=True, num_workers=workers,
                     pin_memory=use_amp, persistent_workers=workers > 0)
 
-    model = CenterNet(pretrained_backbone=pretrained).to(device).to(memory_format=torch.channels_last)
+    model = CenterNet(pretrained_backbone=pretrained, size_mode=args.size_mode).to(device).to(memory_format=torch.channels_last)
     lr = args.lr or 5e-4 * args.bs / 32
     opt = torch.optim.AdamW(param_groups(model, args.wd), lr=lr)
     steps = min(len(dl), args.max_steps or len(dl))
@@ -144,7 +146,7 @@ def main(argv: list[str] | None = None) -> dict:
             x = batch["image"].contiguous(memory_format=torch.channels_last)
             with torch.autocast(device.type, enabled=use_amp):
                 outputs = model(x)
-            losses = centernet_loss(outputs, batch)
+            losses = centernet_loss(outputs, batch, size_mode=args.size_mode)
             if not torch.isfinite(losses["loss"]):
                 raise FloatingPointError(f"loss is {losses['loss'].item()} at epoch {ep} step {step}")
             opt.zero_grad(set_to_none=True)
@@ -162,7 +164,8 @@ def main(argv: list[str] | None = None) -> dict:
         history.append(row)
         print(" | ".join(f"{k} {v}" for k, v in row.items()))
         # everything needed to resume: Kaggle sessions end at 12 h
-        torch.save({"model": model.state_dict(), "n_classes": 1, "epoch": ep, "args": vars(args),
+        torch.save({"model": model.state_dict(), "n_classes": 1, "size_mode": args.size_mode,
+                    "epoch": ep, "args": vars(args),
                     "opt": opt.state_dict(), "sched": sched.state_dict(), "scaler": scaler.state_dict(),
                     "history": history}, ckpt)
 
