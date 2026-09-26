@@ -24,3 +24,9 @@ __pycache__/
 *.pth
 *.onnx
 checkpoints/
+
+# Personal planning document
+*Roadmap*.pdf
+
+# Kaggle upload bundle (built by kaggle/make_code_zip.py)
+kaggle_upload/

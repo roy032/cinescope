@@ -75,9 +75,11 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--max-steps", type=int)
     ap.add_argument("--tag", default="centernet_r18")
-    ap.add_argument("--out", default=str(HERE / "results"))
-    ap.add_argument("--ckpt-dir", default=str(HERE / "checkpoints"))
+    ap.add_argument("--out", help="results folder (default p*/results; outputs/smoke for --synthetic)")
+    ap.add_argument("--ckpt-dir", help="default p*/checkpoints; outputs/smoke for --synthetic")
     ap.add_argument("--seed", type=int, default=0)
+    ap.add_argument("--resume", nargs="?", const="auto",
+                    help="continue from a checkpoint (default: this tag's checkpoint, if it exists)")
     args = ap.parse_args(argv)
     if not args.synthetic and not args.wider:
         ap.error("--wider is required unless --synthetic")
@@ -87,6 +89,10 @@ def main(argv: list[str] | None = None) -> dict:
     torch.manual_seed(args.seed)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     use_amp = device.type == "cuda"
+    # smoke runs must not leave files where real results go
+    smoke = Path("outputs") / "smoke"
+    args.out = args.out or str(smoke if args.synthetic else HERE / "results")
+    args.ckpt_dir = args.ckpt_dir or str(smoke if args.synthetic else HERE / "checkpoints")
     out = Path(args.out) / args.tag
     out.mkdir(parents=True, exist_ok=True)
     ckpt = Path(args.ckpt_dir) / f"{args.tag}.pt"
@@ -114,8 +120,21 @@ def main(argv: list[str] | None = None) -> dict:
     print(f"{device} amp={use_amp} | {len(ds)} images | {steps} steps/epoch | lr {lr:.2e} | "
           f"backbone {'ImageNet' if pretrained else 'random'}")
 
-    history = []
-    for ep in range(1, args.epochs + 1):
+    history, start = [], 1
+    if args.resume:
+        path = ckpt if args.resume == "auto" else Path(args.resume)
+        if path.exists():
+            state = torch.load(path, map_location=device, weights_only=False)
+            model.load_state_dict(state["model"])
+            if "opt" in state:
+                opt.load_state_dict(state["opt"])
+                sched.load_state_dict(state["sched"])
+                scaler.load_state_dict(state["scaler"])
+            history, start = state.get("history", []), state["epoch"] + 1
+            print(f"resumed from {path} at epoch {start}")
+        else:
+            print(f"no checkpoint at {path}; starting fresh")
+    for ep in range(start, args.epochs + 1):
         model.train()
         t0, sums, n = time.perf_counter(), {}, 0
         for step, batch in enumerate(dl):
@@ -142,8 +161,14 @@ def main(argv: list[str] | None = None) -> dict:
                "lr": opt.param_groups[0]["lr"], "seconds": round(time.perf_counter() - t0, 1)}
         history.append(row)
         print(" | ".join(f"{k} {v}" for k, v in row.items()))
-        torch.save({"model": model.state_dict(), "n_classes": 1, "epoch": ep, "args": vars(args)}, ckpt)
+        # everything needed to resume: Kaggle sessions end at 12 h
+        torch.save({"model": model.state_dict(), "n_classes": 1, "epoch": ep, "args": vars(args),
+                    "opt": opt.state_dict(), "sched": sched.state_dict(), "scaler": scaler.state_dict(),
+                    "history": history}, ckpt)
 
+    if not history:
+        print("nothing to do: the checkpoint already has every epoch")
+        return {"history": history, "checkpoint": str(ckpt)}
     with (out / "history.csv").open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(history[0]))
         w.writeheader()

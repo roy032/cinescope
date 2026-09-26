@@ -81,14 +81,18 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--max-steps", type=int, help="cap steps per epoch (debugging)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--tag", default=None)
-    ap.add_argument("--out", default=str(HERE / "results"), help="results folder (a <tag>/ subfolder is made)")
-    ap.add_argument("--ckpt-dir", default=str(HERE / "checkpoints"))
+    ap.add_argument("--out", help="results folder (default p*/results; outputs/smoke for --synthetic)")
+    ap.add_argument("--ckpt-dir", help="default p*/checkpoints; outputs/smoke for --synthetic")
     args = ap.parse_args(argv)
     if not args.synthetic and not args.root:
         ap.error("--root is required unless --synthetic")
 
     seed_everything(args.seed)
     tag = args.tag or ("pretrained" if args.pretrained else "scratch")
+    # smoke runs must not leave files where real results go
+    smoke = Path("outputs") / "smoke"
+    args.out = args.out or str(smoke if args.synthetic else HERE / "results")
+    args.ckpt_dir = args.ckpt_dir or str(smoke if args.synthetic else HERE / "checkpoints")
     out = Path(args.out) / tag
     out.mkdir(parents=True, exist_ok=True)
     ckpt = Path(args.ckpt_dir) / f"{tag}.pt"

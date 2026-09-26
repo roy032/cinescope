@@ -141,8 +141,11 @@ class TestCenterNet(unittest.TestCase):
         with tempfile.TemporaryDirectory() as t:
             res = main(["--synthetic", "--epochs", "4", "--bs", "8", "--lr", "2e-3",
                         "--out", t, "--ckpt-dir", t, "--tag", "smoke"])
-        hist = res["history"]
-        self.assertLess(hist[-1]["heatmap"], hist[0]["heatmap"])
+            hist = res["history"]
+            self.assertLess(hist[-1]["heatmap"], hist[0]["heatmap"])
+            more = main(["--synthetic", "--epochs", "5", "--bs", "8", "--lr", "2e-3",
+                         "--out", t, "--ckpt-dir", t, "--tag", "smoke", "--resume"])
+            self.assertEqual([h["epoch"] for h in more["history"]], [1, 2, 3, 4, 5])
 
 
 if __name__ == "__main__":
