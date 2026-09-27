@@ -1,0 +1,11 @@
+{
+  "checkpoint": "/kaggle/working/checkpoints/centernet_r18_log.pt",
+  "images": 3226,
+  "ms_per_image": 58.9,
+  "max_side": 1024,
+  "topk": 1000,
+  "protocol": "official WIDER FACE (easy/medium/hard)",
+  "easy": 0.5926344757950589,
+  "medium": 0.7262197981388663,
+  "hard": 0.7922206876034543
+}

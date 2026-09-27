@@ -105,11 +105,13 @@ python p1_cnn/train_framing.py --synthetic --epochs 2 --tag smoke
 
 Test split, shot-level accuracy (3 key frames averaged). Filled in after the runs.
 
+<!-- auto:p1-results -->
 | Model | Init | Epochs | Accuracy | Mean class acc. | Train time |
 |---|---|---|---|---|---|
 | ResNet-18 (ours) | ImageNet | 30 | — | — | — |
 | ResNet-18 (ours) | random | 60 | — | — | — |
 | MovieShots paper (scale) | — | — | *copy from the paper's results table* | | |
+<!-- /auto:p1-results -->
 
 Confusion matrix: `p1_cnn/results/pretrained/confusion.png`. Expected
 confusions are between neighbours on the scale (ECS↔CS, MS↔FS): the classes

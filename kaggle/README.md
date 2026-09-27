@@ -1,5 +1,24 @@
 # Training on Kaggle (free GPU)
 
+## Automated (recommended)
+
+One command runs every remaining job on Kaggle, one after another, downloads the
+results, fills in the README tables, runs the tests and commits:
+
+```powershell
+cd $HOME\Desktop\cinescope
+.venv\Scripts\pip install kaggle              # once
+.venv\Scripts\python kaggle\run_all.py
+```
+
+Needs your Kaggle API token once: kaggle.com → Settings → API → **Create New Token**,
+then move the downloaded `kaggle.json` to `C:\Users\<you>\.kaggle\kaggle.json`.
+Jobs: `p2_diagnose` (~15 min), `p2_train_log` (~4 h), `p1_movieshots` (~4–7 h).
+Stopping the script is safe: running it again waits for, or fetches, what Kaggle
+already ran. Job sources are in `kaggle/jobs/`; the log is `outputs/run_all.log`.
+
+## By hand, in the Kaggle website
+
 Training runs on Kaggle's free GPUs (about 30 GPU-hours a week); nothing heavy
 runs on the laptop. Two notebooks, one per phase:
 

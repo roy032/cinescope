@@ -1,0 +1,263 @@
+{
+  "all faces": [
+    {
+      "size": "0-16 px",
+      "faces": 18507,
+      "found_any_score": 0.667,
+      "found_score>=0.5": 0.472,
+      "mislocalised": 0.195,
+      "missed": 0.138,
+      "median_iou_found": 0.678,
+      "median_score_found": 0.578,
+      "duplicates_per_face": 0.0
+    },
+    {
+      "size": "16-32 px",
+      "faces": 10268,
+      "found_any_score": 0.897,
+      "found_score>=0.5": 0.701,
+      "mislocalised": 0.076,
+      "missed": 0.027,
+      "median_iou_found": 0.768,
+      "median_score_found": 0.586,
+      "duplicates_per_face": 0.001
+    },
+    {
+      "size": "32-64 px",
+      "faces": 6650,
+      "found_any_score": 0.949,
+      "found_score>=0.5": 0.74,
+      "mislocalised": 0.039,
+      "missed": 0.012,
+      "median_iou_found": 0.826,
+      "median_score_found": 0.579,
+      "duplicates_per_face": 0.002
+    },
+    {
+      "size": "64-128 px",
+      "faces": 2784,
+      "found_any_score": 0.974,
+      "found_score>=0.5": 0.655,
+      "mislocalised": 0.02,
+      "missed": 0.005,
+      "median_iou_found": 0.841,
+      "median_score_found": 0.545,
+      "duplicates_per_face": 0.025
+    },
+    {
+      "size": "128-256 px",
+      "faces": 1062,
+      "found_any_score": 0.984,
+      "found_score>=0.5": 0.611,
+      "mislocalised": 0.011,
+      "missed": 0.005,
+      "median_iou_found": 0.858,
+      "median_score_found": 0.543,
+      "duplicates_per_face": 0.05
+    },
+    {
+      "size": "256-\u221e px",
+      "faces": 437,
+      "found_any_score": 0.986,
+      "found_score>=0.5": 0.405,
+      "mislocalised": 0.014,
+      "missed": 0.0,
+      "median_iou_found": 0.865,
+      "median_score_found": 0.451,
+      "duplicates_per_face": 0.286
+    }
+  ],
+  "easy": [
+    {
+      "size": "16-32 px",
+      "faces": 15,
+      "found_any_score": 0.733,
+      "found_score>=0.5": 0.0,
+      "mislocalised": 0.267,
+      "missed": 0.0,
+      "median_iou_found": 0.625,
+      "median_score_found": 0.177,
+      "duplicates_per_face": 0.067
+    },
+    {
+      "size": "32-64 px",
+      "faces": 2915,
+      "found_any_score": 0.953,
+      "found_score>=0.5": 0.708,
+      "mislocalised": 0.037,
+      "missed": 0.011,
+      "median_iou_found": 0.837,
+      "median_score_found": 0.571,
+      "duplicates_per_face": 0.003
+    },
+    {
+      "size": "64-128 px",
+      "faces": 2782,
+      "found_any_score": 0.974,
+      "found_score>=0.5": 0.655,
+      "mislocalised": 0.02,
+      "missed": 0.005,
+      "median_iou_found": 0.841,
+      "median_score_found": 0.545,
+      "duplicates_per_face": 0.025
+    },
+    {
+      "size": "128-256 px",
+      "faces": 1062,
+      "found_any_score": 0.984,
+      "found_score>=0.5": 0.611,
+      "mislocalised": 0.011,
+      "missed": 0.005,
+      "median_iou_found": 0.858,
+      "median_score_found": 0.543,
+      "duplicates_per_face": 0.05
+    },
+    {
+      "size": "256-\u221e px",
+      "faces": 437,
+      "found_any_score": 0.986,
+      "found_score>=0.5": 0.405,
+      "mislocalised": 0.014,
+      "missed": 0.0,
+      "median_iou_found": 0.865,
+      "median_score_found": 0.451,
+      "duplicates_per_face": 0.286
+    }
+  ],
+  "medium": [
+    {
+      "size": "0-16 px",
+      "faces": 3,
+      "found_any_score": 0.0,
+      "found_score>=0.5": 0.0,
+      "mislocalised": 0.667,
+      "missed": 0.333,
+      "median_iou_found": null,
+      "median_score_found": null,
+      "duplicates_per_face": 0.0
+    },
+    {
+      "size": "16-32 px",
+      "faces": 2402,
+      "found_any_score": 0.903,
+      "found_score>=0.5": 0.679,
+      "mislocalised": 0.075,
+      "missed": 0.022,
+      "median_iou_found": 0.785,
+      "median_score_found": 0.575,
+      "duplicates_per_face": 0.002
+    },
+    {
+      "size": "32-64 px",
+      "faces": 6631,
+      "found_any_score": 0.95,
+      "found_score>=0.5": 0.741,
+      "mislocalised": 0.038,
+      "missed": 0.011,
+      "median_iou_found": 0.827,
+      "median_score_found": 0.579,
+      "duplicates_per_face": 0.002
+    },
+    {
+      "size": "64-128 px",
+      "faces": 2784,
+      "found_any_score": 0.974,
+      "found_score>=0.5": 0.655,
+      "mislocalised": 0.02,
+      "missed": 0.005,
+      "median_iou_found": 0.841,
+      "median_score_found": 0.545,
+      "duplicates_per_face": 0.025
+    },
+    {
+      "size": "128-256 px",
+      "faces": 1062,
+      "found_any_score": 0.984,
+      "found_score>=0.5": 0.611,
+      "mislocalised": 0.011,
+      "missed": 0.005,
+      "median_iou_found": 0.858,
+      "median_score_found": 0.543,
+      "duplicates_per_face": 0.05
+    },
+    {
+      "size": "256-\u221e px",
+      "faces": 437,
+      "found_any_score": 0.986,
+      "found_score>=0.5": 0.405,
+      "mislocalised": 0.014,
+      "missed": 0.0,
+      "median_iou_found": 0.865,
+      "median_score_found": 0.451,
+      "duplicates_per_face": 0.286
+    }
+  ],
+  "hard": [
+    {
+      "size": "0-16 px",
+      "faces": 10757,
+      "found_any_score": 0.796,
+      "found_score>=0.5": 0.6,
+      "mislocalised": 0.138,
+      "missed": 0.065,
+      "median_iou_found": 0.698,
+      "median_score_found": 0.591,
+      "duplicates_per_face": 0.0
+    },
+    {
+      "size": "16-32 px",
+      "faces": 10268,
+      "found_any_score": 0.897,
+      "found_score>=0.5": 0.701,
+      "mislocalised": 0.076,
+      "missed": 0.027,
+      "median_iou_found": 0.768,
+      "median_score_found": 0.586,
+      "duplicates_per_face": 0.001
+    },
+    {
+      "size": "32-64 px",
+      "faces": 6650,
+      "found_any_score": 0.949,
+      "found_score>=0.5": 0.74,
+      "mislocalised": 0.039,
+      "missed": 0.012,
+      "median_iou_found": 0.826,
+      "median_score_found": 0.579,
+      "duplicates_per_face": 0.002
+    },
+    {
+      "size": "64-128 px",
+      "faces": 2784,
+      "found_any_score": 0.974,
+      "found_score>=0.5": 0.655,
+      "mislocalised": 0.02,
+      "missed": 0.005,
+      "median_iou_found": 0.841,
+      "median_score_found": 0.545,
+      "duplicates_per_face": 0.025
+    },
+    {
+      "size": "128-256 px",
+      "faces": 1062,
+      "found_any_score": 0.984,
+      "found_score>=0.5": 0.611,
+      "mislocalised": 0.011,
+      "missed": 0.005,
+      "median_iou_found": 0.858,
+      "median_score_found": 0.543,
+      "duplicates_per_face": 0.05
+    },
+    {
+      "size": "256-\u221e px",
+      "faces": 437,
+      "found_any_score": 0.986,
+      "found_score>=0.5": 0.405,
+      "mislocalised": 0.014,
+      "missed": 0.0,
+      "median_iou_found": 0.865,
+      "median_score_found": 0.451,
+      "duplicates_per_face": 0.286
+    }
+  ]
+}

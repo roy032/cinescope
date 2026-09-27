@@ -45,7 +45,7 @@ Filled in as each phase ships.
 |---|---|---|---|
 | 0 | Shot-cut F1 | — | — |
 | 1 | Shot-framing accuracy (MovieShots) | — | — |
-| 2 | Face AP (WIDER FACE Easy) | — | — |
+| 2 | Face AP (WIDER FACE Easy / Medium / Hard) | 0.593 / 0.726 / 0.792 | — |
 | 3 | Character clustering purity | — | — |
 | 4 | Mask IoU / speed vs. SAM 2 | — | — |
 | 5 | SfM reprojection error (px) | — | — |
