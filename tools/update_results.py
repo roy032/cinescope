@@ -2,7 +2,8 @@
 
     python tools/update_results.py
 
-Reads p1_cnn/results/<tag>/metrics.json + history.csv and
+Reads p1_cnn/results/own/hand_eval.json (or, for MovieShots,
+p1_cnn/results/<tag>/metrics.json) + history.csv and
 p2_detection/results/<tag>/wider_val.json + diagnosis.md; rewrites the blocks
 between <!-- auto:NAME --> markers and the Phase 1/2 rows of the root README.
 Missing results leave the existing text alone.
@@ -35,14 +36,36 @@ def hours(history: Path) -> str:
 
 
 def phase1() -> dict:
-    res, rows = ROOT / "p1_cnn" / "results", {}
+    """Hand-labelled evaluation on our own episodes when it exists, else MovieShots test metrics."""
+    res = ROOT / "p1_cnn" / "results"
+    own = res / "own" / "hand_eval.json"
+    if own.exists():
+        d = json.loads(own.read_text(encoding="utf-8"))
+        rows = ["| System | Trained on | Accuracy [95% CI] | Mean class acc. | Train time |", "|---|---|---|---|---|"]
+        out = {}
+        for key, m in d["systems"].items():
+            lo, hi = m["accuracy_ci95"]
+            trained = ("teacher labels, 30 epochs" if key == "pretrained" else
+                       "teacher labels, 60 epochs" if key == "scratch" else "nothing (zero-shot / rule)")
+            t = hours(res / key / "history.csv") + " (T4)" if key in ("pretrained", "scratch") else "—"
+            rows.append(f"| {m['name']} | {trained} | {m['accuracy']:.3f} [{lo:.2f}–{hi:.2f}] | "
+                        f"{m['mean_class_accuracy']:.3f} | {t} |")
+            if key in ("pretrained", "scratch", "fused"):
+                out[key] = m["accuracy"]
+        dist = d["distribution"]
+        rows += ["", f"{d['n']} hand-labelled shots from the held-out episodes; majority-class accuracy "
+                     f"{max(dist.values()) / d['n']:.3f}. Face size only is scored on the shots where a face was found."]
+        replace_block(ROOT / "p1_cnn" / "README.md", "p1-results", "\n".join(rows))
+        return out
+    rows = {}
     for tag, init in (("pretrained", "ImageNet"), ("scratch", "random")):
         m = res / tag / "metrics.json"
         if m.exists():
             d = json.loads(m.read_text(encoding="utf-8"))
             if d.get("synthetic") or "test" not in d:
                 continue
-            rows[tag] = (init, d["epochs"], d["test"]["accuracy"], d["test"]["mean_class_accuracy"], hours(res / tag / "history.csv"))
+            rows[tag] = (init, d["epochs"], d["test"]["accuracy"], d["test"]["mean_class_accuracy"],
+                         hours(res / tag / "history.csv"))
     if not rows:
         return {}
     lines = ["| Model | Init | Epochs | Accuracy | Mean class acc. | Train time |", "|---|---|---|---|---|---|"]
@@ -50,7 +73,6 @@ def phase1() -> dict:
         if tag in rows:
             init, ep, acc, mca, t = rows[tag]
             lines.append(f"| ResNet-18 (ours) | {init} | {ep} | {acc:.3f} | {mca:.3f} | {t} (T4) |")
-    lines.append("| MovieShots paper (scale) | — | — | *copy from the paper's results table* | | |")
     replace_block(ROOT / "p1_cnn" / "README.md", "p1-results", "\n".join(lines))
     return {t: r[2] for t, r in rows.items()}
 
@@ -86,12 +108,13 @@ def root_table(p1: dict, p2: dict) -> None:
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
     if p1:
-        cell = " / ".join(f"{k}: {v:.3f}" for k, v in p1.items())
-        text = re.sub(r"^\| 1 \| Shot-framing accuracy \(MovieShots\) \|.*$",
-                      f"| 1 | Shot-framing accuracy (MovieShots) | {cell} | — |", text, flags=re.M)
+        names = {"fused": "teacher", "pretrained": "ImageNet init", "scratch": "random init"}
+        cell = " / ".join(f"{names.get(k, k)} {v:.3f}" for k, v in p1.items())
+        text = re.sub(r"^\| 1 \| Shot-framing accuracy[^|]*\|.*$",
+                      f"| 1 | Shot-framing accuracy (hand-labelled test episodes) | {cell} | — |", text, flags=re.M)
     if p2:
         best = max(p2.values(), key=lambda r: r["easy"])
-        text = re.sub(r"^\| 2 \| Face AP \(WIDER FACE Easy\) \|.*$",
+        text = re.sub(r"^\| 2 \| Face AP \(WIDER FACE Easy[^)]*\) \|.*$",
                       f"| 2 | Face AP (WIDER FACE Easy / Medium / Hard) | {best['easy']:.3f} / {best['medium']:.3f} / "
                       f"{best['hard']:.3f} | — |", text, flags=re.M)
     path.write_text(text, encoding="utf-8")

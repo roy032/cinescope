@@ -90,3 +90,15 @@ One entry per week: what I built, what broke, what I would explain in an intervi
 - A test asserted the *mean* initial heatmap probability was 0.1; random head
   weights plus a convex sigmoid make it ~0.15. The prior is in the bias —
   the test now checks sigmoid(bias) = 0.1.
+
+## Week 5, revisited — our own episodes instead of MovieShots
+
+- MovieShots' public folder holds only the annotation JSON; the frames are
+  released on request. The first Kaggle run found 0 of 33,653 shots' frames.
+- Switched to full *Ted Lasso* and *Lanterns* episodes: Phase 0 cuts them into
+  shots, three key frames per shot, split by episode.
+- No labels exist, so a teacher labels the shots: SigLIP zero-shot prompts
+  fused with the face-height ratio from the Phase 2 detector. The ResNet-18s
+  learn from those labels; a hand-labelled sample of the test episodes (never
+  shown any prediction while labelling) scores every system.
+

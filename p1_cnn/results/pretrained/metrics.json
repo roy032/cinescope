@@ -1,0 +1,11 @@
+{
+  "tag": "pretrained",
+  "pretrained": true,
+  "best_epoch": 17,
+  "best_val_acc": 0.8620037807183365,
+  "epochs": 30,
+  "lr": 0.0025,
+  "batch_size": 64,
+  "synthetic": false,
+  "finished": "2026-09-27 09:21"
+}

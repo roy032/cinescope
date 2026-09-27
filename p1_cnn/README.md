@@ -46,7 +46,7 @@ Things the gradient check taught me:
   showed a 5e-6 error, because the loss nearly cancelled and the finite
   differences lost precision.
 
-## Week 5 — ResNet-18 on MovieShots (PyTorch)
+## Week 5 — ResNet-18 shot-scale classifier (PyTorch)
 
 | Built | Module |
 |---|---|
@@ -70,32 +70,52 @@ Design choices worth defending:
 - **Three key frames per shot**: one random frame per step while training,
   probabilities averaged over all three at test time.
 
-### Data
+### Data: our own episodes, labelled automatically
 
-MovieShots (Rao et al., *A Unified Framework for Shot Type Classification
-Based on Subject Centric Lens*, ECCV 2020): about 46k shots from trailers, with
-scale and movement labels. It is released by the authors on request through
-the project page; it is never committed to this repo.
+MovieShots (Rao et al., ECCV 2020), the usual benchmark, is released by its
+authors on request; its public folder holds only the annotation files. The
+classifier is therefore trained on footage we have: full episodes of *Ted
+Lasso* and *Lanterns*, with labels made automatically and a test set labelled
+by hand. The footage and key frames are never committed.
+
+1. **Shots.** `build_own_shots.py` finds the episodes, copies them into
+   `data/episodes/`, cuts them with the Phase 0 shot detector and keeps three
+   key frames per shot (25/50/75% of its length; shots under half a second and
+   black frames are dropped). Splits are by episode: per show, the last episode
+   is test and the one before it validation, so no scene is on both sides.
+2. **Automatic labels** (`autolabel.py`, `cinescope/framing/teacher.py`). Two
+   independent cues, fused per shot:
+   - zero-shot image-text matching with SigLIP (so400m), three prompts per class;
+   - the height of the largest face from the Phase 2 detector relative to the
+     frame height, turned into a soft class prior (a Gaussian in log space
+     around each class's typical ratio). Scale is defined by how much of a
+     person the frame shows, so this cue is strong when a face is visible and
+     silent when none is.
+3. **Hand-labelled test set.** `label_scales.py` builds a keyboard page with
+   300 random shots from the test episodes; it never shows a prediction, so
+   the labels do not lean towards any system. `eval_own.py` scores every cue,
+   the fused teacher and both networks against it.
+
+The networks learn from noisy labels. Whether a student ends up better or worse
+than its teacher on the hand labels is the interesting number: better means
+the CNN averaged away some of the teacher's errors; worse means it mostly
+copied them.
 
 ```powershell
-python p1_cnn/prepare_movieshots.py --root D:\datasets\MovieShots     # -> data/movieshots/index.csv
+RUN_OWN_SHOTS.bat          # find + copy + cut the episodes, build the labelling page, train on Kaggle
+python p1_cnn/eval_own.py  # after labelling: every system against the hand labels
 ```
 
-The script prints how many shots it used per split and class, and how many it
-skipped and why.
+MovieShots still works unchanged (`prepare_movieshots.py`, then
+`kaggle/run_all.py --only p1_movieshots` with its frames attached).
 
-### Training (Kaggle / Colab GPU)
+### Training (Kaggle GPU)
 
-```bash
-# the two runs the roadmap asks for
-python p1_cnn/train_framing.py --root /kaggle/input/movieshots --index data/movieshots/index.csv --pretrained --tag pretrained --epochs 30
-python p1_cnn/train_framing.py --root /kaggle/input/movieshots --index data/movieshots/index.csv --tag scratch --epochs 60
-```
-
-On Kaggle: upload MovieShots and a zip of this repo as two private datasets,
-turn on the GPU, `pip install -e .`, run `prepare_movieshots.py` then the two
-commands above, and download `p1_cnn/results/` and `p1_cnn/checkpoints/`.
-Before spending GPU hours, check the loop on a CPU:
+`kaggle/jobs/p1_own.py`: auto-labelling (~15 min on a T4), then the two runs
+the roadmap asks for, ResNet-18 from ImageNet weights (30 epochs) and from
+random init (60), selected on the validation episodes (whose labels are the
+teacher's), then predictions for the test episodes. Before spending GPU hours,
+check the loop on a CPU:
 
 ```powershell
 python p1_cnn/train_framing.py --synthetic --epochs 2 --tag smoke
@@ -103,17 +123,19 @@ python p1_cnn/train_framing.py --synthetic --epochs 2 --tag smoke
 
 ### Results
 
-Test split, shot-level accuracy (3 key frames averaged). Filled in after the runs.
+Shot-level accuracy on the hand-labelled test shots (3 key frames averaged).
+Filled in by `tools/update_results.py`.
 
 <!-- auto:p1-results -->
-| Model | Init | Epochs | Accuracy | Mean class acc. | Train time |
-|---|---|---|---|---|---|
-| ResNet-18 (ours) | ImageNet | 30 | — | — | — |
-| ResNet-18 (ours) | random | 60 | — | — | — |
-| MovieShots paper (scale) | — | — | *copy from the paper's results table* | | |
+| System | Trained on | Accuracy [95% CI] | Mean class acc. | Train time |
+|---|---|---|---|---|
+| SigLIP zero-shot (prompts only) | nothing | — | — | — |
+| Teacher: prompts + face size | nothing | — | — | — |
+| ResNet-18, ImageNet init | teacher labels, 30 epochs | — | — | — |
+| ResNet-18, random init | teacher labels, 60 epochs | — | — | — |
 <!-- /auto:p1-results -->
 
-Confusion matrix: `p1_cnn/results/pretrained/confusion.png`. Expected
+Confusion matrices: `p1_cnn/results/own/confusion_<system>.png`. Expected
 confusions are between neighbours on the scale (ECS↔CS, MS↔FS): the classes
 are points on a continuum, and annotators disagree at the boundaries too.
 
