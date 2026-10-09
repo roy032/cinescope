@@ -1,4 +1,4 @@
-# 🎬 CineScope
+# CineScope
 
 **An X-Ray engine for Hollywood films, built from pixels up.**
 
@@ -26,16 +26,16 @@ My own implementation is how I learn the idea. The comparison with the library g
 
 | Phase | Weeks | Feature | CV area | Status |
 |---|---|---|---|---|
-| [0](p0_classical/) | 1–3 | Shot cuts, camera moves, color palettes | Classical CV | 🚧 Built, awaiting test labels |
-| [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | 🚧 Built; training on our own episodes (auto-labelled, hand-labelled test) |
-| [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | 🚧 Trained on WIDER FACE; hand-labelled clip test pending |
-| [3](p3_tracking/) | 9–11 | Character timeline, who's talking | Tracking, metric learning, audio-visual | ⏳ Planned |
-| [4](p4_segmentation/) | 12–13 | Actor cutouts, object removal | Segmentation, matting, inpainting | ⏳ Planned |
-| [5](p5_3d/) | 14–17 | Camera path, 2D→3D, set fly-through | Calibration, SfM, depth, Gaussian splatting | ⏳ Planned |
-| [6](p6_pose_video/) | 18–20 | Fight breakdowns, scene types | Pose, ViT, VideoMAE | ⏳ Planned |
-| [7](p7_ocr/) | 21–22 | Subtitles and credits read | OCR (CRNN + CTC, TrOCR) | ⏳ Planned |
-| [8](p8_search/) | 23–24 | Scene search, chat with the movie | CLIP/SigLIP, multimodal RAG | ⏳ Planned |
-| [9](p9_production/) | 25–26 | Full-film pipeline, web app | ONNX/TensorRT, FastAPI, React | ⏳ Planned |
+| [0](p0_classical/) | 1–3 | Shot cuts, camera moves, color palettes | Classical CV | Built, awaiting test labels |
+| [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | Built; training on our own episodes (auto-labelled, hand-labelled test) |
+| [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | Trained on WIDER FACE; hand-labelled clip test pending |
+| [3](p3_tracking/) | 9–11 | Character timeline, who's talking | Tracking, metric learning, audio-visual | Planned |
+| [4](p4_segmentation/) | 12–13 | Actor cutouts, object removal | Segmentation, matting, inpainting | Planned |
+| [5](p5_3d/) | 14–17 | Camera path, 2D→3D, set fly-through | Calibration, SfM, depth, Gaussian splatting | Planned |
+| [6](p6_pose_video/) | 18–20 | Fight breakdowns, scene types | Pose, ViT, VideoMAE | Planned |
+| [7](p7_ocr/) | 21–22 | Subtitles and credits read | OCR (CRNN + CTC, TrOCR) | Planned |
+| [8](p8_search/) | 23–24 | Scene search, chat with the movie | CLIP/SigLIP, multimodal RAG | Planned |
+| [9](p9_production/) | 25–26 | Full-film pipeline, web app | ONNX/TensorRT, FastAPI, React | Planned |
 
 ## Results
 
