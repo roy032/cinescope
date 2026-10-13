@@ -1,4 +1,4 @@
-"""Automatic shot-scale labels for footage that has none (Phase 1 on our own episodes).
+"""Automatic shot-scale labels for footage that has none (Phase 1 on your own videos).
 
 Two independent cues, fused per shot:
 

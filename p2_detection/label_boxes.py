@@ -1,6 +1,6 @@
 """Build a draw-boxes labelling page for frames sampled from a clip.
 
-    python p2_detection/label_boxes.py trailers/Ted_Lasso_900s.mkv --start 120 --seconds 60 --fps 0.5 --tag dark
+    python p2_detection/label_boxes.py trailers/your_clip.mp4 --start 120 --seconds 60 --fps 0.5 --tag dark
 
 Writes outputs/boxes_<clip>_<tag>/ with frames/*.jpg and index.html. Open the
 page, draw a box around every face (and every prop you want to evaluate),

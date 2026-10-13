@@ -1,7 +1,7 @@
 """Evaluate a face detector on the WIDER FACE validation set.
 
-    python p2_detection/eval_wider.py --wider D:/datasets/WIDER --ckpt p2_detection/checkpoints/centernet_r18.pt
-    python p2_detection/eval_wider.py ... --eval-tools D:/datasets/WIDER/eval_tools    # official Easy/Medium/Hard
+    python p2_detection/eval_wider.py --wider path/to/WIDER --ckpt p2_detection/checkpoints/centernet_r18.pt
+    python p2_detection/eval_wider.py ... --eval-tools path/to/WIDER/eval_tools    # official Easy/Medium/Hard
 
 With the official toolkit's ground-truth .mat files, reports Easy / Medium /
 Hard AP computed the toolkit's way (cinescope/detect/wider_eval.py). Without

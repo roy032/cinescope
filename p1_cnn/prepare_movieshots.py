@@ -1,6 +1,6 @@
 """Flatten MovieShots annotations into data/movieshots/index.csv.
 
-    python p1_cnn/prepare_movieshots.py --root D:/datasets/MovieShots
+    python p1_cnn/prepare_movieshots.py --root path/to/MovieShots
     python p1_cnn/prepare_movieshots.py --root ... --annotations v1_split_trailer.json
 
 MovieShots is distributed by its authors on request (see p1_cnn/README.md);

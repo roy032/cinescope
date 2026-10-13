@@ -1,6 +1,6 @@
 """Build a keyboard labelling page for the shot-scale test set.
 
-    python p1_cnn/label_scales.py            # 300 random shots from the test episodes
+    python p1_cnn/label_scales.py            # 300 random shots from the test split
 
 Writes outputs/label_scales/index.html. Open it in a browser; for each shot
 press 1-5 (ECS, CS, MS, FS, LS), 0 to skip a shot that has no clear subject

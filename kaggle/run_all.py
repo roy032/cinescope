@@ -12,8 +12,8 @@ What it does, in order (a job is skipped when its results are already on disk):
      and the trained face-detector checkpoint as "cinescope-ckpt" (first time only)
   2. p2_diagnose    WIDER val, top-1000 peaks + per-face-size diagnosis     (~15 min GPU)
   3. p2_train_log   retrain CenterNet with log-size regression + evaluate   (~4 h GPU)
-  4. p1_own         auto-label our own episodes' shots (p1_cnn/build_own_shots.py makes them),
-                    ImageNet-init and scratch ResNet-18, test-episode predictions (~1-2 h GPU)
+  4. p1_own         auto-label your own videos' shots (p1_cnn/build_own_shots.py makes them),
+                    ImageNet-init and scratch ResNet-18, test-split predictions (~1-2 h GPU)
      (p1_movieshots   the same on MovieShots, once its frames are attached: --only p1_movieshots)
   5. downloads each job's results into p1_cnn/results or p2_detection/results,
      fills in the README tables (tools/update_results.py), runs the tests and commits.

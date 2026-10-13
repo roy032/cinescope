@@ -4,7 +4,7 @@
 medium, full, long) from a ResNet-18 written from scratch.
 
 ```powershell
-python p0_classical/analyse.py trailers/Ted_Lasso_120s.mkv --framing p1_cnn/checkpoints/pretrained.pt
+python p0_classical/analyse.py trailers/goldeneye.mp4 --framing p1_cnn/checkpoints/pretrained.pt
 # shots.json gains  "framing": {"label": "CS", "name": "close-up", "confidence": 0.91, ...}
 ```
 
@@ -70,19 +70,21 @@ Design choices worth defending:
 - **Three key frames per shot**: one random frame per step while training,
   probabilities averaged over all three at test time.
 
-### Data: our own episodes, labelled automatically
+### Data: any videos, labelled automatically
 
 MovieShots (Rao et al., ECCV 2020), the usual benchmark, is released by its
 authors on request; its public folder holds only the annotation files. The
-classifier is therefore trained on footage we have: full episodes of *Ted
-Lasso* and *Lanterns*, with labels made automatically and a test set labelled
+classifier is therefore trained on whatever videos you point it at (TV
+episodes, films, clips), with labels made automatically and a test set labelled
 by hand. The footage and key frames are never committed.
 
-1. **Shots.** `build_own_shots.py` finds the episodes, copies them into
-   `data/episodes/`, cuts them with the Phase 0 shot detector and keeps three
-   key frames per shot (25/50/75% of its length; shots under half a second and
-   black frames are dropped). Splits are by episode: per show, the last episode
-   is test and the one before it validation, so no scene is on both sides.
+1. **Shots.** `build_own_shots.py` finds every video under a folder, copies
+   them into `data/episodes/`, cuts them with the Phase 0 shot detector and
+   keeps three key frames per shot (25/50/75% of its length; shots under half a
+   second and black frames are dropped). Splits are by video: files named like
+   episodes of one show (`Show.S01E02`, `Show 1x02`) are split by episode, the
+   last one test and the one before it validation; any other video is split by
+   time (70/10/20%), so no scene is on both sides.
 2. **Automatic labels** (`autolabel.py`, `cinescope/framing/teacher.py`). Two
    independent cues, fused per shot:
    - zero-shot image-text matching with SigLIP (so400m), three prompts per class;
@@ -92,7 +94,7 @@ by hand. The footage and key frames are never committed.
      person the frame shows, so this cue is strong when a face is visible and
      silent when none is.
 3. **Hand-labelled test set.** `label_scales.py` builds a keyboard page with
-   300 random shots from the test episodes; it never shows a prediction, so
+   300 random shots from the test split; it never shows a prediction, so
    the labels do not lean towards any system. `eval_own.py` scores every cue,
    the fused teacher and both networks against it.
 
@@ -102,7 +104,8 @@ the CNN averaged away some of the teacher's errors; worse means it mostly
 copied them.
 
 ```powershell
-RUN_OWN_SHOTS.bat          # find + copy + cut the episodes, build the labelling page, train on Kaggle
+python p1_cnn/build_own_shots.py --search path/to/videos   # find + copy + cut, zip for Kaggle
+RUN_OWN_SHOTS.bat path\to\videos                          # Windows: that, the labelling page and the Kaggle run
 python p1_cnn/eval_own.py  # after labelling: every system against the hand labels
 ```
 
@@ -113,8 +116,8 @@ MovieShots still works unchanged (`prepare_movieshots.py`, then
 
 `kaggle/jobs/p1_own.py`: auto-labelling (~15 min on a T4), then the two runs
 the roadmap asks for, ResNet-18 from ImageNet weights (30 epochs) and from
-random init (60), selected on the validation episodes (whose labels are the
-teacher's), then predictions for the test episodes. Before spending GPU hours,
+random init (60), selected on the validation split (whose labels are the
+teacher's), then predictions for the test split. Before spending GPU hours,
 check the loop on a CPU:
 
 ```powershell

@@ -1,6 +1,6 @@
 """Score shot-boundary detection against your hand labels.
 
-    python p0_classical/eval_cuts.py trailers/Ted_Lasso_900s.mkv p0_classical/labels/Ted_Lasso_900s.labels.json
+    python p0_classical/eval_cuts.py trailers/goldeneye.mp4 p0_classical/labels/goldeneye.labels.json
     python p0_classical/eval_cuts.py --all            # every clip that has a label file
 
 Compares, on the same frames:
@@ -10,8 +10,8 @@ Compares, on the same frames:
   ffmpeg-scene    FFmpeg's `select='gt(scene,0.3)'` filter, if ffmpeg is on PATH
 
 Writes p0_classical/results/<clip>.json and prints a table. The detector
-parameters are fixed in code and were chosen on the *_120s development clips;
-the labelled *_900s clips are the held-out test set.
+parameters are fixed in code; the labelled clips are a held-out test set and
+must never be used to tune them.
 """
 from __future__ import annotations
 

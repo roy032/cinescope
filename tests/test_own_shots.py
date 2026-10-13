@@ -1,4 +1,4 @@
-"""Phase 1 on our own episodes: episode discovery and splits, the automatic
+"""Phase 1 on your own videos: video discovery and splits, the automatic
 labeller's cue fusion, the labelling page and the hand evaluation."""
 from __future__ import annotations
 
@@ -26,14 +26,29 @@ from cinescope.framing.teacher import (  # noqa: E402
 
 class TestEpisodes:
     def test_show_and_id(self):
-        p = Path("D:/Shows/Ted.Lasso.S02E07.1080p.WEB.mkv")
-        assert bos.show_of(p) == "ted_lasso"
-        assert bos.episode_id(p) == "ted_lasso_s02e07"
-        assert bos.episode_id(Path("D:/Lanterns 1x03.mp4")) == "lanterns_s01e03"
-        assert bos.show_of(Path("D:/holiday.mp4")) is None
+        p = Path("videos/Some.Show.S02E07.1080p.WEB.mkv")
+        assert bos.show_of(p) == "some_show"
+        assert bos.episode_id(p) == "some_show_s02e07"
+        assert bos.episode_id(Path("videos/My Series 1x03.mp4")) == "my_series_s01e03"
 
-    def test_id_without_episode_number(self):
-        assert bos.episode_id(Path("D:/Green Lantern Pilot.mkv")) == "lanterns_green_lantern_pilot"
+    def test_any_other_video_is_its_own_group(self):
+        assert bos.show_of(Path("videos/holiday.mp4")) is None
+        assert bos.episode_id(Path("videos/Tears of Steel (2012).mkv")) == "tears_of_steel_2012"
+        assert bos.show_of(Path("videos/1920x1080 test.mp4")) is None      # a resolution, not 19x10
+
+    def test_finds_every_video(self, tmp_path):
+        for name in ("a.mp4", "sub/b.MKV", "notes.txt", "sub/c.webm"):
+            (tmp_path / name).parent.mkdir(parents=True, exist_ok=True)
+            (tmp_path / name).write_bytes(b"x" * 10)
+        assert [p.name for p in bos.find_videos(tmp_path)] == ["a.mp4", "b.MKV", "c.webm"]
+        assert bos.find_videos(tmp_path, min_mb=1) == []
+
+    def test_searches_inside_the_project_but_not_its_copies(self, tmp_path, monkeypatch):
+        for name in ("trailers/clip.mp4", "data/episodes/copy.mp4"):
+            (tmp_path / name).parent.mkdir(parents=True)
+            (tmp_path / name).write_bytes(b"x")
+        monkeypatch.setattr(bos, "ROOT", tmp_path)
+        assert [p.name for p in bos.find_videos(tmp_path)] == ["clip.mp4"]
 
     @staticmethod
     def _ep(name, show, n=10):
@@ -41,14 +56,14 @@ class TestEpisodes:
                 "shots": [{"shot": f"{i:04d}", "t0": float(i), "t1": float(i) + 0.9} for i in range(n)]}
 
     def test_episode_level_split(self):
-        eps = [self._ep(f"ted_lasso_s01e0{i}", "ted_lasso") for i in range(1, 5)]
+        eps = [self._ep(f"some_show_s01e0{i}", "some_show") for i in range(1, 5)]
         split = bos.assign_splits(eps)
         per_ep = {e["episode"]: {split[(e["episode"], s["shot"])] for s in e["shots"]} for e in eps}
-        assert per_ep == {"ted_lasso_s01e01": {"train"}, "ted_lasso_s01e02": {"train"},
-                          "ted_lasso_s01e03": {"val"}, "ted_lasso_s01e04": {"test"}}
+        assert per_ep == {"some_show_s01e01": {"train"}, "some_show_s01e02": {"train"},
+                          "some_show_s01e03": {"val"}, "some_show_s01e04": {"test"}}
 
     def test_time_split_for_a_single_episode(self):
-        e = self._ep("lanterns_s01e01", "lanterns", n=100)
+        e = self._ep("tears_of_steel", "tears_of_steel", n=100)
         split = bos.assign_splits([e])
         seq = [split[(e["episode"], s["shot"])] for s in e["shots"]]
         assert seq[0] == "train" and seq[-1] == "test"

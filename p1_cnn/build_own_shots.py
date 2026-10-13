@@ -1,14 +1,17 @@
-"""Turn full episodes into a shot-scale dataset: find the episodes, copy them into
-the project, cut them into shots with the Phase 0 detector, save three key
-frames per shot, and split by episode.
+"""Turn any videos you have (TV episodes, films, clips) into a shot-scale dataset:
+find them, copy them into the project, cut them into shots with the Phase 0
+detector, save three key frames per shot, and split by video.
 
-    python p1_cnn/build_own_shots.py --search D:\\            # find, copy, cut, zip
-    python p1_cnn/build_own_shots.py --videos data/episodes    # episodes already in place
+    python p1_cnn/build_own_shots.py --search path/to/videos   # find, copy, cut, zip
+    python p1_cnn/build_own_shots.py --videos data/episodes    # videos already in place
+
+Files named like a series episode ("Show.Name.S02E07...", "Show Name 2x07") are
+grouped by show; any other file is a group of its own.
 
 Output (all git-ignored; the footage is never committed):
-  data/episodes/<file>                        copies of the episodes
+  data/episodes/<file>                        copies of the videos
   data/own_shots/frames/<episode>/<shot>_<k>.jpg   key frames at 25/50/75% of each shot
-  data/own_shots/episodes/<episode>.json      shots of one episode (resumable: done episodes are skipped)
+  data/own_shots/episodes/<episode>.json      shots of one video (resumable: done videos are skipped)
   data/own_shots/shots.csv                    split, episode, shot, start, end, frames
   kaggle_upload/dataset-own/own_shots.zip     the frames + shots.csv, for the Kaggle job
 
@@ -16,10 +19,11 @@ Episodes wider than 1920 px (4K, usually HDR) are skipped: decoding them on a
 CPU is several times slower, and HDR decoded without tone mapping looks washed
 out next to the SDR episodes.
 
-Splits are by episode, never by shot: neighbouring shots of one scene look
+Splits are by video, never by shot: neighbouring shots of one scene look
 alike, and a shot-level split would leak the test set into training. Per show,
 the last episode is test and the one before it validation; a show with fewer
-episodes is split by time instead (first 70% / next 10% / last 20%).
+than three episodes, or a single film or clip, is split by time instead
+(first 70% / next 10% / last 20%).
 
 Decoding is one pass per episode: frames are kept at 160 px for the cut
 detector and every 6th frame is JPEG-encoded in memory at 448 px, so the key
@@ -46,9 +50,9 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 VIDEO_EXT = {".mkv", ".mp4", ".avi", ".mov", ".m4v", ".webm"}
-SHOWS = {"lasso": "ted_lasso", "lantern": "lanterns"}
-SKIP_DIRS = {"$recycle.bin", "system volume information", "riot games", "windows", "program files",
-             "program files (x86)", "programdata", "appdata"}
+SKIP_DIRS = {"$recycle.bin", "system volume information", "windows", "program files",
+             "program files (x86)", "programdata", "appdata", "node_modules", ".git"}
+EPISODE = re.compile(r"[sS](\d{1,2})\s*[eE](\d{1,3})|(?<!\d)(\d{1,2})x(\d{2})(?!\d)")
 OUT = ROOT / "data" / "own_shots"
 KEEP_EVERY = 6            # frames kept for key-frame selection (4 per second at 24 fps)
 MIN_SHOT_FRAMES = 12      # half a second: shorter "shots" are mostly flashes and detector noise
@@ -56,32 +60,38 @@ KEY_WIDTH = 448
 DARK = 12.0               # mean luma below this = black frame (fades, credits background)
 
 
+def _slug(text: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "_", text.lower()).strip("_")
+
+
 def show_of(path: Path) -> str | None:
-    low = str(path).lower()
-    for key, show in SHOWS.items():
-        if key in low:
-            return show
-    return None
+    """The series a file belongs to, from the name before its episode number
+    ("Show.Name.S02E07.mkv" -> "show_name"); None for a file that is not an episode."""
+    m = EPISODE.search(path.stem)
+    if not m:
+        return None
+    return _slug(path.stem[:m.start()]) or None
 
 
 def episode_id(path: Path) -> str:
-    show = show_of(path) or "other"
-    m = re.search(r"[sS](\d{1,2})\s*[eE](\d{1,3})", path.name) or re.search(r"(\d{1,2})x(\d{2})", path.name)
-    if m:
-        return f"{show}_s{int(m.group(1)):02d}e{int(m.group(2)):02d}"
-    stem = re.sub(r"[^a-z0-9]+", "_", path.stem.lower()).strip("_")
-    return f"{show}_{stem}"[:60]
+    m = EPISODE.search(path.stem)
+    show = show_of(path)
+    if m and show:
+        season, ep = (m.group(1), m.group(2)) if m.group(1) else (m.group(3), m.group(4))
+        return f"{show}_s{int(season):02d}e{int(ep):02d}"
+    return _slug(path.stem)[:60] or "video"
 
 
-def find_videos(search: Path) -> list[Path]:
+def find_videos(search: Path, min_mb: float = 0) -> list[Path]:
     found = []
     for dirpath, dirnames, filenames in os.walk(search):
         dirnames[:] = [d for d in dirnames if d.lower() not in SKIP_DIRS and not d.startswith("$")]
-        if Path(dirpath).resolve().is_relative_to(ROOT):
-            continue
+        here = Path(dirpath).resolve()
+        if any(here.is_relative_to(ROOT / d) for d in ("data", "outputs", ".venv", "kaggle_upload")):
+            continue                  # our own copies and outputs, not new videos
         for fn in filenames:
             p = Path(dirpath) / fn
-            if p.suffix.lower() in VIDEO_EXT and show_of(p) and p.stat().st_size > 50e6:
+            if p.suffix.lower() in VIDEO_EXT and p.stat().st_size >= min_mb * 1e6:
                 found.append(p)
     return sorted(found)
 
@@ -105,7 +115,7 @@ def copy_in(videos: list[Path], dest: Path) -> list[Path]:
     free = shutil.disk_usage(dest).free
     if need > free - 5e9:
         print(f"not enough space on {dest.drive or dest} to copy {need / 1e9:.1f} GB "
-              f"({free / 1e9:.1f} GB free): reading the episodes where they are instead")
+              f"({free / 1e9:.1f} GB free): reading the videos where they are instead")
         return videos
     out = []
     for v in videos:
@@ -193,26 +203,27 @@ def assign_splits(episodes: list[dict]) -> dict[tuple[str, str], str]:
 
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--search", help="folder or drive to search for the episodes (e.g. D:\\)")
-    ap.add_argument("--videos", default=str(ROOT / "data" / "episodes"), help="where the episode copies live")
-    ap.add_argument("--no-copy", action="store_true", help="read the episodes where they were found")
+    ap.add_argument("--search", help="folder to search (recursively) for video files")
+    ap.add_argument("--min-mb", type=float, default=0, help="with --search: ignore videos smaller than this")
+    ap.add_argument("--videos", default=str(ROOT / "data" / "episodes"), help="where the video copies live")
+    ap.add_argument("--no-copy", action="store_true", help="read the videos where they were found")
     ap.add_argument("--pack-only", action="store_true",
                     help="skip finding and cutting: rebuild shots.csv and the zip from every cut episode")
-    ap.add_argument("--max-width", type=int, default=1920, help="skip episodes wider than this (4K/HDR)")
+    ap.add_argument("--max-width", type=int, default=1920, help="skip videos wider than this (4K/HDR)")
     ap.add_argument("--workers", type=int, default=max(1, min(3, (os.cpu_count() or 2) // 2)))
     args = ap.parse_args(argv)
 
     if args.pack_only:
         ids = sorted(p.stem for p in (OUT / "episodes").glob("*.json"))
         if not ids:
-            sys.exit(f"no cut episodes in {OUT / 'episodes'}")
+            sys.exit(f"no cut videos in {OUT / 'episodes'}")
         pack(ids)
         return
     if args.search:
-        found = find_videos(Path(args.search))
+        found = find_videos(Path(args.search), args.min_mb)
         if not found:
-            sys.exit(f"no Ted Lasso / Lanterns video files found under {args.search}")
-        print(f"found {len(found)} episodes under {args.search}")
+            sys.exit(f"no video files found under {args.search}")
+        print(f"found {len(found)} videos under {args.search}")
         big = too_large(found, args.max_width)
         for v in big:
             print(f"  skipped (wider than {args.max_width} px): {v.name}")
@@ -222,13 +233,13 @@ def main(argv: list[str] | None = None) -> None:
         videos = sorted(p for p in Path(args.videos).glob("*") if p.suffix.lower() in VIDEO_EXT)
         videos = [v for v in videos if v not in too_large(videos, args.max_width)]
     if not videos:
-        sys.exit("no episodes to process")
+        sys.exit("no videos to process")
 
     ids = [episode_id(v) for v in videos]
     if len(set(ids)) != len(ids):
         ids = [f"{i}_{n}" for n, i in enumerate(ids)]
     todo = [(str(v), e) for v, e in zip(videos, ids, strict=True) if not (OUT / "episodes" / f"{e}.json").exists()]
-    print(f"{len(videos)} episodes, {len(videos) - len(todo)} already cut, {len(todo)} to do "
+    print(f"{len(videos)} videos, {len(videos) - len(todo)} already cut, {len(todo)} to do "
           f"({args.workers} in parallel; roughly 5-15 minutes each)", flush=True)
     with ProcessPoolExecutor(args.workers) as pool:
         futs = {pool.submit(process_episode, v, e): e for v, e in todo}

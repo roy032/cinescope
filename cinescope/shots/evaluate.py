@@ -2,7 +2,7 @@
 
 Label file (written by the labelling tool, p0_classical/label_cuts.py):
 
-    {"video": "Ted_Lasso_120s.mkv", "fps": 23.976, "n_frames": 7218,
+    {"video": "goldeneye.mp4", "fps": 23.976, "n_frames": 1980,
      "transitions": [{"kind": "cut", "frame": 131},
                      {"kind": "dissolve", "start": 880, "end": 902}, ...]}
 

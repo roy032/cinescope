@@ -1,6 +1,6 @@
 """Find faces through a clip and draw them (the Phase 2 feature).
 
-    python p2_detection/detect_clip.py trailers/Ted_Lasso_120s.mkv --ckpt p2_detection/checkpoints/centernet_r18.pt
+    python p2_detection/detect_clip.py trailers/goldeneye.mp4 --ckpt p2_detection/checkpoints/centernet_r18.pt
 
 Samples the clip at --fps, detects faces in every sampled frame, and writes
 outputs/<clip>/faces.json (boxes per frame) and faces.jpg (a contact sheet with

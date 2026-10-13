@@ -4,8 +4,8 @@
 evaluated here, and compares it (and production prop detectors) on movie frames.
 
 ```powershell
-python p2_detection/detect_clip.py trailers/Ted_Lasso_120s.mkv --ckpt p2_detection/checkpoints/centernet_r18.pt
-# -> outputs/Ted_Lasso_120s/faces.json, faces.jpg
+python p2_detection/detect_clip.py trailers/goldeneye.mp4 --ckpt p2_detection/checkpoints/centernet_r18.pt
+# -> outputs/goldeneye/faces.json, faces.jpg
 ```
 
 ## Week 6 — the metric code (NumPy)
@@ -192,7 +192,7 @@ Three clips that stress detectors differently — **dark**, **profile**,
 **crowd** — about 30 frames each, labelled by hand:
 
 ```powershell
-python p2_detection/label_boxes.py trailers/Lanterns_S01E01_900s.mkv --start 300 --seconds 60 --tag dark
+python p2_detection/label_boxes.py trailers/your_clip.mp4 --start 300 --seconds 60 --tag dark
 # draw boxes in outputs/boxes_.../index.html, "Download labels", move the JSON to p2_detection/labels/
 python p2_detection/compare_faces.py p2_detection/labels/*.boxes.json --ckpt p2_detection/checkpoints/centernet_r18.pt --yunet models/face_detection_yunet_2023mar.onnx
 pip install ultralytics
