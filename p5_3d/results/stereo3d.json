@@ -1,0 +1,21 @@
+{
+ "synthetic": {
+  "baseline": 0.15,
+  "max_disparity_px": 12.09,
+  "no_warp_psnr": 19.46,
+  "dibr_background_fill_psnr": 33.59,
+  "dibr_background_fill_psnr_in_holes": 21.66,
+  "hole_fraction": 0.0171,
+  "dibr_foreground_fill_psnr": 32.35,
+  "dibr_foreground_fill_psnr_in_holes": 18.15
+ },
+ "goldeneye": {
+  "frames": 95,
+  "fps": 23.976023976023978,
+  "width": 480,
+  "max_disparity_pct": 2.5,
+  "mean_hole_fraction": 0.0157,
+  "ms_per_frame_depth": 3129.5,
+  "ms_per_frame_dibr": 326.9
+ }
+}

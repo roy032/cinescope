@@ -1,0 +1,145 @@
+{
+ "goldeneye#18": {
+  "ok": true,
+  "reference_frame": 1606,
+  "source_frames": [
+   1592,
+   1598,
+   1602,
+   1628
+  ],
+  "sfm_points_in_ref": 103,
+  "mvs_vs_sfm": {
+   "n": 91,
+   "si_log": 0.7323,
+   "abs_rel": 0.1796,
+   "delta1.25": 0.7473,
+   "spearman": 0.9251,
+   "scale": 1.0129
+  },
+  "mvs_coverage": 0.3811,
+  "midas_vs_sfm": {
+   "n": 101,
+   "si_log": 2.0252,
+   "abs_rel": 1.1639,
+   "delta1.25": 0.1089,
+   "spearman": 0.7701,
+   "scale": 0.5103
+  },
+  "midas_vs_sfm_rank_only": 0.7774,
+  "mvs_vs_midas_dense": {
+   "n": 36175,
+   "si_log": 1.816,
+   "abs_rel": 3.8882,
+   "delta1.25": 0.0211,
+   "spearman": 0.4687,
+   "scale": 0.4088
+  },
+  "sfm": {
+   "ok": true,
+   "keyframes": 7,
+   "points": 121,
+   "observations": 449,
+   "mean_track_length": 3.7107438016528924,
+   "mean_reproj_px": 0.1855,
+   "median_reproj_px": 0.1468,
+   "focal": 476.79,
+   "frames_with_pose": 50
+  }
+ },
+ "goldeneye#8": {
+  "ok": true,
+  "reference_frame": 886,
+  "source_frames": [
+   882,
+   884,
+   888,
+   890
+  ],
+  "sfm_points_in_ref": 75,
+  "mvs_vs_sfm": {
+   "n": 74,
+   "si_log": 0.0297,
+   "abs_rel": 0.0171,
+   "delta1.25": 1.0,
+   "spearman": 0.5884,
+   "scale": 1.0008
+  },
+  "mvs_coverage": 0.4234,
+  "midas_vs_sfm": {
+   "n": 75,
+   "si_log": 0.0148,
+   "abs_rel": 0.0095,
+   "delta1.25": 1.0,
+   "spearman": 0.7182,
+   "scale": 1.0003
+  },
+  "midas_vs_sfm_rank_only": -0.7182,
+  "mvs_vs_midas_dense": {
+   "n": 41461,
+   "si_log": 0.1606,
+   "abs_rel": 0.1269,
+   "delta1.25": 0.879,
+   "spearman": -0.4051,
+   "scale": 0.8564
+  },
+  "sfm": {
+   "ok": true,
+   "keyframes": 8,
+   "points": 80,
+   "observations": 496,
+   "mean_track_length": 6.2,
+   "mean_reproj_px": 0.2048,
+   "median_reproj_px": 0.1797,
+   "focal": 869.95,
+   "frames_with_pose": 49
+  }
+ },
+ "goldeneye#17": {
+  "ok": true,
+  "reference_frame": 1401,
+  "source_frames": [
+   1391,
+   1395,
+   1411
+  ],
+  "sfm_points_in_ref": 64,
+  "mvs_vs_sfm": {
+   "n": 61,
+   "si_log": 0.7033,
+   "abs_rel": 0.1899,
+   "delta1.25": 0.7377,
+   "spearman": 0.3958,
+   "scale": 1.006
+  },
+  "mvs_coverage": 0.3931,
+  "midas_vs_sfm": {
+   "n": 64,
+   "si_log": 0.7436,
+   "abs_rel": 0.2596,
+   "delta1.25": 0.5938,
+   "spearman": 0.5944,
+   "scale": 0.8558
+  },
+  "midas_vs_sfm_rank_only": 0.5944,
+  "mvs_vs_midas_dense": {
+   "n": 38488,
+   "si_log": 0.4913,
+   "abs_rel": 0.4067,
+   "delta1.25": 0.5728,
+   "spearman": 0.1147,
+   "scale": 1.1832
+  },
+  "sfm": {
+   "ok": true,
+   "keyframes": 4,
+   "points": 68,
+   "observations": 187,
+   "mean_track_length": 2.75,
+   "mean_reproj_px": 0.4064,
+   "median_reproj_px": 0.3411,
+   "focal": 1146.27,
+   "frames_with_pose": 16
+  }
+ }
+}
