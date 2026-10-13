@@ -14,3 +14,6 @@ scipy>=1.11              # only used in tests as an independent reference
 # Dev
 pytest>=8.0
 ruff>=0.6
+
+# Optional library baselines (each comparison is skipped if its library is missing)
+# pycolmap timm          # Phase 5: COLMAP SfM, MiDaS depth
