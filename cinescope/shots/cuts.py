@@ -57,8 +57,8 @@ class Shot:
     index: int
     start: int           # first frame (inclusive)
     end: int             # last frame (inclusive)
-    t0: float
-    t1: float
+    t0: float            # time of the first frame
+    t1: float            # time the shot ends: the next shot's first frame (t1 - t0 = duration)
 
     @property
     def n_frames(self) -> int:
@@ -207,9 +207,12 @@ def detect_transitions(feat: FrameFeatures, p: CutParams | None = None,
 def shots_from_transitions(transitions: list[Transition], n_frames: int,
                            times: np.ndarray) -> list[Shot]:
     bounds = [0] + [tr.frame for tr in transitions if 0 < tr.frame < n_frames] + [n_frames]
+    # The last frame is on screen for one frame interval after its timestamp.
+    frame_s = float(np.median(np.diff(times[:n_frames]))) if n_frames > 1 else 0.0
     shots = []
     for a, b in zip(bounds[:-1], bounds[1:], strict=True):
         if b <= a:
             continue
-        shots.append(Shot(len(shots), a, b - 1, float(times[a]), float(times[b - 1])))
+        end = float(times[b]) if b < n_frames else float(times[n_frames - 1]) + frame_s
+        shots.append(Shot(len(shots), a, b - 1, float(times[a]), end))
     return shots

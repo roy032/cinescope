@@ -198,8 +198,9 @@ def write_video(path: str | Path, frames: np.ndarray, fps: float = 24.0) -> None
     frames = np.asarray(frames, dtype=np.uint8)
     h, w = frames.shape[1:3]
     if _have_av():
-        import av
         from fractions import Fraction
+
+        import av
 
         with av.open(path, "w") as out:
             s = out.add_stream("mpeg4", rate=Fraction(fps).limit_denominator(1001))
