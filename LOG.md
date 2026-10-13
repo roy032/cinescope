@@ -102,3 +102,18 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   learn from those labels; a hand-labelled sample of the test split (never
   shown any prediction while labelling) scores every system.
 
+
+## Weeks 14–17 — calibration, SfM, depth, stereo, splatting
+
+- Zhang calibration from scratch matches `cv2.calibrateCamera` exactly on the
+  OpenCV chessboards (RMS 0.418 px); vanishing-point self-calibration gets the
+  focal length within 7%, the image-size prior only within 43%.
+- From-scratch SfM with a Schur-complement bundle adjustment: 0.19–0.24 px and
+  ≤ 0.4% trajectory error on synthetic shots. On trailers it is conservative:
+  it reconstructs 3 of 12 shots (COLMAP 10), with lower error on those (0.27
+  vs 0.68 px). Pans and low-parallax shots get a rotation-only camera path.
+- Plane-sweep stereo beats MiDaS small where it is confident (synthetic si-log
+  0.087 vs 0.162); MiDaS covers every pixel.
+- Filling DIBR holes from the background side is worth +3.5 dB inside the holes.
+- CPU Gaussian splatting: 24.8 dB on held-out frames vs 17.4 dB for a point
+  render; actors walking through the shot break the static-scene assumption.

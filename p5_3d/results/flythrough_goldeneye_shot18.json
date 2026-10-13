@@ -1,0 +1,275 @@
+{
+ "initial_points": 1331,
+ "final_gaussians": 6366,
+ "iters": 1500,
+ "train_frames": 38,
+ "test_frames": 12,
+ "point_radius": 3,
+ "heldout_psnr_splat": 24.76,
+ "heldout_psnr_points": 17.39,
+ "train_psnr_splat": 24.68,
+ "per_frame": [
+  {
+   "frame": 1596,
+   "splat_psnr": 18.26,
+   "points_psnr": 18.33
+  },
+  {
+   "frame": 1604,
+   "splat_psnr": 18.34,
+   "points_psnr": 18.91
+  },
+  {
+   "frame": 1612,
+   "splat_psnr": 19.97,
+   "points_psnr": 17.71
+  },
+  {
+   "frame": 1620,
+   "splat_psnr": 22.88,
+   "points_psnr": 16.74
+  },
+  {
+   "frame": 1628,
+   "splat_psnr": 27.06,
+   "points_psnr": 16.42
+  },
+  {
+   "frame": 1636,
+   "splat_psnr": 30.21,
+   "points_psnr": 16.91
+  },
+  {
+   "frame": 1644,
+   "splat_psnr": 27.5,
+   "points_psnr": 17.44
+  },
+  {
+   "frame": 1652,
+   "splat_psnr": 27.39,
+   "points_psnr": 17.28
+  },
+  {
+   "frame": 1660,
+   "splat_psnr": 27.16,
+   "points_psnr": 17.29
+  },
+  {
+   "frame": 1668,
+   "splat_psnr": 25.8,
+   "points_psnr": 17.39
+  },
+  {
+   "frame": 1676,
+   "splat_psnr": 26.43,
+   "points_psnr": 17.31
+  },
+  {
+   "frame": 1684,
+   "splat_psnr": 26.14,
+   "points_psnr": 16.95
+  }
+ ],
+ "seconds_mvs": 3.2,
+ "seconds_train": 1538.4,
+ "s_per_iter": 1.026,
+ "log": [
+  {
+   "iter": 1,
+   "loss": 0.17908,
+   "psnr": 18.93,
+   "gaussians": 1331
+  },
+  {
+   "iter": 50,
+   "loss": 0.10589,
+   "psnr": 23.75,
+   "gaussians": 1331
+  },
+  {
+   "iter": 100,
+   "loss": 0.09748,
+   "psnr": 24.38,
+   "gaussians": 1331
+  },
+  {
+   "iter": 150,
+   "loss": 0.07723,
+   "psnr": 25.79,
+   "gaussians": 1331
+  },
+  {
+   "iter": 200,
+   "loss": 0.08764,
+   "psnr": 24.87,
+   "gaussians": 1958
+  },
+  {
+   "iter": 250,
+   "loss": 0.09491,
+   "psnr": 24.51,
+   "gaussians": 1958
+  },
+  {
+   "iter": 300,
+   "loss": 0.08126,
+   "psnr": 25.53,
+   "gaussians": 2281
+  },
+  {
+   "iter": 350,
+   "loss": 0.06668,
+   "psnr": 26.74,
+   "gaussians": 2281
+  },
+  {
+   "iter": 400,
+   "loss": 0.09185,
+   "psnr": 24.57,
+   "gaussians": 2662
+  },
+  {
+   "iter": 450,
+   "loss": 0.17062,
+   "psnr": 17.57,
+   "gaussians": 2662
+  },
+  {
+   "iter": 500,
+   "loss": 0.07216,
+   "psnr": 26.72,
+   "gaussians": 3113
+  },
+  {
+   "iter": 550,
+   "loss": 0.0975,
+   "psnr": 20.9,
+   "gaussians": 3113
+  },
+  {
+   "iter": 600,
+   "loss": 0.08058,
+   "psnr": 25.65,
+   "gaussians": 3644
+  },
+  {
+   "iter": 650,
+   "loss": 0.11757,
+   "psnr": 20.02,
+   "gaussians": 3644
+  },
+  {
+   "iter": 700,
+   "loss": 0.07104,
+   "psnr": 26.48,
+   "gaussians": 4263
+  },
+  {
+   "iter": 750,
+   "loss": 0.07922,
+   "psnr": 26.28,
+   "gaussians": 4263
+  },
+  {
+   "iter": 800,
+   "loss": 0.08584,
+   "psnr": 25.71,
+   "gaussians": 4913
+  },
+  {
+   "iter": 850,
+   "loss": 0.14931,
+   "psnr": 18.39,
+   "gaussians": 4913
+  },
+  {
+   "iter": 900,
+   "loss": 0.06498,
+   "psnr": 28.02,
+   "gaussians": 5624
+  },
+  {
+   "iter": 950,
+   "loss": 0.15831,
+   "psnr": 18.22,
+   "gaussians": 5624
+  },
+  {
+   "iter": 1000,
+   "loss": 0.07804,
+   "psnr": 26.04,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1050,
+   "loss": 0.06367,
+   "psnr": 25.84,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1100,
+   "loss": 0.07666,
+   "psnr": 26.78,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1150,
+   "loss": 0.06604,
+   "psnr": 27.67,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1200,
+   "loss": 0.07164,
+   "psnr": 23.33,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1250,
+   "loss": 0.15848,
+   "psnr": 18.25,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1300,
+   "loss": 0.08774,
+   "psnr": 24.47,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1350,
+   "loss": 0.06142,
+   "psnr": 25.22,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1400,
+   "loss": 0.06882,
+   "psnr": 27.57,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1450,
+   "loss": 0.06426,
+   "psnr": 27.94,
+   "gaussians": 6366
+  },
+  {
+   "iter": 1500,
+   "loss": 0.04596,
+   "psnr": 29.99,
+   "gaussians": 6366
+  }
+ ],
+ "sfm": {
+  "ok": true,
+  "keyframes": 7,
+  "points": 121,
+  "observations": 449,
+  "mean_track_length": 3.7107438016528924,
+  "mean_reproj_px": 0.1855,
+  "median_reproj_px": 0.1468,
+  "focal": 476.79,
+  "frames_with_pose": 50
+ }
+}
