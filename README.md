@@ -29,12 +29,12 @@ My own implementation is how I learn the idea. The comparison with the library g
 | [0](p0_classical/) | 1–3 | Shot cuts, camera moves, color palettes | Classical CV | Built; scored on public clips |
 | [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | Built; trains on any videos (auto-labelled, hand-labelled test) |
 | [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | Trained on WIDER FACE; hand-labelled clip test pending |
-| [3](p3_tracking/) | 9–11 | Character timeline, who's talking | Tracking, metric learning, audio-visual | Planned |
+| [3](p3_tracking/) | 9–11 | Character timeline, who's talking | Tracking, metric learning, audio-visual | Built; scored on hand-labelled public clips |
 | [4](p4_segmentation/) | 12–13 | Actor cutouts, object removal | Segmentation, matting, inpainting | Planned |
-| [5](p5_3d/) | 14–17 | Camera path, 2D→3D, set fly-through | Calibration, SfM, depth, Gaussian splatting | Planned |
+| [5](p5_3d/) | 14–17 | Camera path, 2D→3D, set fly-through | Calibration, SfM, depth, Gaussian splatting | Built; scored on synthetic ground truth and public clips |
 | [6](p6_pose_video/) | 18–20 | Fight breakdowns, scene types | Pose, ViT, VideoMAE | Planned |
 | [7](p7_ocr/) | 21–22 | Subtitles and credits read | OCR (CRNN + CTC, TrOCR) | Planned |
-| [8](p8_search/) | 23–24 | Scene search, chat with the movie | CLIP/SigLIP, multimodal RAG | Planned |
+| [8](p8_search/) | 23–24 | Scene search, chat with the movie | CLIP/SigLIP, multimodal RAG | Built; scored on hand-written queries over public clips (LLM answers optional) |
 | [9](p9_production/) | 25–26 | Full-film pipeline, web app | ONNX/TensorRT, FastAPI, React | Planned |
 
 ## Results
@@ -46,12 +46,12 @@ Filled in as each phase ships.
 | 0 | Shot-cut F1 (public clips) | 0.945 | 0.960 (PySceneDetect) |
 | 1 | Shot-framing accuracy (hand-labelled test episodes) | — | — |
 | 2 | Face AP (WIDER FACE Easy / Medium / Hard) | 0.593 / 0.726 / 0.792 | — |
-| 3 | Character clustering purity | — | — |
+| 3 | Character clustering purity / pair F1 (goldeneye, 8 people) | 0.93 / 0.32 (self-supervised triplet; 15 clusters) | 1.00 / 1.00 (SFace; 8 clusters) |
 | 4 | Mask IoU / speed vs. SAM 2 | — | — |
-| 5 | SfM reprojection error (px) | — | — |
+| 5 | SfM reprojection error (px), on the public-clip shots both reconstruct | 0.27 (3 of 12 shots) | 0.68 (COLMAP; 10 of 12 shots) |
 | 6 | Scene-type accuracy | — | — |
 | 7 | Subtitle character error rate | — | — |
-| 8 | Scene search Recall@5 | — | — |
+| 8 | Scene search Recall@5 (46 test queries, 9 public clips pooled) | 0.783 (own exact index) · 0.457 (own IVF-PQ) · 0.000 (own dual encoder) | 0.783 (open_clip + FAISS Flat) · 0.435 (FAISS IVF-PQ) |
 | 9 | Time to process a 2-hour film | — | — |
 
 ---

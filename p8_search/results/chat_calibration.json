@@ -1,0 +1,91 @@
+{
+ "clip": "vtest",
+ "positive": [
+  {
+   "q": "pedestrians walking on a path in front of a building",
+   "best": 0.2714,
+   "contrast": 0.0122
+  },
+  {
+   "q": "two people walking across the grass toward the camera",
+   "best": 0.2263,
+   "contrast": 0.0112
+  },
+  {
+   "q": "a person in a red jacket on the lawn",
+   "best": 0.229,
+   "contrast": 0.0194
+  },
+  {
+   "q": "a woman in a dark coat walking alone across the lawn",
+   "best": 0.2228,
+   "contrast": 0.0145
+  }
+ ],
+ "negative": [
+  {
+   "q": "a car chase",
+   "best": 0.2155,
+   "contrast": 0.011
+  },
+  {
+   "q": "an explosion",
+   "best": 0.1804,
+   "contrast": 0.0072
+  },
+  {
+   "q": "a plane flying in the sky",
+   "best": 0.0601,
+   "contrast": 0.0049
+  },
+  {
+   "q": "a dog running",
+   "best": 0.1548,
+   "contrast": 0.0088
+  },
+  {
+   "q": "people dancing at a party",
+   "best": 0.142,
+   "contrast": 0.0145
+  },
+  {
+   "q": "a snowy mountain",
+   "best": 0.0336,
+   "contrast": 0.0083
+  },
+  {
+   "q": "a man swimming in the sea",
+   "best": 0.0309,
+   "contrast": 0.0138
+  },
+  {
+   "q": "a computer screen",
+   "best": 0.1057,
+   "contrast": 0.0051
+  },
+  {
+   "q": "a cartoon character",
+   "best": 0.1319,
+   "contrast": 0.0073
+  },
+  {
+   "q": "a deer in a forest",
+   "best": 0.0395,
+   "contrast": 0.0115
+  },
+  {
+   "q": "a close-up of a woman's face",
+   "best": 0.0216,
+   "contrast": 0.0056
+  },
+  {
+   "q": "a candlelit dinner",
+   "best": 0.0532,
+   "contrast": 0.0097
+  }
+ ],
+ "best_threshold": 0.2192,
+ "best_separates": true,
+ "contrast_threshold": 0.0129,
+ "contrast_separates": false
+}

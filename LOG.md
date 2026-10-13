@@ -102,3 +102,47 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   learn from those labels; a hand-labelled sample of the test split (never
   shown any prediction while labelling) scores every system.
 
+
+## Weeks 14–17 — calibration, SfM, depth, stereo, splatting
+
+- Zhang calibration from scratch matches `cv2.calibrateCamera` exactly on the
+  OpenCV chessboards (RMS 0.418 px); vanishing-point self-calibration gets the
+  focal length within 7%, the image-size prior only within 43%.
+- From-scratch SfM with a Schur-complement bundle adjustment: 0.19–0.24 px and
+  ≤ 0.4% trajectory error on synthetic shots. On trailers it is conservative:
+  it reconstructs 3 of 12 shots (COLMAP 10), with lower error on those (0.27
+  vs 0.68 px). Pans and low-parallax shots get a rotation-only camera path.
+- Plane-sweep stereo beats MiDaS small where it is confident (synthetic si-log
+  0.087 vs 0.162); MiDaS covers every pixel.
+- Filling DIBR holes from the background side is worth +3.5 dB inside the holes.
+- CPU Gaussian splatting: 24.8 dB on held-out frames vs 17.4 dB for a point
+  render; actors walking through the shot break the static-scene assumption.
+
+## Weeks 23–24 — scene search and chat with the movie
+
+- Exact, IVF and IVF-PQ search with asymmetric distance, in NumPy: recall
+  matches FAISS, speed is 4–6x lower (Python loops over the lists).
+- The benchmark caught two bugs: lists probed by L2 instead of inner product,
+  and too few k-means samples per centroid.
+- open_clip finds the right shot first for 85% of hand-written queries within
+  a clip, and in the top 5 for 78% with nine clips pooled; misses are fine
+  details about people (clothes, how many, head pose).
+- The from-scratch CLIP-style encoder combines unseen colour-shape pairs but
+  ignores word order, and is at chance on real queries: vocabulary and data,
+  not the method.
+- Chat with the movie: retrieval plus timestamped answers, an LLM optional;
+  the "not found" threshold is the weak part.
+
+## Weeks 9–11 — character timeline and who's talking
+
+- ByteTrack-style face tracker with resets at shot cuts: MOTA 0.978 / IDF1
+  0.989 on goldeneye, against 0.892 / 0.943 for ultralytics' ByteTrack with
+  default settings. Hungarian and MOT metrics match scipy and motmetrics.
+- A self-supervised face embedding trained on only 23 tracks splits people
+  (purity 0.93, pair F1 0.32); SFace clusters goldeneye perfectly. Too little
+  data, not the loss: the triplet loss hit zero early.
+- Hand-built speaking score (voice activity + mouth motion + synchrony): AP
+  0.39 against Light-ASD's 0.92. The audio cue does most of the work;
+  synchrony adds nothing measurable.
+- Decoding long clips grew the heap by about one frame per frame (glibc
+  keeps freed arenas); mmap for large buffers fixed the out-of-memory kills.

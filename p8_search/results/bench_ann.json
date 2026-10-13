@@ -1,0 +1,512 @@
+[
+ {
+  "dataset": "real-image",
+  "index": "Flat (ours, NumPy)",
+  "nprobe": "-",
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 8668,
+  "train_s": 0.0,
+  "bytes/vec": 2048.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "FAISS IndexFlatIP",
+  "nprobe": "-",
+  "R@10": 0.9997999999999999,
+  "1-R@1": 1.0,
+  "qps": 5774,
+  "train_s": 0.0,
+  "bytes/vec": 2048
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 1,
+  "R@10": 0.8736,
+  "1-R@1": 0.974,
+  "qps": 4733,
+  "train_s": 3.9,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 1,
+  "R@10": 0.8592000000000001,
+  "1-R@1": 0.952,
+  "qps": 27493,
+  "train_s": 0.2,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 4,
+  "R@10": 0.9888,
+  "1-R@1": 0.996,
+  "qps": 4061,
+  "train_s": 3.9,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 4,
+  "R@10": 0.9952,
+  "1-R@1": 1.0,
+  "qps": 24190,
+  "train_s": 0.2,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 16,
+  "R@10": 0.999,
+  "1-R@1": 0.998,
+  "qps": 3092,
+  "train_s": 3.9,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 16,
+  "R@10": 0.9997999999999999,
+  "1-R@1": 1.0,
+  "qps": 30064,
+  "train_s": 0.2,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 1,
+  "R@10": 0.627,
+  "1-R@1": 0.374,
+  "qps": 3886,
+  "train_s": 15.5,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 1,
+  "R@10": 0.663,
+  "1-R@1": 0.358,
+  "qps": 17201,
+  "train_s": 14.3,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 4,
+  "R@10": 0.6849999999999999,
+  "1-R@1": 0.376,
+  "qps": 3259,
+  "train_s": 15.5,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 4,
+  "R@10": 0.7166,
+  "1-R@1": 0.368,
+  "qps": 15076,
+  "train_s": 14.3,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 16,
+  "R@10": 0.6884,
+  "1-R@1": 0.374,
+  "qps": 2001,
+  "train_s": 15.5,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 16,
+  "R@10": 0.7174,
+  "1-R@1": 0.368,
+  "qps": 7690,
+  "train_s": 14.3,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 1,
+  "R@10": 0.8736,
+  "1-R@1": 0.974,
+  "qps": 2128,
+  "train_s": 15.5,
+  "bytes/vec": 2088.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 4,
+  "R@10": 0.9888,
+  "1-R@1": 0.996,
+  "qps": 1609,
+  "train_s": 15.5,
+  "bytes/vec": 2088.0
+ },
+ {
+  "dataset": "real-image",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 16,
+  "R@10": 0.9992000000000001,
+  "1-R@1": 0.998,
+  "qps": 1864,
+  "train_s": 15.5,
+  "bytes/vec": 2088.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "Flat (ours, NumPy)",
+  "nprobe": "-",
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 3934,
+  "train_s": 0.0,
+  "bytes/vec": 2048.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "FAISS IndexFlatIP",
+  "nprobe": "-",
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 2691,
+  "train_s": 0.0,
+  "bytes/vec": 2048
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 1,
+  "R@10": 0.4462962962962963,
+  "1-R@1": 0.6049382716049383,
+  "qps": 3836,
+  "train_s": 3.6,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 1,
+  "R@10": 0.5098765432098766,
+  "1-R@1": 0.6172839506172839,
+  "qps": 7321,
+  "train_s": 0.3,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 4,
+  "R@10": 0.8592592592592594,
+  "1-R@1": 0.9506172839506173,
+  "qps": 8136,
+  "train_s": 3.6,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 4,
+  "R@10": 0.8808641975308642,
+  "1-R@1": 0.9135802469135802,
+  "qps": 8428,
+  "train_s": 0.3,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 16,
+  "R@10": 0.9777777777777779,
+  "1-R@1": 0.9938271604938271,
+  "qps": 5724,
+  "train_s": 3.6,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 16,
+  "R@10": 0.9882716049382717,
+  "1-R@1": 0.9938271604938271,
+  "qps": 12651,
+  "train_s": 0.3,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 1,
+  "R@10": 0.41913580246913584,
+  "1-R@1": 0.3395061728395062,
+  "qps": 2936,
+  "train_s": 16.0,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 1,
+  "R@10": 0.46419753086419757,
+  "1-R@1": 0.3148148148148148,
+  "qps": 8054,
+  "train_s": 16.8,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 4,
+  "R@10": 0.682716049382716,
+  "1-R@1": 0.4506172839506173,
+  "qps": 2349,
+  "train_s": 16.0,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 4,
+  "R@10": 0.6604938271604939,
+  "1-R@1": 0.36419753086419754,
+  "qps": 7688,
+  "train_s": 16.8,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 16,
+  "R@10": 0.7123456790123457,
+  "1-R@1": 0.4691358024691358,
+  "qps": 1936,
+  "train_s": 16.0,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 16,
+  "R@10": 0.6783950617283951,
+  "1-R@1": 0.3888888888888889,
+  "qps": 6364,
+  "train_s": 16.8,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 1,
+  "R@10": 0.4462962962962963,
+  "1-R@1": 0.6049382716049383,
+  "qps": 2204,
+  "train_s": 15.4,
+  "bytes/vec": 2088.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 4,
+  "R@10": 0.858641975308642,
+  "1-R@1": 0.9506172839506173,
+  "qps": 2066,
+  "train_s": 15.4,
+  "bytes/vec": 2088.0
+ },
+ {
+  "dataset": "real-text",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 16,
+  "R@10": 0.9771604938271604,
+  "1-R@1": 0.9938271604938271,
+  "qps": 1432,
+  "train_s": 15.4,
+  "bytes/vec": 2088.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "Flat (ours, NumPy)",
+  "nprobe": "-",
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 235,
+  "train_s": 0.0,
+  "bytes/vec": 2048.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "FAISS IndexFlatIP",
+  "nprobe": "-",
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 316,
+  "train_s": 0.0,
+  "bytes/vec": 2048
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 1,
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 3892,
+  "train_s": 304.1,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 1,
+  "R@10": 0.9994999999999999,
+  "1-R@1": 0.999,
+  "qps": 17183,
+  "train_s": 17.9,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 8,
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 710,
+  "train_s": 304.1,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 8,
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 3860,
+  "train_s": 17.9,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-Flat (ours)",
+  "nprobe": 32,
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 214,
+  "train_s": 304.1,
+  "bytes/vec": 2056.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-Flat (FAISS)",
+  "nprobe": 32,
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 1740,
+  "train_s": 17.9,
+  "bytes/vec": 2056
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 1,
+  "R@10": 0.3706,
+  "1-R@1": 0.118,
+  "qps": 2410,
+  "train_s": 453.5,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 1,
+  "R@10": 0.3685,
+  "1-R@1": 0.098,
+  "qps": 14516,
+  "train_s": 66.2,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 8,
+  "R@10": 0.3706,
+  "1-R@1": 0.118,
+  "qps": 2370,
+  "train_s": 453.5,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 8,
+  "R@10": 0.3686,
+  "1-R@1": 0.098,
+  "qps": 8482,
+  "train_s": 66.2,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ (ours)",
+  "nprobe": 32,
+  "R@10": 0.3706,
+  "1-R@1": 0.118,
+  "qps": 992,
+  "train_s": 453.5,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ (FAISS)",
+  "nprobe": 32,
+  "R@10": 0.3686,
+  "1-R@1": 0.098,
+  "qps": 4352,
+  "train_s": 66.2,
+  "bytes/vec": 40.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 1,
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 2797,
+  "train_s": 503.5,
+  "bytes/vec": 2088.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 8,
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 1689,
+  "train_s": 503.5,
+  "bytes/vec": 2088.0
+ },
+ {
+  "dataset": "synthetic-100k",
+  "index": "IVF-PQ + re-rank 100 (ours)",
+  "nprobe": 32,
+  "R@10": 1.0,
+  "1-R@1": 1.0,
+  "qps": 722,
+  "train_s": 503.5,
+  "bytes/vec": 2088.0
+ }
+]
