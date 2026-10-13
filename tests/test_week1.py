@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from cinescope.imgproc import color, filters
-from cinescope.io.video import VideoReader, write_video
+from cinescope.io.video import VideoReader, _monotonic_times, write_video
 
 try:
     import cv2
@@ -154,6 +154,15 @@ class TestVideoIO(unittest.TestCase):
             self.assertAlmostEqual(sampled[0].t, 0.5, delta=1 / 24 + 1e-6)
             gaps = np.diff([f.t for f in sampled])
             np.testing.assert_allclose(gaps, 0.25, atol=1 / 24 + 1e-6)
+
+    def test_timestamps_in_decode_order_are_repaired(self):
+        # AVI + MPEG-4 B-frames: frames come out in display order, stamped with
+        # the decode order's times. Frames keep their order; times get sorted.
+        pts = [0.0, 1, 2, 4, 3, 5, 7, 6, 8, None, 10]
+        frames = [np.full((2, 2, 3), i, np.uint8) for i in range(len(pts))]
+        out = list(_monotonic_times(zip(pts, frames, strict=True), fps=1.0, window=4))
+        self.assertEqual([int(rgb[0, 0, 0]) for _, rgb in out], list(range(len(pts))))
+        np.testing.assert_allclose([t for t, _ in out], range(len(pts)))
 
 
 if __name__ == "__main__":

@@ -70,6 +70,13 @@ class TestBoundaries(unittest.TestCase):
         tr = cuts.detect_transitions(self.feat)
         self.assertLessEqual(len(tr), 4)          # cut, dissolve, fade (+ at most one extra)
 
+    def test_no_sliver_shot_at_the_clip_edges(self):
+        # One black frame before the first shot (a common encoding artefact) is
+        # not a shot of its own: cuts closer than min_shot to either end are dropped.
+        a = shot_frames((200, 60, 50), 40, texture_seed=1)
+        feat = to_features([np.zeros_like(a[0])] + a + [np.full_like(a[0], 255)] * 2)
+        self.assertEqual(cuts.detect_cuts(feat), [])
+
     def test_shots_partition_the_clip(self):
         tr = cuts.detect_transitions(self.feat)
         shots = cuts.shots_from_transitions(tr, len(self.feat), self.feat.times)

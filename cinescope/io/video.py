@@ -19,6 +19,7 @@ a copy-pasted `if i % n` in every script.
 """
 from __future__ import annotations
 
+import heapq
 from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
@@ -62,6 +63,32 @@ def _have_av() -> bool:
     except ImportError:
         return False
     return True
+
+
+def _monotonic_times(decoded, fps: float, window: int = 8) -> Iterator[tuple[float, np.ndarray]]:
+    """(pts_s | None, rgb) in decoder output order -> (t, rgb) with increasing t.
+
+    The decoder returns frames in presentation order, but some containers stamp
+    them wrongly: AVI has no presentation times, so MPEG-4 with B-frames comes
+    out with the *decode* order's timestamps (0.125, 0.209, 0.167, ...). The set
+    of timestamps is right, only their order is not, so the frames keep their
+    order and take the timestamps sorted over a small window. Missing pts
+    continue from the previous frame at the nominal rate.
+    """
+    step = 1.0 / fps if fps else 0.0
+    pending: list[np.ndarray] = []
+    heap: list[float] = []
+    newest = last = -step
+    for t, rgb in decoded:
+        newest = t if t is not None else newest + step
+        heapq.heappush(heap, newest)
+        pending.append(rgb)
+        if len(pending) > window:
+            last = max(heapq.heappop(heap), last + 1e-6)
+            yield last, pending.pop(0)
+    while pending:
+        last = max(heapq.heappop(heap), last + 1e-6)
+        yield last, pending.pop(0)
 
 
 class VideoReader:
@@ -129,9 +156,13 @@ class VideoReader:
                 self._container.seek(int(start_s / stream.time_base), stream=stream,
                                      backward=True, any_frame=False)
             fps = self.info.fps
-            for frame in self._container.decode(stream):
-                t = float(frame.pts * stream.time_base) if frame.pts is not None else 0.0
-                yield int(round(t * fps)), t, frame.to_ndarray(format="rgb24")
+            decoded = ((float(f.pts * stream.time_base) if f.pts is not None else None,
+                        f.to_ndarray(format="rgb24")) for f in self._container.decode(stream))
+            first = None                           # 0, or the frame number a seek landed on
+            for k, (t, rgb) in enumerate(_monotonic_times(decoded, fps)):
+                if first is None:
+                    first = int(round(t * fps)) if start_s > 0 else 0
+                yield first + k, t, rgb
             return
         import cv2
 
@@ -198,8 +229,9 @@ def write_video(path: str | Path, frames: np.ndarray, fps: float = 24.0) -> None
     frames = np.asarray(frames, dtype=np.uint8)
     h, w = frames.shape[1:3]
     if _have_av():
-        import av
         from fractions import Fraction
+
+        import av
 
         with av.open(path, "w") as out:
             s = out.add_stream("mpeg4", rate=Fraction(fps).limit_denominator(1001))

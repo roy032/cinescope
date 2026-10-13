@@ -124,8 +124,8 @@ def detect_cuts(feat: FrameFeatures, p: CutParams | None = None) -> list[Transit
             continue                                        # not the local peak
         if _is_flash(feat, d, t, p):
             continue
-        if cuts and t - cuts[-1].frame < p.min_shot:
-            continue
+        if t - (cuts[-1].frame if cuts else 0) < p.min_shot or n - t < p.min_shot:
+            continue                                        # the clip's edges bound shots too
         cuts.append(Transition("cut", t, t, t, float(feat.times[t]), float(d[t])))
     return cuts
 
