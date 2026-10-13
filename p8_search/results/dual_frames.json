@@ -1,0 +1,17 @@
+{
+ "train_s": 1374.4,
+ "final_loss": 1.8757,
+ "n_train_frames": 1694,
+ "vocab_size": 251,
+ "val_clip": "person-bicycle-car-detection",
+ "val_text_to_image": {
+  "R@1": 0.026,
+  "R@5": 0.0779
+ },
+ "steps": 500,
+ "batch": 128,
+ "lr": 0.002,
+ "multi_positive": true,
+ "checkpoint": "p8_search/checkpoints/dual_frames.pt",
+ "params": 788129
+}

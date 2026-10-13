@@ -34,7 +34,7 @@ My own implementation is how I learn the idea. The comparison with the library g
 | [5](p5_3d/) | 14–17 | Camera path, 2D→3D, set fly-through | Calibration, SfM, depth, Gaussian splatting | Built; scored on synthetic ground truth and public clips |
 | [6](p6_pose_video/) | 18–20 | Fight breakdowns, scene types | Pose, ViT, VideoMAE | Planned |
 | [7](p7_ocr/) | 21–22 | Subtitles and credits read | OCR (CRNN + CTC, TrOCR) | Planned |
-| [8](p8_search/) | 23–24 | Scene search, chat with the movie | CLIP/SigLIP, multimodal RAG | Planned |
+| [8](p8_search/) | 23–24 | Scene search, chat with the movie | CLIP/SigLIP, multimodal RAG | Built; scored on hand-written queries over public clips (LLM answers optional) |
 | [9](p9_production/) | 25–26 | Full-film pipeline, web app | ONNX/TensorRT, FastAPI, React | Planned |
 
 ## Results
@@ -51,7 +51,7 @@ Filled in as each phase ships.
 | 5 | SfM reprojection error (px), on the public-clip shots both reconstruct | 0.27 (3 of 12 shots) | 0.68 (COLMAP; 10 of 12 shots) |
 | 6 | Scene-type accuracy | — | — |
 | 7 | Subtitle character error rate | — | — |
-| 8 | Scene search Recall@5 | — | — |
+| 8 | Scene search Recall@5 (46 test queries, 9 public clips pooled) | 0.783 (own exact index) · 0.457 (own IVF-PQ) · 0.000 (own dual encoder) | 0.783 (open_clip + FAISS Flat) · 0.435 (FAISS IVF-PQ) |
 | 9 | Time to process a 2-hour film | — | — |
 
 ---

@@ -117,3 +117,18 @@ One entry per week: what I built, what broke, what I would explain in an intervi
 - Filling DIBR holes from the background side is worth +3.5 dB inside the holes.
 - CPU Gaussian splatting: 24.8 dB on held-out frames vs 17.4 dB for a point
   render; actors walking through the shot break the static-scene assumption.
+
+## Weeks 23–24 — scene search and chat with the movie
+
+- Exact, IVF and IVF-PQ search with asymmetric distance, in NumPy: recall
+  matches FAISS, speed is 4–6x lower (Python loops over the lists).
+- The benchmark caught two bugs: lists probed by L2 instead of inner product,
+  and too few k-means samples per centroid.
+- open_clip finds the right shot first for 85% of hand-written queries within
+  a clip, and in the top 5 for 78% with nine clips pooled; misses are fine
+  details about people (clothes, how many, head pose).
+- The from-scratch CLIP-style encoder combines unseen colour-shape pairs but
+  ignores word order, and is at chance on real queries: vocabulary and data,
+  not the method.
+- Chat with the movie: retrieval plus timestamped answers, an LLM optional;
+  the "not found" threshold is the weak part.
