@@ -84,6 +84,10 @@ class TestBoundaries(unittest.TestCase):
         self.assertEqual(shots[-1].end, len(self.feat) - 1)
         for s, t in zip(shots[:-1], shots[1:], strict=True):
             self.assertEqual(s.end + 1, t.start)
+            self.assertAlmostEqual(s.t1, t.t0)
+        fps = 24.0                                    # to_features stamps frame i at i / 24
+        for s in shots:
+            self.assertAlmostEqual(s.t1 - s.t0, s.n_frames / fps)
 
 
 class TestScoring(unittest.TestCase):
