@@ -1,0 +1,97 @@
+{
+ "video": "goldeneye.mp4",
+ "fps": 23.976,
+ "n_frames": 1980,
+ "labeller": "claude, by eye from every frame, before any detector output was seen",
+ "transitions": [
+  {
+   "kind": "cut",
+   "frame": 90
+  },
+  {
+   "kind": "cut",
+   "frame": 210
+  },
+  {
+   "kind": "cut",
+   "frame": 259
+  },
+  {
+   "kind": "cut",
+   "frame": 374
+  },
+  {
+   "kind": "cut",
+   "frame": 650
+  },
+  {
+   "kind": "dissolve",
+   "start": 685,
+   "end": 694
+  },
+  {
+   "kind": "cut",
+   "frame": 818
+  },
+  {
+   "kind": "cut",
+   "frame": 876
+  },
+  {
+   "kind": "cut",
+   "frame": 1019
+  },
+  {
+   "kind": "cut",
+   "frame": 1055
+  },
+  {
+   "kind": "cut",
+   "frame": 1099
+  },
+  {
+   "kind": "cut",
+   "frame": 1174
+  },
+  {
+   "kind": "cut",
+   "frame": 1226
+  },
+  {
+   "kind": "cut",
+   "frame": 1260
+  },
+  {
+   "kind": "cut",
+   "frame": 1281
+  },
+  {
+   "kind": "cut",
+   "frame": 1334
+  },
+  {
+   "kind": "cut",
+   "frame": 1365
+  },
+  {
+   "kind": "cut",
+   "frame": 1590
+  },
+  {
+   "kind": "cut",
+   "frame": 1697
+  },
+  {
+   "kind": "cut",
+   "frame": 1871
+  },
+  {
+   "kind": "cut",
+   "frame": 1916
+  },
+  {
+   "kind": "cut",
+   "frame": 1966
+  }
+ ]
+}

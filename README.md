@@ -26,7 +26,7 @@ My own implementation is how I learn the idea. The comparison with the library g
 
 | Phase | Weeks | Feature | CV area | Status |
 |---|---|---|---|---|
-| [0](p0_classical/) | 1–3 | Shot cuts, camera moves, color palettes | Classical CV | Built, awaiting test labels |
+| [0](p0_classical/) | 1–3 | Shot cuts, camera moves, color palettes | Classical CV | Built; scored on public clips, episode labels pending |
 | [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | Built; training on our own episodes (auto-labelled, hand-labelled test) |
 | [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | Trained on WIDER FACE; hand-labelled clip test pending |
 | [3](p3_tracking/) | 9–11 | Character timeline, who's talking | Tracking, metric learning, audio-visual | Planned |
@@ -43,7 +43,7 @@ Filled in as each phase ships.
 
 | Phase | Metric | From scratch | Library baseline |
 |---|---|---|---|
-| 0 | Shot-cut F1 | — | — |
+| 0 | Shot-cut F1 (public clips; hand-labelled episodes pending) | 0.945 | 0.960 (PySceneDetect) |
 | 1 | Shot-framing accuracy (hand-labelled test episodes) | — | — |
 | 2 | Face AP (WIDER FACE Easy / Medium / Hard) | 0.593 / 0.726 / 0.792 | — |
 | 3 | Character clustering purity | — | — |

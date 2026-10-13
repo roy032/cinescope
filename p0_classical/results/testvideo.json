@@ -1,0 +1,110 @@
+{
+ "video": "testvideo.mp4",
+ "labels": "testvideo.labels.json",
+ "tolerance_frames": 2,
+ "n_labelled": 4,
+ "n_cuts": 1,
+ "methods": {
+  "ours": {
+   "tp": 4,
+   "fp": 2,
+   "fn": 0,
+   "precision": 0.6667,
+   "recall": 1.0,
+   "f1": 0.8,
+   "cut_recall": 1.0,
+   "gradual_recall": 1.0,
+   "seconds": 6.7,
+   "false_positive_frames": [
+    180,
+    691
+   ],
+   "missed": []
+  },
+  "ours-cuts-only": {
+   "tp": 4,
+   "fp": 3,
+   "fn": 0,
+   "precision": 0.5714,
+   "recall": 1.0,
+   "f1": 0.7273,
+   "cut_recall": 1.0,
+   "gradual_recall": 1.0,
+   "seconds": 6.7,
+   "false_positive_frames": [
+    180,
+    357,
+    691
+   ],
+   "missed": []
+  },
+  "pyscenedetect-content": {
+   "tp": 3,
+   "fp": 0,
+   "fn": 1,
+   "precision": 1.0,
+   "recall": 0.75,
+   "f1": 0.8571,
+   "cut_recall": 1.0,
+   "gradual_recall": 0.6667,
+   "seconds": 1.2,
+   "false_positive_frames": [],
+   "missed": [
+    {
+     "kind": "dissolve",
+     "start": 529,
+     "end": 558,
+     "frame": 543
+    }
+   ]
+  },
+  "pyscenedetect-adaptive": {
+   "tp": 3,
+   "fp": 1,
+   "fn": 1,
+   "precision": 0.75,
+   "recall": 0.75,
+   "f1": 0.75,
+   "cut_recall": 1.0,
+   "gradual_recall": 0.6667,
+   "seconds": 1.2,
+   "false_positive_frames": [
+    691
+   ],
+   "missed": [
+    {
+     "kind": "dissolve",
+     "start": 529,
+     "end": 558,
+     "frame": 543
+    }
+   ]
+  },
+  "ffmpeg-scene>0.3": {
+   "tp": 2,
+   "fp": 0,
+   "fn": 2,
+   "precision": 1.0,
+   "recall": 0.5,
+   "f1": 0.6667,
+   "cut_recall": 1.0,
+   "gradual_recall": 0.3333,
+   "seconds": 0.8,
+   "false_positive_frames": [],
+   "missed": [
+    {
+     "kind": "fade",
+     "start": 331,
+     "end": 422,
+     "frame": 376
+    },
+    {
+     "kind": "dissolve",
+     "start": 529,
+     "end": 558,
+     "frame": 543
+    }
+   ]
+  }
+ }
+}
