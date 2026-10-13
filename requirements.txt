@@ -17,4 +17,5 @@ ruff>=0.6
 
 # Optional library baselines (each comparison is skipped if its library is missing)
 # pycolmap timm          # Phase 5: COLMAP SfM, MiDaS depth
+# motmetrics lap python_speech_features silero-vad   # Phase 3: MOT metrics, ultralytics trackers, MFCC check, VAD
 # open_clip_torch faiss-cpu anthropic   # Phase 8: CLIP encoder, FAISS index, optional LLM answers

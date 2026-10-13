@@ -132,3 +132,17 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   not the method.
 - Chat with the movie: retrieval plus timestamped answers, an LLM optional;
   the "not found" threshold is the weak part.
+
+## Weeks 9–11 — character timeline and who's talking
+
+- ByteTrack-style face tracker with resets at shot cuts: MOTA 0.978 / IDF1
+  0.989 on goldeneye, against 0.892 / 0.943 for ultralytics' ByteTrack with
+  default settings. Hungarian and MOT metrics match scipy and motmetrics.
+- A self-supervised face embedding trained on only 23 tracks splits people
+  (purity 0.93, pair F1 0.32); SFace clusters goldeneye perfectly. Too little
+  data, not the loss: the triplet loss hit zero early.
+- Hand-built speaking score (voice activity + mouth motion + synchrony): AP
+  0.39 against Light-ASD's 0.92. The audio cue does most of the work;
+  synchrony adds nothing measurable.
+- Decoding long clips grew the heap by about one frame per frame (glibc
+  keeps freed arenas); mmap for large buffers fixed the out-of-memory kills.
