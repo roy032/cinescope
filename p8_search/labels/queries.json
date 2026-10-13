@@ -1,0 +1,73 @@
+{
+ "note": "Made by eye from contact sheets (3 frames per detected shot for multi-shot clips, one frame every 2.5 s for single-shot clips) BEFORE any search system was run. Multi-shot clips list the Phase 0 shot ids (cinescope/shots/pipeline.py defaults) and their times; single-shot clips list time intervals in seconds. A retrieved segment counts as relevant when it overlaps a ground-truth interval by at least half of the shorter of the two. Split 'dev' (vtest) may be used to choose settings; 'test' is scored once.",
+ "clips": {
+  "goldeneye": {"file": "goldeneye.mp4", "split": "test", "queries": [
+   {"q": "a password entry screen on a computer monitor", "shots": [0, 1, 3, 5, 12], "times": [[0.0, 3.754], [3.754, 8.759], [10.802, 15.599], [27.11, 28.737], [48.966, 51.134]]},
+   {"q": "a map of Europe and Russia on a screen", "shots": [6], "times": [[28.737, 34.117]]},
+   {"q": "a map of the United States", "shots": [8], "times": [[36.536, 42.501]]},
+   {"q": "the FBI logo", "shots": [8, 10], "times": [[36.536, 42.501], [44.002, 45.837]]},
+   {"q": "a man and a woman looking at a computer screen together", "shots": [2, 4, 7, 9, 11, 17], "times": [[8.759, 10.802], [15.599, 27.11], [34.117, 36.536], [42.501, 44.002], [45.837, 48.966], [56.932, 66.316]]},
+   {"q": "a man raising his fist in celebration", "shots": [13, 15], "times": [[51.134, 52.553], [53.428, 55.639]]},
+   {"q": "people in a control room with world map screens", "shots": [14], "times": [[52.553, 53.428]]},
+   {"q": "an older man sitting at a computer console", "shots": [16], "times": [[55.639, 56.932]]},
+   {"q": "a man in a fur-hooded parka standing in the snow", "shots": [19, 21, 22], "times": [[70.779, 78.036], [79.913, 80.581], [80.581, 81.999]]},
+   {"q": "a hand flicking open a lighter with a flame", "shots": [20], "times": [[78.036, 79.913]]},
+   {"q": "a man lighting a cigarette in a dark doorway", "shots": [18], "times": [[66.316, 70.779]]},
+   {"q": "a plane flying in a foggy sky", "shots": [23], "times": [[81.999, 82.582]]},
+   {"q": "a snowy landscape with a satellite dish", "shots": [19], "times": [[70.779, 78.036]]},
+   {"q": "a man with glasses shouting in a snowstorm", "shots": [22], "times": [[80.581, 81.999]]}
+  ]},
+  "testvideo": {"file": "testvideo.mp4", "split": "test", "queries": [
+   {"q": "a deer in a forest", "shots": [3], "times": [[7.04, 12.312]]},
+   {"q": "a dry leaf lying on a rock", "shots": [1, 4], "times": [[1.001, 6.006], [12.312, 17.651]]},
+   {"q": "close-up texture of tree bark", "shots": [5], "times": [[17.651, 23.056]]},
+   {"q": "a black screen", "shots": [0, 2, 6], "times": [[0.0, 1.001], [6.006, 7.04], [23.056, 24.024]]}
+  ]},
+  "Megamind": {"file": "Megamind.avi", "split": "test", "queries": [
+   {"q": "an animated woman in a purple dress holding a glass of wine", "shots": [0, 2], "times": [[0.042, 4.129], [6.465, 8.383]]},
+   {"q": "a cartoon man with glasses and a turtleneck sweater", "shots": [1, 3], "times": [[4.129, 6.465], [8.383, 11.303]]},
+   {"q": "close-up of a cartoon man's face with his eyes closed", "shots": [3], "times": [[8.383, 11.303]]},
+   {"q": "a candlelit restaurant table", "shots": [0, 1, 2], "times": [[0.042, 4.129], [4.129, 6.465], [6.465, 8.383]]}
+  ]},
+  "vtest": {"file": "vtest.avi", "split": "dev", "queries": [
+   {"q": "pedestrians walking on a path in front of a building", "times": [[0, 79.5]]},
+   {"q": "two people walking across the grass toward the camera", "times": [[52, 62]]},
+   {"q": "a person in a red jacket on the lawn", "times": [[52, 61]]},
+   {"q": "a woman in a dark coat walking alone across the lawn", "times": [[60, 72]]}
+  ]},
+  "face-demographics-walking": {"file": "face-demographics-walking.mp4", "split": "test", "queries": [
+   {"q": "an empty hallway with a window", "times": [[0, 3], [9.5, 17], [27, 36], [44.5, 53], [59.5, 61]]},
+   {"q": "a man in a navy t-shirt walking towards the camera", "times": [[3.5, 9]]},
+   {"q": "a woman in a white dress walking next to a man in a patterned vest", "times": [[19, 26.5]]},
+   {"q": "a group of three people walking down a corridor", "times": [[36.5, 42]]},
+   {"q": "a bald man with glasses and a beard", "times": [[41, 44]]},
+   {"q": "a blonde woman in a black dress and grey cardigan", "times": [[54, 59.5]]}
+  ]},
+  "head-pose-face-detection-female-and-male": {"file": "head-pose-face-detection-female-and-male.mp4", "split": "test", "queries": [
+   {"q": "a woman and a man standing against a white wall", "times": [[0, 143.2]]},
+   {"q": "both people tilting their heads to the side", "times": [[6.5, 11.5], [19, 24]]},
+   {"q": "both people looking down", "times": [[57, 64]]},
+   {"q": "both people turning their heads sideways into profile", "times": [[124, 129], [134, 141]]},
+   {"q": "the man smiling", "times": [[72, 78]]}
+  ]},
+  "people-detection": {"file": "people-detection.mp4", "split": "test", "queries": [
+   {"q": "an empty room with a wooden floor", "times": [[6, 15], [21.5, 29], [34, 44], [47, 49.7]]},
+   {"q": "a woman with long hair in a dark dress walking across the room", "times": [[1, 6]]},
+   {"q": "three people walking into a room together", "times": [[29, 33]]},
+   {"q": "a man in a light shirt and khaki trousers walking", "times": [[44, 47.5]]},
+   {"q": "two people walking side by side", "times": [[15, 21]]}
+  ]},
+  "classroom": {"file": "classroom.mp4", "split": "test", "queries": [
+   {"q": "a classroom with students sitting at desks", "times": [[0, 32.8]]},
+   {"q": "a man standing up next to a flip chart by the window", "times": [[4, 16]]},
+   {"q": "a student standing up at the back of the room", "times": [[21, 27]]}
+  ]},
+  "one-by-one-person-detection": {"file": "one-by-one-person-detection.mp4", "split": "test", "queries": [
+   {"q": "a small round white table in an empty room", "times": [[0, 6.5], [19, 23.5], [44, 51], [69, 74], [87, 91], [119, 124], [137, 139.4]]},
+   {"q": "a woman in a long grey cardigan standing with her back to the camera", "times": [[6.5, 19], [94, 119]]},
+   {"q": "a man in black standing at a table with his back to the camera", "times": [[24, 44], [76, 87]]},
+   {"q": "a woman with long blonde hair in black clothes", "times": [[51, 69]]},
+   {"q": "a heavyset man in a grey shirt", "times": [[124, 137]]}
+  ]}
+ }
+}
