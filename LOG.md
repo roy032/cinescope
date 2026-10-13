@@ -146,3 +146,15 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   synchrony adds nothing measurable.
 - Decoding long clips grew the heap by about one frame per frame (glibc
   keeps freed arenas); mmap for large buffers fixed the out-of-memory kills.
+
+## Weeks 21–22 — reading subtitles
+
+- CTC as a log-space alpha recursion matches PyTorch's loss and gradient to
+  1e-10, about 2.5x slower (a Python loop over time steps).
+- The CRNN read synthetic validation lines at 3% CER but real subtitle crops
+  at 68%: training crops were cut at the font's line height, the detector
+  cuts around the ink. Cutting synthetic crops around the ink fixed it.
+- On a busy CPU one PyTorch thread trained 3x faster than two.
+- A subtitle stays still while the picture moves: per-line tracks plus a
+  temporal median give one clean crop per line. Watermarks and screens in the
+  same band are the main remaining error.
