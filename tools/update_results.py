@@ -36,7 +36,7 @@ def hours(history: Path) -> str:
 
 
 def phase1() -> dict:
-    """Hand-labelled evaluation on our own episodes when it exists, else MovieShots test metrics."""
+    """Hand-labelled evaluation on your own videos when it exists, else MovieShots test metrics."""
     res = ROOT / "p1_cnn" / "results"
     own = res / "own" / "hand_eval.json"
     if own.exists():
@@ -53,7 +53,7 @@ def phase1() -> dict:
             if key in ("pretrained", "scratch", "fused"):
                 out[key] = m["accuracy"]
         dist = d["distribution"]
-        rows += ["", f"{d['n']} hand-labelled shots from the held-out episodes; majority-class accuracy "
+        rows += ["", f"{d['n']} hand-labelled shots from the held-out videos; majority-class accuracy "
                      f"{max(dist.values()) / d['n']:.3f}. Face size only is scored on the shots where a face was found."]
         replace_block(ROOT / "p1_cnn" / "README.md", "p1-results", "\n".join(rows))
         return out

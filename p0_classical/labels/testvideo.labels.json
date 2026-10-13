@@ -1,0 +1,27 @@
+{
+ "video": "testvideo.mp4",
+ "fps": 29.97,
+ "n_frames": 720,
+ "labeller": "claude, by eye from every frame before any detector output was seen; gradual spans then tightened from mean brightness and frame differences",
+ "transitions": [
+  {
+   "kind": "cut",
+   "frame": 30
+  },
+  {
+   "kind": "fade",
+   "start": 180,
+   "end": 239
+  },
+  {
+   "kind": "fade",
+   "start": 331,
+   "end": 422
+  },
+  {
+   "kind": "dissolve",
+   "start": 529,
+   "end": 558
+  }
+ ]
+}

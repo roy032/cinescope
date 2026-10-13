@@ -5,8 +5,8 @@ and shows the colour palette of every shot plus a "movie barcode" of the whole
 clip. No deep learning: NumPy for every algorithm, OpenCV only as the yardstick.
 
 ```powershell
-python p0_classical/analyse.py trailers/Ted_Lasso_120s.mkv
-# -> outputs/Ted_Lasso_120s/{shots.json, shots.jpg, barcode.png}
+python p0_classical/analyse.py trailers/goldeneye.mp4     # any video file works
+# -> outputs/goldeneye/{shots.json, shots.jpg, barcode.png}
 ```
 
 ## What is implemented (and where)
@@ -30,17 +30,15 @@ skipped cleanly if that library is not installed.
 
 ## Data and the test set
 
-| Clip | Role |
-|---|---|
-| `Ted_Lasso_120s.mkv`, `Lanterns_S01E01_120s.mkv` | **development** — detector parameters were chosen by looking at these |
-| `Ted_Lasso_900s.mkv`, `Lanterns_S01E01_900s.mkv` | **test** — hand-labelled, never used for tuning |
-| `*_1800s.mkv` | spare / qualitative |
+CineScope works on any video file. The detector's parameters were chosen on
+development clips and are fixed; the test set is two public clips, labelled
+and never used for tuning, which anyone can download and rerun (below).
 
-The test labels are made by hand with the labelling page:
+To score the detector on a clip of your own, label it with the labelling page:
 
 ```powershell
-python p0_classical/label_cuts.py trailers/Ted_Lasso_900s.mkv
-# open outputs/label_Ted_Lasso_900s/index.html, click the first frame of every new shot,
+python p0_classical/label_cuts.py trailers/your_clip.mp4
+# open outputs/label_your_clip/index.html, click the first frame of every new shot,
 # "Download labels", move the file into p0_classical/labels/
 ```
 
@@ -49,21 +47,58 @@ suggestions**, so the labels cannot inherit the detector's blind spots.
 
 ## Results
 
-Run `python p0_classical/eval_cuts.py --all` once the labels exist.
+`python p0_classical/eval_cuts.py --all` scores every clip in `labels/`.
 Tolerance ±2 frames; gradual transitions match anywhere inside their span.
-
-| Method | Precision | Recall | F1 | Time (5-min clip) |
-|---|---|---|---|---|
-| Ours (histogram spikes + flash guard + gradual) | — | — | — | — |
-| PySceneDetect ContentDetector | — | — | — | — |
-| PySceneDetect AdaptiveDetector | — | — | — | — |
-| FFmpeg `scene > 0.3` | — | — | — | — |
-
 *Target from the roadmap: F1 ≥ 0.85.*
+
+The test clips can be downloaded from PySceneDetect's test resources:
+
+```bash
+mkdir -p trailers
+for f in goldeneye.mp4 testvideo.mp4; do
+  curl -L -o trailers/$f https://raw.githubusercontent.com/Breakthrough/PySceneDetect/resources/tests/resources/$f
+done
+pip install scenedetect          # for the PySceneDetect rows
+python p0_classical/eval_cuts.py --all
+```
+
+- `goldeneye.mp4` — 83 s from the *GoldenEye* (1995) film, 1,980 frames: 21 cuts and
+  1 dissolve. Hard cases: a computer screen whose contents change in place
+  (frame 1176, not a cut), slow camera moves across faces, a night scene lit by a lighter.
+- `testvideo.mp4` — a 24 s nature clip, 720 frames: 1 cut, 2 fades through black,
+  1 dissolve, and a fade to black at the very end (not a boundary, as for any black at
+  the start or end of a clip).
+
+The labels were made by Claude, not by hand: every frame was looked at in a
+numbered contact sheet before any detector had been run on these clips; the
+gradual spans of `testvideo` were then tightened from the frames' mean brightness
+and differences (the dissolve starts at 529, not at 532 as first read by eye).
+The detector's parameters were not changed after seeing these results.
+
+| Method | Precision | Recall | F1 | Cut recall | Gradual recall |
+|---|---|---|---|---|---|
+| Ours (histogram spikes + flash guard + gradual) | 0.897 | **1.000** | 0.945 | 1.000 | 1.000 |
+| Ours, cuts only | 0.893 | 0.962 | 0.926 | 1.000 | 0.750 |
+| PySceneDetect ContentDetector | **1.000** | 0.923 | **0.960** | 1.000 | 0.500 |
+| PySceneDetect AdaptiveDetector | 0.960 | 0.923 | 0.941 | 1.000 | 0.500 |
+| FFmpeg `scene > 0.3` | 0.952 | 0.769 | 0.851 | 0.864 | 0.250 |
+
+Micro-averaged over the 26 labelled transitions; per-clip tables and every
+false positive and miss are in `results/goldeneye.json` and `results/testvideo.json`.
+PySceneDetect's own tests use `goldeneye.mp4`, so its defaults have seen this clip.
+
+Ours finds every transition, the dissolves and fades included, which no
+baseline does. Its three false positives:
+
+- **goldeneye 1932** — a lighting change on a face inside one shot.
+- **testvideo 180** — a hard cut to black followed 30 frames later by a fade in: the
+  cut and the fade are reported as two boundaries for one transition.
+- **testvideo 691** — the cut detector fires as the closing fade reaches black;
+  the "no boundary at the clip's ends" rule only covers fades.
 
 Development-clip observations (no labels, inspected by eye):
 
-- On `Ted_Lasso_120s`, every true cut scored at least ~12x its neighbourhood's
+- On the development clips, every true cut scored at least ~12x its neighbourhood's
   90th-percentile distance, and every non-cut peak (people walking through
   frame, lamp flicker, a TV switching off) under ~2x. The first version used an
   absolute floor of 0.25 and missed 11 cuts in shot/reverse-shot dialogue

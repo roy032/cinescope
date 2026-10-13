@@ -1,0 +1,124 @@
+{
+ "video": "goldeneye.mp4",
+ "labels": "goldeneye.labels.json",
+ "tolerance_frames": 2,
+ "n_labelled": 22,
+ "n_cuts": 21,
+ "methods": {
+  "ours": {
+   "tp": 22,
+   "fp": 1,
+   "fn": 0,
+   "precision": 0.9565,
+   "recall": 1.0,
+   "f1": 0.9778,
+   "cut_recall": 1.0,
+   "gradual_recall": 1.0,
+   "seconds": 15.3,
+   "false_positive_frames": [
+    1932
+   ],
+   "missed": []
+  },
+  "ours-cuts-only": {
+   "tp": 21,
+   "fp": 0,
+   "fn": 1,
+   "precision": 1.0,
+   "recall": 0.9545,
+   "f1": 0.9767,
+   "cut_recall": 1.0,
+   "gradual_recall": 0.0,
+   "seconds": 15.3,
+   "false_positive_frames": [],
+   "missed": [
+    {
+     "kind": "dissolve",
+     "start": 685,
+     "end": 694,
+     "frame": 689
+    }
+   ]
+  },
+  "pyscenedetect-content": {
+   "tp": 21,
+   "fp": 0,
+   "fn": 1,
+   "precision": 1.0,
+   "recall": 0.9545,
+   "f1": 0.9767,
+   "cut_recall": 1.0,
+   "gradual_recall": 0.0,
+   "seconds": 3.3,
+   "false_positive_frames": [],
+   "missed": [
+    {
+     "kind": "dissolve",
+     "start": 685,
+     "end": 694,
+     "frame": 689
+    }
+   ]
+  },
+  "pyscenedetect-adaptive": {
+   "tp": 21,
+   "fp": 0,
+   "fn": 1,
+   "precision": 1.0,
+   "recall": 0.9545,
+   "f1": 0.9767,
+   "cut_recall": 1.0,
+   "gradual_recall": 0.0,
+   "seconds": 3.1,
+   "false_positive_frames": [],
+   "missed": [
+    {
+     "kind": "dissolve",
+     "start": 685,
+     "end": 694,
+     "frame": 689
+    }
+   ]
+  },
+  "ffmpeg-scene>0.3": {
+   "tp": 18,
+   "fp": 1,
+   "fn": 4,
+   "precision": 0.9474,
+   "recall": 0.8182,
+   "f1": 0.878,
+   "cut_recall": 0.8571,
+   "gradual_recall": 0.0,
+   "seconds": 2.2,
+   "false_positive_frames": [
+    1176
+   ],
+   "missed": [
+    {
+     "kind": "dissolve",
+     "start": 685,
+     "end": 694,
+     "frame": 689
+    },
+    {
+     "kind": "cut",
+     "frame": 1260,
+     "start": 1260,
+     "end": 1260
+    },
+    {
+     "kind": "cut",
+     "frame": 1590,
+     "start": 1590,
+     "end": 1590
+    },
+    {
+     "kind": "cut",
+     "frame": 1966,
+     "start": 1966,
+     "end": 1966
+    }
+   ]
+  }
+ }
+}

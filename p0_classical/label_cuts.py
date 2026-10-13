@@ -1,6 +1,6 @@
 """Build a click-to-label page for shot boundaries.
 
-    python p0_classical/label_cuts.py trailers/Ted_Lasso_900s.mkv
+    python p0_classical/label_cuts.py trailers/your_clip.mp4
 
 Writes outputs/label_<clip>/index.html. Open it in a browser: every frame of
 the clip is shown, 12 frames (half a second at 24 fps) per row. Click the FIRST frame of each new shot.

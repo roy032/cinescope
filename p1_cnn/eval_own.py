@@ -103,7 +103,7 @@ def main() -> None:
                                f"{name}: acc {m['accuracy']:.3f} (n={m['n']})")
 
     dist = {c: int((y == i).sum()) for i, c in enumerate(SCALES)}
-    lines = [f"Hand-labelled test shots: {len(keys)} from the held-out episodes ({dist}); "
+    lines = [f"Hand-labelled test shots: {len(keys)} from the held-out videos ({dist}); "
              f"majority-class accuracy {max(dist.values()) / len(keys):.3f}.", "",
              "| System | Accuracy [95% CI] | Mean class acc. | Shots scored |", "|---|---|---|---|"]
     for m in results.values():

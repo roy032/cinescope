@@ -1,5 +1,5 @@
-# Phase 1 on our own episodes: auto-label the shots, train ResNet-18 (ImageNet init 30 epochs,
-# random init 60), and predict the held-out test episodes for the hand-labelled evaluation.
+# Phase 1 on your own videos: auto-label the shots, train ResNet-18 (ImageNet init 30 epochs,
+# random init 60), and predict the held-out test split for the hand-labelled evaluation.
 find_code("p1_cnn/train_framing.py")
 zips = glob.glob("/kaggle/input/**/own_shots.zip", recursive=True)
 csvs = glob.glob("/kaggle/input/**/own_shots/shots.csv", recursive=True) + \

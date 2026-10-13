@@ -1,6 +1,6 @@
 """Break WIDER FACE val results down by face size (after eval_wider.py).
 
-    python p2_detection/diagnose_wider.py --wider D:/datasets/WIDER \
+    python p2_detection/diagnose_wider.py --wider path/to/WIDER \
         --preds p2_detection/results/centernet_r18/wider_val_preds.npz --eval-tools .../ground_truth
 
 Prints, per size bucket, how many faces are found, mislocalised, missed or

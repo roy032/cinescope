@@ -1,8 +1,8 @@
 """Train the ResNet-18 shot-scale classifier (Phase 1, week 5).
 
     # the comparison the roadmap asks for (GPU: Kaggle / Colab)
-    python p1_cnn/train_framing.py --root D:/datasets/MovieShots --pretrained --tag pretrained
-    python p1_cnn/train_framing.py --root D:/datasets/MovieShots --tag scratch --epochs 60
+    python p1_cnn/train_framing.py --root path/to/MovieShots --pretrained --tag pretrained
+    python p1_cnn/train_framing.py --root path/to/MovieShots --tag scratch --epochs 60
 
     # 1-minute CPU smoke test of the whole loop, no dataset needed
     python p1_cnn/train_framing.py --synthetic --epochs 2 --tag smoke

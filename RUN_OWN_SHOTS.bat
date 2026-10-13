@@ -1,6 +1,8 @@
 @echo off
-title CineScope: Phase 1 on our own episodes
+title CineScope: Phase 1 on your own videos
 cd /d "%~dp0"
+set "VIDEOS=%~1"
+if "%VIDEOS%"=="" set "VIDEOS=trailers"
 if not exist .venv\Scripts\python.exe (
   echo The .venv folder is missing. Create it first: see README.md
   pause
@@ -13,8 +15,8 @@ if not exist "%USERPROFILE%\.kaggle\kaggle.json" if exist "%USERPROFILE%\Downloa
 .venv\Scripts\python -m pip install -q kaggle
 echo === 1/4 quick self-test ===
 .venv\Scripts\python -m pytest -q tests\test_own_shots.py
-echo === 2/4 find, copy and cut the episodes (the longest step; safe to re-run) ===
-.venv\Scripts\python p1_cnn\build_own_shots.py --search D:\ || goto :fail
+echo === 2/4 find, copy and cut the videos in %VIDEOS% (the longest step; safe to re-run) ===
+.venv\Scripts\python p1_cnn\build_own_shots.py --search "%VIDEOS%" || goto :fail
 echo === 3/4 labelling page for the test shots ===
 .venv\Scripts\python p1_cnn\label_scales.py || goto :fail
 start "" "outputs\label_scales\index.html"

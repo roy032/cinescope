@@ -1,6 +1,6 @@
 """Phase 0 demo: split a clip into shots, label camera moves, extract palettes.
 
-    python p0_classical/analyse.py trailers/Ted_Lasso_120s.mkv
+    python p0_classical/analyse.py trailers/goldeneye.mp4
     python p0_classical/analyse.py clip.mp4 --no-camera --out outputs
 
 Writes to outputs/<clip>/:

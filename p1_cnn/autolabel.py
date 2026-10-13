@@ -8,7 +8,7 @@ shot over its three key frames. Writes
 
   teacher.csv   every shot: split, per-cue class probabilities, face ratio, fused label + confidence
   index.csv     train/val shots with the fused label, in the format train_framing.py reads
-                (test episodes are left out: they are scored against hand labels only)
+                (test shots are left out: they are scored against hand labels only)
 """
 from __future__ import annotations
 
