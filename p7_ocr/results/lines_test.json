@@ -1,0 +1,184 @@
+{
+ "n": 400,
+ "fonts": [
+  "DejaVuSans-Bold.ttf",
+  "DejaVuSans.ttf",
+  "DejaVuSansMono-Bold.ttf",
+  "DejaVuSansMono-BoldOblique.ttf",
+  "DejaVuSansMono-Oblique.ttf",
+  "DejaVuSansMono.ttf",
+  "DejaVuSerif-Bold.ttf",
+  "DejaVuSerif.ttf"
+ ],
+ "bg_clips": [
+  "goldeneye.mp4",
+  "testvideo.mp4",
+  "Megamind.avi"
+ ],
+ "readers": {
+  "ours": {
+   "cer": 0.02715226992976613,
+   "wer": 0.11818181818181818,
+   "cer_folded": 0.016188373804267846,
+   "exact": 0.5325,
+   "ms_per_line": 17.05602765083313,
+   "examples": [
+    [
+     "If I cannot persuade you to take a lenient view of the matter, Lord St.",
+     "If I cannot persuade you to take a lenient view of the matter, Lord St."
+    ],
+    [
+     "You will excuse my beginning without you, Watson",
+     "You will excuse my beginning without you, Watson"
+    ],
+    [
+     "Then I trust that you at least will honour me with your company",
+     "Then I trust that you at least will honour me with your company"
+    ],
+    [
+     "Then you may entirely rely on me.",
+     "Then you may entirely rely on me."
+    ],
+    [
+     "But to whom?",
+     "But to whom?"
+    ],
+    [
+     "It's merely taking your money, for I know that I am right.",
+     "It\"s merely taking your money, for I know that I am right."
+    ],
+    [
+     "I imagine that you saw all that I did.",
+     "I imagine that you saw all that I did."
+    ],
+    [
+     "Yes, and I confess that the contents startled me beyond measure.",
+     "Yes, and I confess that the contenis slarlled me beyond me asure."
+    ]
+   ]
+  },
+  "ours-beam": {
+   "cer": 0.026573021504597786,
+   "wer": 0.11672727272727272,
+   "cer_folded": 0.01591243561442237,
+   "exact": 0.54,
+   "ms_per_line": 79.53284621238708,
+   "examples": [
+    [
+     "If I cannot persuade you to take a lenient view of the matter, Lord St.",
+     "If I cannot persuade you to take a lenient view of the matter, Lord St."
+    ],
+    [
+     "You will excuse my beginning without you, Watson",
+     "You will excuse my beginning without you, Watson"
+    ],
+    [
+     "Then I trust that you at least will honour me with your company",
+     "Then I trust that you at least will honour me with your company"
+    ],
+    [
+     "Then you may entirely rely on me.",
+     "Then you may entirely rely on me."
+    ],
+    [
+     "But to whom?",
+     "But to whom?"
+    ],
+    [
+     "It's merely taking your money, for I know that I am right.",
+     "It\"s merely taking your money, for I know that I am right."
+    ],
+    [
+     "I imagine that you saw all that I did.",
+     "I imagine that you saw all that I did."
+    ],
+    [
+     "Yes, and I confess that the contents startled me beyond measure.",
+     "Yes, and I confess that the contenis slarlled me beyond me asure."
+    ]
+   ]
+  },
+  "rapidocr": {
+   "cer": 0.01897038592426327,
+   "wer": 0.09745454545454546,
+   "cer_folded": 0.006806475349521707,
+   "exact": 0.695,
+   "ms_per_line": 336.84128522872925,
+   "examples": [
+    [
+     "If I cannot persuade you to take a lenient view of the matter, Lord St.",
+     "If I cannot persuade you to take a lenient view of the matter, Lord St."
+    ],
+    [
+     "You will excuse my beginning without you, Watson",
+     "You will excuse my beginning without you, Watson"
+    ],
+    [
+     "Then I trust that you at least will honour me with your company",
+     "Then I trust that you at least will honour me with your company"
+    ],
+    [
+     "Then you may entirely rely on me.",
+     "Then you may entirely rely on me."
+    ],
+    [
+     "But to whom?",
+     "But to whom?"
+    ],
+    [
+     "It's merely taking your money, for I know that I am right.",
+     " It's merely taking your money, for I know that I am right."
+    ],
+    [
+     "I imagine that you saw all that I did.",
+     "I imagine that you saw all that I did."
+    ],
+    [
+     "Yes, and I confess that the contents startled me beyond measure.",
+     "Yes, and I confess that tie contonts startled me beyond measure."
+    ]
+   ]
+  },
+  "opencv": {
+   "cer": 0.6441242487871986,
+   "wer": 0.9210909090909091,
+   "cer_folded": 0.5905997056659308,
+   "exact": 0.0,
+   "ms_per_line": 260.9024542570114,
+   "examples": [
+    [
+     "If I cannot persuade you to take a lenient view of the matter, Lord St.",
+     "cathtss"
+    ],
+    [
+     "You will excuse my beginning without you, Watson",
+     "you ilny your watson"
+    ],
+    [
+     "Then I trust that you at least will honour me with your company",
+     "pnenltrsitlntyoat sebrpras"
+    ],
+    [
+     "Then you may entirely rely on me.",
+     "meoes"
+    ],
+    [
+     "But to whom?",
+     "buttowhoma"
+    ],
+    [
+     "It's merely taking your money, for I know that I am right.",
+     "cneogigaly"
+    ],
+    [
+     "I imagine that you saw all that I did.",
+     "i imagine that you sawall that rdid"
+    ],
+    [
+     "Yes, and I confess that the contents startled me beyond measure.",
+     "eleneed"
+    ]
+   ]
+  }
+ }
+}

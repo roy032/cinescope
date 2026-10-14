@@ -1,0 +1,20 @@
+{
+ "video": "trailers/goldeneye.mp4",
+ "note": "Real on-screen text in the GoldenEye trailer (computer screens and the FBI screen), labelled by eye from full-resolution frames at 1, 6.5, 13, 28, 41.5, 44.5, 49 and 49.5 s, before any reader was run on this clip. One entry per distinct legible horizontal line; repeated UI labels are listed once. Excluded: the curved seal text (DEPARTMENT OF JUSTICE / FEDERAL BUREAU OF INVESTIGATION), the SEND / FORUM / MESSAGE buttons cut off by the frame or occluded, the half-typed 'Bet', and the unreadable monitor text at 56 s. Scored case- and punctuation-blind (--fold).",
+ "lines": [
+  "Send Spike",
+  "Initiate Search Program",
+  "Enter Password",
+  "FBI",
+  "FBI HEADQUARTERS",
+  "COMPUTER FRAUD DIVISION",
+  "ATLANTA, GEORGIA",
+  "Better Luck Next Time",
+  "Slug-heads!",
+  "PREFS",
+  "B/BOARD",
+  "NATALYA",
+  "LUKE",
+  "OFFLINE"
+ ]
+}
