@@ -1,6 +1,7 @@
 """Build a draw-boxes labelling page for frames sampled from a clip.
 
     python p2_detection/label_boxes.py trailers/your_clip.mp4 --start 120 --seconds 60 --fps 0.5 --tag dark
+    python p2_detection/label_boxes.py clip.mp4 --times 5,6.5,123,124 --tag profile   # hand-picked moments
 
 Writes outputs/boxes_<clip>_<tag>/ with frames/*.jpg and index.html. Open the
 page, draw a box around every face (and every prop you want to evaluate),
@@ -145,6 +146,8 @@ def main(argv: list[str] | None = None) -> Path:
     ap.add_argument("--width", type=int, default=1280, help="frames are saved at this width")
     ap.add_argument("--classes", default="face,person,car,cell phone,knife,bottle",
                     help="comma-separated; the first is the default")
+    ap.add_argument("--times", help="comma-separated seconds: label the first frame at or after each of "
+                                    "these instead of sampling --start/--seconds/--fps")
     ap.add_argument("--tag", default="", help="e.g. dark / profile / crowd")
     ap.add_argument("--out", default="outputs")
     args = ap.parse_args(argv)
@@ -153,8 +156,21 @@ def main(argv: list[str] | None = None) -> Path:
     out = Path(args.out) / f"boxes_{name}"
     (out / "frames").mkdir(parents=True, exist_ok=True)
     frames = []
+    def picked(vr):
+        if not args.times:
+            yield from vr.frames(sample_fps=args.fps, start_s=args.start, end_s=args.start + args.seconds)
+            return
+        want = sorted(float(x) for x in args.times.split(","))
+        for f in vr.frames(start_s=want[0]):              # one decoding pass
+            if not want:
+                break
+            if f.t + 1e-6 >= want[0]:
+                yield f
+                while want and want[0] <= f.t + 1e-6:
+                    want.pop(0)
+
     with VideoReader(args.video, width=args.width) as vr:
-        for f in vr.frames(sample_fps=args.fps, start_s=args.start, end_s=args.start + args.seconds):
+        for f in picked(vr):
             file = f"{len(frames):04d}.jpg"
             Image.fromarray(f.rgb).save(out / "frames" / file, quality=92)
             frames.append({"file": file, "t": round(f.t, 3), "index": f.index,

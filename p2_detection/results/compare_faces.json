@@ -1,0 +1,29 @@
+{
+  "OpenCV YuNet": {
+    "goldeneye_dark": {
+      "AP": 0.4664,
+      "AP50": 0.9894,
+      "AR100": 0.5,
+      "AP_small": -1.0
+    },
+    "head-pose-face-detection-female-and-male_profile": {
+      "AP": 0.4126,
+      "AP50": 0.9799,
+      "AR100": 0.4772,
+      "AP_small": -1.0
+    },
+    "classroom_crowd": {
+      "AP": 0.116,
+      "AP50": 0.6051,
+      "AR100": 0.171,
+      "AP_small": -1.0
+    },
+    "all": {
+      "AP": 0.2165,
+      "AP50": 0.7475,
+      "AR100": 0.3005,
+      "AP_small": -1.0
+    },
+    "ms_per_frame": 43.0
+  }
+}

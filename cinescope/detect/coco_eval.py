@@ -42,7 +42,7 @@ class EvalParams:
 
 
 def _evaluate_image(gts: list[dict], dts: list[dict], a_rng: tuple[float, float], max_det: int,
-                    iou_thrs: np.ndarray) -> dict | None:
+                    iou_thrs: np.ndarray, similarity=None) -> dict | None:
     if not gts and not dts:
         return None
     g_ignore = np.array([bool(g.get("ignore", 0)) or bool(g.get("iscrowd", 0))
@@ -60,7 +60,10 @@ def _evaluate_image(gts: list[dict], dts: list[dict], a_rng: tuple[float, float]
     dtm = np.full((T, D), -1, dtype=np.int64)
     dt_ig = np.zeros((T, D), dtype=bool)
     if G and D:
-        ious = iou(xywh_to_xyxy([d["bbox"] for d in dts]), xywh_to_xyxy([g["bbox"] for g in gts]), crowd)
+        if similarity is None:
+            ious = iou(xywh_to_xyxy([d["bbox"] for d in dts]), xywh_to_xyxy([g["bbox"] for g in gts]), crowd)
+        else:                                                   # e.g. OKS for keypoints (cinescope.pose.oks)
+            ious = similarity(dts, gts)
         for ti, t in enumerate(iou_thrs):
             for di in range(D):
                 best, m = min(t, 1 - 1e-10), -1
@@ -111,6 +114,8 @@ class COCOEvaluator:
     too-small/invalid faces need it. Without such flags the numbers match.
     """
 
+    similarity = None          # (dts, gts) -> (D, G) matrix; None = box IoU. Subclasses swap it.
+
     def __init__(self, gt: dict, params: EvalParams | None = None):
         self.p = params or EvalParams()
         self.img_ids = sorted(im["id"] for im in gt["images"])
@@ -134,7 +139,7 @@ class COCOEvaluator:
         for ki, c in enumerate(self.cat_ids):
             for ai, a_rng in enumerate(p.area_ranges.values()):
                 evals = [e for e in (_evaluate_image(self.gts.get((i, c), []), dts.get((i, c), []),
-                                                     a_rng, max_det_all, p.iou_thrs)
+                                                     a_rng, max_det_all, p.iou_thrs, self.similarity)
                                      for i in self.img_ids) if e is not None]
                 if not evals:
                     continue

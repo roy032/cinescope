@@ -1,0 +1,5 @@
+{
+ "text_cue": "open_clip ViT-B/32 (LAION-400M)",
+ "face_cue": "OpenCV YuNet",
+ "w_face": 1.0
+}

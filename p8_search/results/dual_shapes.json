@@ -1,0 +1,40 @@
+{
+ "untrained": {
+  "seen_compositions": {
+   "R@1": 0.0,
+   "R@5": 0.0041
+  },
+  "held_out_compositions": {
+   "R@1": 0.0105,
+   "R@5": 0.0421
+  },
+  "relation_order_acc_seen": 0.5174,
+  "relation_order_acc_held_out": 0.5466,
+  "zero_shot_36way_acc": 0.0205,
+  "zero_shot_colour_acc": 0.1282,
+  "zero_shot_shape_acc": 0.4154
+ },
+ "trained": {
+  "seen_compositions": {
+   "R@1": 0.5514,
+   "R@5": 0.9657
+  },
+  "held_out_compositions": {
+   "R@1": 0.8438,
+   "R@5": 0.9062
+  },
+  "relation_order_acc_seen": 0.5922,
+  "relation_order_acc_held_out": 0.4035,
+  "zero_shot_36way_acc": 0.8321,
+  "zero_shot_colour_acc": 1.0,
+  "zero_shot_shape_acc": 0.8321
+ },
+ "train_s": 386.4,
+ "final_loss": 0.578,
+ "steps": 600,
+ "batch": 128,
+ "lr": 0.002,
+ "multi_positive": true,
+ "checkpoint": "p8_search/checkpoints/dual_shapes.pt",
+ "params": 543137
+}

@@ -1,0 +1,71 @@
+{
+ "params": {
+  "min_conf": 0.3,
+  "max_gap": 0.5,
+  "v_strike": 1.0,
+  "d_contact": 0.1,
+  "strike_merge": 0.4,
+  "max_pair_speed": 0.6,
+  "v_run": 1.5,
+  "run_window": 0.75,
+  "min_run": 0.75,
+  "upright_deg": 35.0,
+  "down_deg": 60.0,
+  "fall_window": 1.2,
+  "hip_drop": 0.05
+ },
+ "tuning_seeds": {
+  "run": {
+   "tp": 68,
+   "fp": 2,
+   "fn": 0,
+   "precision": 0.971,
+   "recall": 1.0,
+   "f1": 0.986
+  },
+  "strike": {
+   "tp": 88,
+   "fp": 8,
+   "fn": 30,
+   "precision": 0.917,
+   "recall": 0.746,
+   "f1": 0.822
+  },
+  "fall": {
+   "tp": 53,
+   "fp": 0,
+   "fn": 1,
+   "precision": 1.0,
+   "recall": 0.981,
+   "f1": 0.991
+  }
+ },
+ "test_seeds": {
+  "fall": {
+   "tp": 46,
+   "fp": 0,
+   "fn": 0,
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  },
+  "run": {
+   "tp": 62,
+   "fp": 3,
+   "fn": 4,
+   "precision": 0.954,
+   "recall": 0.939,
+   "f1": 0.947
+  },
+  "strike": {
+   "tp": 86,
+   "fp": 9,
+   "fn": 14,
+   "precision": 0.905,
+   "recall": 0.86,
+   "f1": 0.882
+  }
+ },
+ "test_macro_f1": 0.943,
+ "n_scenes_each": 200
+}

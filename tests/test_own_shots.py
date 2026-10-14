@@ -70,6 +70,48 @@ class TestEpisodes:
         # contiguous blocks, in order: no test shot sits between two training shots
         assert seq == sorted(seq, key=["train", "val", "test"].index)
 
+    def test_time_folds_score_every_shot_once(self):
+        e = self._ep("clip", "clip", n=100)
+        folds = [bos.assign_splits([e], val_frac=0.1, fold=k, folds=2) for k in range(2)]
+        for s in e["shots"]:
+            assert sum(f[("clip", s["shot"])] == "test" for f in folds) == 1
+        seq0 = [folds[0][("clip", s["shot"])] for s in e["shots"]]
+        seq1 = [folds[1][("clip", s["shot"])] for s in e["shots"]]
+        assert set(seq0[:50]) == {"test"} and set(seq0[90:]) == {"val"} and set(seq0[50:90]) == {"train"}
+        assert set(seq1[50:]) == {"test"} and set(seq1[40:50]) == {"val"} and set(seq1[:40]) == {"train"}
+
+    def test_fold_files_and_index(self, tmp_path):
+        import run_public
+
+        (tmp_path / "episodes").mkdir()
+        e = self._ep("clip", "clip", n=20)
+        for s in e["shots"]:
+            s.update(start=0, end=10, frames=[f"frames/clip/{s['shot']}_0.jpg"])
+        (tmp_path / "episodes" / "clip.json").write_text(json.dumps(e))
+        paths = run_public.write_folds(tmp_path, 2, 0.1)
+        with (tmp_path / "teacher.csv").open("w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow(["episode", "shot", "label"])
+            w.writerows(["clip", s["shot"], "MS"] for s in e["shots"])
+        for p in paths:
+            run_public.fold_index(tmp_path / "teacher.csv", p, tmp_path / "index.csv")
+            with (tmp_path / "index.csv").open() as f:
+                rows = list(csv.DictReader(f))
+            assert len(rows) == 10 and {r["split"] for r in rows} == {"train", "val"}   # no test shots
+            assert {r["scale"] for r in rows} == {"MS"}
+
+
+def test_imagenet_weights_from_a_local_file(tmp_path):
+    torch = pytest.importorskip("torch")
+    from cinescope.framing.resnet import resnet18
+
+    src = resnet18(1000)
+    torch.save(src.state_dict(), tmp_path / "r18.pth")
+    m = resnet18(5, pretrained=True, weights=str(tmp_path / "r18.pth"))
+    assert torch.equal(m.conv1.weight, src.conv1.weight)
+    assert torch.equal(m.layer4[1].bn2.running_var, src.layer4[1].bn2.running_var)
+    assert m.fc.weight.shape == (5, 512)                       # new head, not copied
+
 
 class TestTeacher:
     def test_class_scores_average_prompts(self):
@@ -124,7 +166,7 @@ def test_label_page_has_only_test_shots_and_no_predictions(tmp_path, monkeypatch
     items = json.loads(html.split("const ITEMS = ", 1)[1].split(";\n", 1)[0])
     assert len(items) == 5
     assert all(int(it["key"].split("/")[1]) % 2 == 1 for it in items)      # odd = test
-    assert all(f.startswith("../../data/own_shots/frames/") for it in items for f in it["frames"])
+    assert all(f.startswith("../data/own_shots/frames/") for it in items for f in it["frames"])  # relative to the page
     assert "teacher" not in html.lower() and "fused" not in html.lower()
 
 
@@ -153,7 +195,7 @@ def test_hand_eval(tmp_path, monkeypatch):
             w.writerow(row)
     monkeypatch.setattr(eval_own, "RES", res)
     monkeypatch.setattr(eval_own, "LABELS", lab)
-    eval_own.main()
+    eval_own.main([])
     out = json.loads((res / "hand_eval.json").read_text())
     assert out["n"] == 60                                   # the skipped shot is not scored
     assert out["systems"]["fused"]["accuracy"] == 1.0

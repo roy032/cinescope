@@ -1,0 +1,17 @@
+{
+  "tag": "public_f1_pretrained",
+  "pretrained": true,
+  "best_epoch": 2,
+  "best_val_acc": 0.8,
+  "epochs": 30,
+  "lr": 0.01,
+  "batch_size": 8,
+  "synthetic": false,
+  "size": [
+    224,
+    384
+  ],
+  "weights": "data/weights/resnet18_a1_0-d63eafa0.pth",
+  "device": "CPU",
+  "finished": "2026-10-13 17:09"
+}

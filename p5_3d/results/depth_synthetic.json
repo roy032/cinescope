@@ -1,0 +1,56 @@
+{
+ "dolly": {
+  "mvs_confident": {
+   "n": 42802,
+   "si_log": 0.0873,
+   "abs_rel": 0.0201,
+   "delta1.25": 0.9793,
+   "spearman": 0.9595,
+   "scale": 0.9994
+  },
+  "mvs_all": {
+   "n": 43200,
+   "si_log": 0.097,
+   "abs_rel": 0.0231,
+   "delta1.25": 0.9757,
+   "spearman": 0.9512,
+   "scale": 0.9993
+  },
+  "mvs_coverage": 0.9908,
+  "midas": {
+   "n": 43200,
+   "si_log": 0.162,
+   "abs_rel": 0.1433,
+   "delta1.25": 0.8615,
+   "spearman": 0.8667,
+   "scale": 1.028
+  }
+ },
+ "orbit": {
+  "mvs_confident": {
+   "n": 41797,
+   "si_log": 0.126,
+   "abs_rel": 0.0306,
+   "delta1.25": 0.9605,
+   "spearman": 0.9231,
+   "scale": 1.0053
+  },
+  "mvs_all": {
+   "n": 43200,
+   "si_log": 0.1489,
+   "abs_rel": 0.0415,
+   "delta1.25": 0.945,
+   "spearman": 0.899,
+   "scale": 1.0066
+  },
+  "mvs_coverage": 0.9675,
+  "midas": {
+   "n": 43200,
+   "si_log": 0.1379,
+   "abs_rel": 0.104,
+   "delta1.25": 0.8615,
+   "spearman": 0.9024,
+   "scale": 0.9741
+  }
+ }
+}

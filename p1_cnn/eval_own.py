@@ -1,6 +1,7 @@
 """Score every shot-scale system against the hand-labelled test shots.
 
     python p1_cnn/eval_own.py
+    python p1_cnn/eval_own.py --set public       # the public-clip set: results/public, labels/public_test
 
 Reads p1_cnn/labels/own_test.labels.json (copied there from Downloads if it is
 only there), p1_cnn/results/own/teacher.csv and student_<tag>.csv, and writes
@@ -15,6 +16,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import shutil
 import sys
 from pathlib import Path
@@ -34,7 +36,8 @@ LABELS = ROOT / "p1_cnn" / "labels" / "own_test.labels.json"
 def find_labels() -> Path:
     if LABELS.exists():
         return LABELS
-    dl = sorted((Path.home() / "Downloads").glob("own_test.labels*.json"), key=lambda p: p.stat().st_mtime)
+    dl = sorted((Path.home() / "Downloads").glob(LABELS.name.replace(".json", "*.json")),
+                key=lambda p: p.stat().st_mtime)
     if not dl:
         sys.exit("no hand labels yet: label the shots in outputs/label_scales/index.html and press "
                  "'Download labels' (or run p1_cnn/label_scales.py first)")
@@ -68,7 +71,16 @@ def score(name: str, keys: list[str], y: np.ndarray, probs: dict[str, np.ndarray
     return m
 
 
-def main() -> None:
+def main(argv: list[str] | None = None) -> None:
+    global RES, LABELS
+    import argparse
+
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    ap.add_argument("--set", help="shot set: results/<set>/, labels/<set>_test.labels.json (default: own)")
+    args = ap.parse_args(argv)
+    if args.set:
+        RES = ROOT / "p1_cnn" / "results" / args.set
+        LABELS = ROOT / "p1_cnn" / "labels" / f"{args.set}_test.labels.json"
     lab = json.loads(find_labels().read_text(encoding="utf-8"))["labels"]
     lab = {k: v for k, v in lab.items() if v in SCALES}
     if len(lab) < 30:
@@ -84,8 +96,12 @@ def main() -> None:
                 out[k] = np.array([float(r[f"{prefix}_{c}"]) for c in SCALES])
         return out
 
-    systems = [("SigLIP zero-shot (prompts only)", "text", cols("text")),
-               ("Face size only (shots with a face)", "face", cols("face")),
+    meta_path = RES / "teacher.json"
+    meta = json.loads(meta_path.read_text(encoding="utf-8")) if meta_path.exists() else {}
+    text_cue = meta.get("text_cue", "SigLIP").split(" (")[0]
+    face_cue = meta.get("face_cue", "")
+    systems = [(f"{text_cue} zero-shot (prompts only)", "text", cols("text")),
+               (f"Face size only{f' ({face_cue})' if face_cue else ''}, shots with a face", "face", cols("face")),
                ("Teacher: prompts + face size", "fused", cols("fused"))]
     for tag, desc in (("pretrained", "ResNet-18, ImageNet init"), ("scratch", "ResNet-18, random init")):
         f = RES / f"student_{tag}.csv"
@@ -111,7 +127,9 @@ def main() -> None:
         lines.append(f"| {m['name']} | {m['accuracy']:.3f} [{lo:.2f}–{hi:.2f}] | {m['mean_class_accuracy']:.3f} | "
                      f"{m['n']} ({m['coverage']:.0%}) |")
     RES.mkdir(parents=True, exist_ok=True)
-    (RES / "hand_eval.json").write_text(json.dumps({"n": len(keys), "distribution": dist, "systems": results},
+    (RES / "hand_eval.json").write_text(json.dumps({"n": len(keys), "distribution": dist, "teacher": meta,
+                                                    "labels": os.path.relpath(LABELS, ROOT).replace(os.sep, "/"),
+                                                    "systems": results},
                                                    indent=1), encoding="utf-8")
     (RES / "hand_eval.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
     print("\n".join(lines))

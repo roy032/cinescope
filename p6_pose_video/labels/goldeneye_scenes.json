@@ -1,0 +1,19 @@
+{
+ "clip": "goldeneye",
+ "how": "Labelled by eye from p6_pose_video/label_scenes.py sheets (three frames per Phase 0 shot), before any scene classifier was run on this clip. Class definitions in p6_pose_video/README.md. 'none' = fits no class (excluded from accuracy, counted separately).",
+ "shots": {
+  "0": "text", "1": "text", "2": "dialogue", "3": "text", "4": "dialogue", "5": "text",
+  "6": "text", "7": "dialogue", "8": "text", "9": "dialogue", "10": "text", "11": "dialogue",
+  "12": "text", "13": "dialogue", "14": "dialogue", "15": "dialogue", "16": "dialogue", "17": "dialogue",
+  "18": "establishing", "19": "establishing", "20": "none", "21": "dialogue", "22": "dialogue", "23": "establishing"
+ },
+ "notes": {
+  "6": "animated map on a monitor: screen graphics count as text/graphics",
+  "8": "map, then the FBI logo card",
+  "13": "one man raising a fist in celebration; no fight, so not action",
+  "14": "three people at desks in a control room: a character scene, not a crowd",
+  "18": "exterior wall, a man climbing out of a hatch, small in frame",
+  "20": "insert shot of a lighter: no class fits",
+  "23": "an aircraft silhouette in snow fog, 0.6 s"
+ }
+}

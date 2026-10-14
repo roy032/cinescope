@@ -68,6 +68,8 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--synthetic", action="store_true", help="smoke-test on generated images")
     ap.add_argument("--synthetic-n", type=int, default=800)
     ap.add_argument("--pretrained", action="store_true", help="start from ImageNet weights")
+    ap.add_argument("--weights", help="with --pretrained: a local ImageNet state dict (torchvision names) "
+                                      "instead of torchvision's download")
     ap.add_argument("--epochs", type=int, default=30)
     ap.add_argument("--bs", type=int, default=64)
     ap.add_argument("--lr", type=float, help="peak LR (default 0.1 scratch / 0.01 pretrained, x bs/256)")
@@ -107,7 +109,7 @@ def main(argv: list[str] | None = None) -> dict:
     val_dl = DataLoader(val_ds, max(1, args.bs // 3), **kw)
     test_dl = DataLoader(test_ds, max(1, args.bs // 3), **kw) if len(test_ds) else None
 
-    model = resnet18(len(SCALES), pretrained=args.pretrained).to(device).to(memory_format=torch.channels_last)
+    model = resnet18(len(SCALES), pretrained=args.pretrained, weights=args.weights).to(device).to(memory_format=torch.channels_last)
     lr = args.lr or (0.01 if args.pretrained else 0.1) * args.bs / 256
     opt = torch.optim.SGD(param_groups(model, args.wd), lr=lr, momentum=0.9, nesterov=True)
     steps_per_epoch = min(len(train_dl), args.max_steps or len(train_dl))
@@ -145,6 +147,8 @@ def main(argv: list[str] | None = None) -> dict:
     model.load_state_dict(state["model"])
     result = {"tag": tag, "pretrained": args.pretrained, "best_epoch": best[1], "best_val_acc": best[0],
               "epochs": args.epochs, "lr": lr, "batch_size": args.bs, "synthetic": args.synthetic,
+              "size": [args.height, args.width], "weights": args.weights,
+              "device": torch.cuda.get_device_name(0) if device.type == "cuda" else "CPU",
               "finished": time.strftime("%Y-%m-%d %H:%M")}
     if test_dl is not None:
         tp, ty = predict(model, test_dl, device, args.max_steps)

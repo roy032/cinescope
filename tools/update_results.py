@@ -4,7 +4,8 @@
 
 Reads p1_cnn/results/own/hand_eval.json (or, for MovieShots,
 p1_cnn/results/<tag>/metrics.json) + history.csv and
-p2_detection/results/<tag>/wider_val.json + diagnosis.md; rewrites the blocks
+p2_detection/results/<tag>/wider_val.json + diagnosis.md and
+p2_detection/results/compare_{faces,props}.json; rewrites the blocks
 between <!-- auto:NAME --> markers and the Phase 1/2 rows of the root README.
 Missing results leave the existing text alone.
 """
@@ -32,30 +33,59 @@ def hours(history: Path) -> str:
         return "—"
     with history.open(encoding="utf-8") as f:
         secs = sum(float(r.get("seconds") or 0) for r in csv.DictReader(f))
-    return f"{secs / 3600:.1f} h"
+    return f"{secs / 3600:.1f} h" if secs >= 360 else f"{secs / 60:.0f} min"
+
+
+SETS = {"own": "your own videos (held-out episodes)",
+        "public": "public clips, 2-fold by time: each shot predicted by the network that did not train on its half"}
+
+
+def _train_info(run: Path) -> tuple[str, str]:
+    """('teacher labels, N epochs[, H x W px]', 'time (device)') from a training run's folder."""
+    m = run / "metrics.json"
+    d = json.loads(m.read_text(encoding="utf-8")) if m.exists() else {}
+    trained = f"teacher labels, {d.get('epochs', '?')} epochs"
+    if d.get("size") and list(d["size"]) != [224, 384]:
+        trained += f", {d['size'][0]}×{d['size'][1]} px"
+    if d.get("weights"):
+        trained += f", init {Path(d['weights']).name}"
+    return trained, f"{hours(run / 'history.csv')} ({d.get('device', 'T4')})"
+
+
+def _hand_table(name: str, d: dict, res: Path) -> tuple[list[str], dict]:
+    rows = ["| System | Trained on | Accuracy [95% CI] | Mean class acc. | Train time |", "|---|---|---|---|---|"]
+    out = {}
+    for key, m in d["systems"].items():
+        lo, hi = m["accuracy_ci95"]
+        trained, t = "nothing (zero-shot / rule)", "—"
+        if key in ("pretrained", "scratch"):
+            trained, t = _train_info(res / (key if name == "own" else f"{name}_{key}"))
+        rows.append(f"| {m['name']} | {trained} | {m['accuracy']:.3f} [{lo:.2f}–{hi:.2f}] | "
+                    f"{m['mean_class_accuracy']:.3f} | {t} |")
+        if key in ("pretrained", "scratch", "fused"):
+            out[key] = m["accuracy"]
+    dist = d["distribution"]
+    rows += ["", f"{d['n']} hand-labelled shots ({SETS.get(name, name)}; labels "
+                 f"`{d.get('labels', 'p1_cnn/labels/')}`); majority-class accuracy "
+                 f"{max(dist.values()) / d['n']:.3f}. Face size only is scored on the shots where a face was found."]
+    if name == "public":
+        rows[-1] += " Train time is the sum of the two folds."
+    return rows, out
 
 
 def phase1() -> dict:
-    """Hand-labelled evaluation on your own videos when it exists, else MovieShots test metrics."""
+    """Hand-labelled evaluations (your own videos, the public clips) when they exist, else MovieShots."""
     res = ROOT / "p1_cnn" / "results"
-    own = res / "own" / "hand_eval.json"
-    if own.exists():
-        d = json.loads(own.read_text(encoding="utf-8"))
-        rows = ["| System | Trained on | Accuracy [95% CI] | Mean class acc. | Train time |", "|---|---|---|---|---|"]
-        out = {}
-        for key, m in d["systems"].items():
-            lo, hi = m["accuracy_ci95"]
-            trained = ("teacher labels, 30 epochs" if key == "pretrained" else
-                       "teacher labels, 60 epochs" if key == "scratch" else "nothing (zero-shot / rule)")
-            t = hours(res / key / "history.csv") + " (T4)" if key in ("pretrained", "scratch") else "—"
-            rows.append(f"| {m['name']} | {trained} | {m['accuracy']:.3f} [{lo:.2f}–{hi:.2f}] | "
-                        f"{m['mean_class_accuracy']:.3f} | {t} |")
-            if key in ("pretrained", "scratch", "fused"):
-                out[key] = m["accuracy"]
-        dist = d["distribution"]
-        rows += ["", f"{d['n']} hand-labelled shots from the held-out videos; majority-class accuracy "
-                     f"{max(dist.values()) / d['n']:.3f}. Face size only is scored on the shots where a face was found."]
-        replace_block(ROOT / "p1_cnn" / "README.md", "p1-results", "\n".join(rows))
+    found = [(s, res / s / "hand_eval.json") for s in SETS if (res / s / "hand_eval.json").exists()]
+    if found:
+        blocks, out = [], {}
+        for name, path in found:
+            rows, acc = _hand_table(name, json.loads(path.read_text(encoding="utf-8")), res)
+            if len(found) > 1:
+                rows.insert(0, f"**{SETS[name][0].upper() + SETS[name][1:]}**\n")
+            blocks.append("\n".join(rows))
+            out = out or acc                      # the root table shows the first set (own, then public)
+        replace_block(ROOT / "p1_cnn" / "README.md", "p1-results", "\n\n".join(blocks))
         return out
     rows = {}
     for tag, init in (("pretrained", "ImageNet"), ("scratch", "random")):
@@ -104,6 +134,44 @@ def phase2() -> dict:
     return found
 
 
+MODEL_NAMES = {"yolov8n": "YOLOv8n", "yolo11n": "YOLO11n", "rtdetr-l": "RT-DETR-L"}
+
+
+def _tag(clip: str) -> str:
+    """'goldeneye_dark' -> 'dark': the condition is the label file's tag, after the last underscore."""
+    return clip.rsplit("_", 1)[-1]
+
+
+def week8() -> bool:
+    """The week-8 tables (compare_faces.json, compare_props.json) -> p2_detection/README.md."""
+    res, done = ROOT / "p2_detection" / "results", False
+    conds = ("dark", "profile", "crowd")
+    faces = res / "compare_faces.json"
+    if faces.exists():
+        rep = json.loads(faces.read_text(encoding="utf-8"))
+        lines = ["| Faces | dark AP50 | profile AP50 | crowd AP50 | all AP50 | all AP | ms/frame |", "|---|---|---|---|---|---|---|"]
+        if "CenterNet-R18 (ours)" not in rep:
+            lines.append("| CenterNet-R18 (ours) | — | — | — | — | — | — |")
+        for name, r in rep.items():
+            by = {_tag(c): v for c, v in r.items() if isinstance(v, dict) and c != "all"}
+            lines.append(f"| {name} | " + " | ".join(f"{by[c]['AP50']:.3f}" if c in by else "—" for c in conds)
+                         + f" | {r['all']['AP50']:.3f} | {r['all']['AP']:.3f} | {r['ms_per_frame']} |")
+        done |= replace_block(ROOT / "p2_detection" / "README.md", "p2-faces", "\n".join(lines))
+    props = res / "compare_props.json"
+    if props.exists():
+        rep = json.loads(props.read_text(encoding="utf-8"))
+        lines = ["| Props (COCO classes) | dark AP50 | profile AP50 | crowd AP50 | dark AP | profile AP | crowd AP | ms/frame |",
+                 "|---|---|---|---|---|---|---|---|"]
+        for name, r in rep.items():
+            by = {_tag(c): v for c, v in r["clips"].items()}
+            cells = [f"{by[c]['AP50']:.3f}" if c in by else "—" for c in conds]
+            cells += [f"{by[c]['AP']:.3f}" if c in by else "—" for c in conds]
+            label = MODEL_NAMES.get(Path(name).stem, name)
+            lines.append(f"| {label} | " + " | ".join(cells) + f" | {r['ms_per_frame']} |")
+        done |= replace_block(ROOT / "p2_detection" / "README.md", "p2-props", "\n".join(lines))
+    return done
+
+
 def root_table(p1: dict, p2: dict) -> None:
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
@@ -122,6 +190,7 @@ def root_table(p1: dict, p2: dict) -> None:
 
 def main() -> None:
     p1, p2 = phase1(), phase2()
+    week8()
     root_table(p1, p2)
     print(f"phase 1 rows: {list(p1)}; phase 2 rows: {list(p2)}")
 
