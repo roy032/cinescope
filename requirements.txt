@@ -21,3 +21,4 @@ ruff>=0.6
 # motmetrics lap python_speech_features silero-vad   # Phase 3: MOT metrics, ultralytics trackers, MFCC check, VAD
 # rapidocr-onnxruntime transformers   # Phase 7: PP-OCR baseline, TrOCR path
 # open_clip_torch faiss-cpu anthropic   # Phase 8: CLIP encoder, FAISS index, optional LLM answers
+# fastapi uvicorn python-multipart onnx onnxruntime httpx   # Phase 9: web app, ONNX Runtime, API tests
