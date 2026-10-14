@@ -40,6 +40,7 @@ FEATURES = {
     "p1": ("Framing per shot (Phase 1)", ["framing"]),
     "p3": ("Faces, who is talking, characters (Phase 3)", ["faces", "speaking", "characters"]),
     "p5": ("Camera path of one shot (Phase 5)", ["campath"]),
+    "p6": ("People, poses, action events, scene types (Phase 6)", ["pose", "scenes"]),
     "p7": ("Subtitles and on-screen text (Phase 7)", ["subtitles"]),
     "p8": ("Search index (Phase 8)", ["search"]),
 }

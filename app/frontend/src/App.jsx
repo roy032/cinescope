@@ -10,6 +10,7 @@ import SearchPanel from "./components/SearchPanel.jsx";
 import CameraPath from "./components/CameraPath.jsx";
 import Timing from "./components/Timing.jsx";
 import Timelines from "./components/Timelines.jsx";
+import Cutout from "./components/Cutout.jsx";
 
 function initialClip() {
   const p = new URLSearchParams(window.location.search);
@@ -110,6 +111,7 @@ export default function App() {
                 <span>{fmtTime(time)}</span>
                 <span className="dim"> / {fmtTime(duration)}</span>
               </div>
+              <Cutout clip={clip} time={time} />
             </div>
             <div className="side-col">
               <Summary report={report} />

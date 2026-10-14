@@ -4,45 +4,49 @@
  "backend": "onnx",
  "workers": 2,
  "threads": 2,
- "wall_s": 352.57,
- "decode_s": 24.41,
+ "wall_s": 275.18,
+ "decode_s": 34.994,
  "frames_decoded": 1980,
  "stages": {
-  "shots": 10.751,
-  "palette": 0.822,
-  "camera": 2.705,
-  "frames": 2.048,
-  "faces": 122.232,
-  "speaking": 72.072,
-  "characters": 15.421,
-  "subtitles": 152.917,
-  "search": 27.43,
-  "framing": 4.878,
-  "campath": 72.862
+  "shots": 11.767,
+  "palette": 0.787,
+  "camera": 2.751,
+  "frames": 3.109,
+  "faces": 82.102,
+  "speaking": 63.077,
+  "characters": 13.523,
+  "subtitles": 99.609,
+  "search": 18.277,
+  "framing": 4.594,
+  "campath": 68.782,
+  "pose": 19.993,
+  "scenes": 0.88
  },
  "frame_s": {
-  "shots": 10.627,
+  "shots": 11.651,
   "palette": 0.0,
   "camera": 0.0,
-  "frames": 2.048,
-  "faces": 120.153,
+  "frames": 3.109,
+  "faces": 80.1,
   "speaking": 0.0,
   "characters": 0.0,
-  "subtitles": 152.914,
+  "subtitles": 99.604,
   "search": 0.0,
   "framing": 0.0,
-  "campath": 0.0
+  "campath": 0.0,
+  "pose": 19.784,
+  "scenes": 0.0
  },
  "loadavg_before": [
-  10.09,
-  10.88,
-  9.22
+  1.82,
+  1.72,
+  2.53
  ],
  "loadavg_after": [
-  3.68,
-  7.25,
-  8.3
+  1.37,
+  1.88,
+  2.43
  ],
  "cpu_count": 4,
- "when": "2026-10-14 13:39"
+ "when": "2026-10-14 14:13"
 }

@@ -30,7 +30,7 @@ def main(argv=None) -> dict:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("video")
     ap.add_argument("--threads", type=int, default=2)
-    ap.add_argument("--skip", nargs="*", default=[], help="tools to skip (p0 p1 p3 p5 p7 p8)")
+    ap.add_argument("--skip", nargs="*", default=[], help="tools to skip (p0 p1 p3 p5 p6 p7 p8)")
     ap.add_argument("--asd", default="lightasd", choices=["ours", "lightasd"])
     ap.add_argument("--out", help="result file (default p9_production/results/tools_<clip>.json)")
     args = ap.parse_args(argv)
@@ -119,7 +119,16 @@ def main(argv=None) -> dict:
 
         build_clip_index(args.video, get_encoder("openclip"), scratch / "index", tag_vocab=TAG_VOCAB, log=None)
 
-    for name, fn in (("p0", p0), ("p1", p1), ("p3", p3), ("p5", p5), ("p7", p7), ("p8", p8)):
+    def p6():
+        from cinescope.video.clips import clip_name
+        from p6_pose_video.breakdown import main as breakdown
+
+        (Path("outputs") / "shots" / f"{clip_name(Path(args.video))}.json").unlink(missing_ok=True)  # its own Phase 0 pass
+
+        breakdown([args.video, "--pose", "yolo", "--scene", "clip", "--out", str(scratch / "p6"),
+                   "--threads", str(args.threads)])
+
+    for name, fn in (("p0", p0), ("p1", p1), ("p3", p3), ("p5", p5), ("p6", p6), ("p7", p7), ("p8", p8)):
         run(name, fn)
 
     total = round(sum(times.values()), 2)

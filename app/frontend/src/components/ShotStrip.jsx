@@ -48,7 +48,18 @@ export default function ShotStrip({ clip, shots, time, onSeek }) {
                   {cam.direction ? ` ${cam.direction}` : ""}
                 </span>
               )}
+              {s.scenes?.type && (
+                <span className="chip scene" title={`scene type (${Math.round(100 * s.scenes.probs[s.scenes.type])}%)`}>
+                  {s.scenes.type}
+                </span>
+              )}
+              {s.pose?.max_people > 0 && (
+                <span className="chip people" title={`up to ${s.pose.max_people} people; ${s.pose.events.length} action events`}>
+                  {s.pose.max_people} ppl{s.pose.events.length ? ` ${s.pose.events.map((e) => e.type).join(" ")}` : ""}
+                </span>
+              )}
             </div>
+            {s.cutouts?.file && <img className="cut" src={api.file(clip, s.cutouts.file)} alt="cut-out" loading="lazy" />}
             {s.palette && (
               <div className="pal">
                 {s.palette.rgb.map((c, i) => (

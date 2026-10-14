@@ -28,6 +28,7 @@ export const api = {
   search: (clip, q, k = 8) => get(`/api/clips/${enc(clip)}/search?q=${enc(q)}&k=${k}`),
   ask: (clip, q) => get(`/api/clips/${enc(clip)}/ask?q=${enc(q)}`),
   campath: (clip) => get(`/api/clips/${enc(clip)}/campath`),
+  cutout: (clip, t, method = "grabcut") => `/api/clips/${enc(clip)}/cutout?t=${t.toFixed(2)}&method=${method}`,
   upload: async (file) => {
     const fd = new FormData();
     fd.append("file", file);

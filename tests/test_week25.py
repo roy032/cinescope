@@ -125,6 +125,26 @@ class TestRun(PipelineCase):
             STAGES.pop("_count")
 
 
+    def test_pose_stage_with_a_stand_in_detector(self):
+        """Phase 6 pose stage: batched detection during the pass, per-shot people counts."""
+        from unittest import mock
+
+        from cinescope.pose.yolo import People
+
+        class FakePose:
+            def __init__(self, *a, **k):
+                pass
+
+            def __call__(self, frames):
+                return [People(np.array([[10.0, 10, 40, 60]]), np.array([0.9]), np.zeros((1, 17, 3)))
+                        for _ in frames]
+
+        with mock.patch("cinescope.pose.yolo.YoloPose", FakePose):
+            rep = run(self.video, ["pose"], self.out("f"), params={"pose": {"model": "yolo", "batch": 5}}, log=None)
+        self.assertEqual([s["pose"]["max_people"] for s in rep["shots"]], [1, 1, 1])
+        self.assertEqual(rep["extra"]["pose"]["n_samples"], 15)          # 4 fps over 3.75 s
+
+
 class TestPlanning(unittest.TestCase):
     def test_resolve_orders_dependencies(self):
         order = resolve(["characters"])

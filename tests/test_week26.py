@@ -13,6 +13,7 @@ import pytest
 
 from tests.test_week25 import CHEAP, synthetic_clip
 
+SPEC = "openclip:colour-test"      # an "openclip" spec, so the scenes stage runs its prompts
 COLOURS = {"red": (200, 40, 40), "green": (30, 160, 60), "blue": (40, 60, 200)}
 
 
@@ -66,12 +67,12 @@ class TestBackend(unittest.TestCase):
         (root / "clips").mkdir()
         synthetic_clip(root / "clips" / "synth.mp4")
         # the search stage asks accel for its encoder by spec; seed the cache with the stand-in
-        accel._CACHE[("clip", "colour-test", "torch")] = ColourEncoder()
+        accel._CACHE[("clip", SPEC, "torch")] = ColourEncoder()
         cls.app = create_app(clip_dirs=[root / "clips"], out_dir=root / "out", default_backend="torch",
                              encoder_factory=lambda spec: ColourEncoder(), frontend_dist=root / "no-dist")
         cls.c = TestClient(cls.app)
-        r = cls.c.post("/api/jobs", json={"clip": "synth", "stages": [*CHEAP, "search"],
-                                          "params": {"search": {"encoder": "colour-test", "tags": False}}})
+        r = cls.c.post("/api/jobs", json={"clip": "synth", "stages": [*CHEAP, "search", "scenes"],
+                                          "params": {"search": {"encoder": SPEC, "tags": False}}})
         assert r.status_code == 200, r.text
         cls.job = wait(cls.c, r.json()["id"])
 
@@ -79,7 +80,7 @@ class TestBackend(unittest.TestCase):
     def tearDownClass(cls):
         from cinescope.pipeline import accel
 
-        accel._CACHE.pop(("clip", "colour-test", "torch"), None)
+        accel._CACHE.pop(("clip", SPEC, "torch"), None)
         cls.tmp.cleanup()
 
     def test_job_ran_and_clip_is_listed(self):
@@ -103,6 +104,9 @@ class TestBackend(unittest.TestCase):
         self.assertEqual(self.c.get("/api/clips/synth/files/../../etc/passwd").status_code, 404)
         self.assertEqual(self.c.get("/api/clips/nope/report").status_code, 404)
         self.assertEqual(self.c.get("/api/clips/synth/campath").status_code, 404)  # stage not run
+        # Phase 6 scene types through the report's generic conventions
+        self.assertTrue(all(s["scenes"]["type"] for s in rep["shots"]))
+        self.assertEqual(rep["timelines"]["scenes"][0]["t0"], 0.0)
 
     def test_frame_and_video(self):
         f = self.c.get("/api/clips/synth/frame", params={"t": 1.5, "width": 64})
@@ -125,6 +129,21 @@ class TestBackend(unittest.TestCase):
         self.assertTrue(r["hits"][0]["frames"][0].startswith("/api/clips/synth/files/"))
         a = self.c.get("/api/clips/synth/ask", params={"q": "where is the red one?"})
         self.assertEqual(a.status_code, 200)
+
+    def test_cutout_on_demand(self):
+        """Phase 4 through the app: GrabCut (ours) + matting on the bright square, box given."""
+        import io
+
+        from PIL import Image
+
+        r = self.c.get("/api/clips/synth/cutout", params={"t": 0.0, "box": "4,14,36,46", "width": 128})
+        self.assertEqual(r.status_code, 200, r.text)
+        im = np.asarray(Image.open(io.BytesIO(r.content)))
+        self.assertEqual(im.shape[2], 4)                                # RGBA
+        opaque = im[..., 3] > 128
+        self.assertGreater(opaque.sum(), 0.6 * 20 * 20)
+        self.assertGreater(im[..., :3][opaque].mean(), 200)             # the square, not the background
+        self.assertEqual(self.c.get("/api/clips/synth/cutout", params={"method": "nope"}).status_code, 400)
 
     def test_second_job_is_cached(self):
         r = self.c.post("/api/jobs", json={"clip": "synth", "stages": ["palette"]}).json()

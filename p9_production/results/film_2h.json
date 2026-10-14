@@ -1,0 +1,197 @@
+{
+ "formula": "T(2h) = F + (7200 / D) * (W - F); F = camera path of one shot (fixed per film)",
+ "rows": [
+  {
+   "clip": "goldeneye",
+   "duration_s": 82.58,
+   "run": "pipeline_goldeneye_onnx-w2",
+   "backend": "onnx",
+   "workers": 2,
+   "before_wall_s": 666.27,
+   "after_wall_s": 275.18,
+   "decode_s": 34.994,
+   "per_feature": {
+    "p0": {
+     "feature": "Shots, palettes, camera moves (Phase 0)",
+     "before_s": 22.2,
+     "after_s": 15.3,
+     "before_x_realtime": 3.72,
+     "after_x_realtime": 5.396
+    },
+    "p1": {
+     "feature": "Framing per shot (Phase 1)",
+     "before_s": 17.91,
+     "after_s": 4.6,
+     "before_x_realtime": 4.611,
+     "after_x_realtime": 17.976
+    },
+    "p3": {
+     "feature": "Faces, who is talking, characters (Phase 3)",
+     "before_s": 328.26,
+     "after_s": 158.7,
+     "before_x_realtime": 0.252,
+     "after_x_realtime": 0.52
+    },
+    "p5": {
+     "feature": "Camera path of one shot (Phase 5)",
+     "before_s": 46.41,
+     "after_s": 68.8,
+     "before_x_realtime": 1.779,
+     "after_x_realtime": 1.201
+    },
+    "p6": {
+     "feature": "People, poses, action events, scene types (Phase 6)",
+     "before_s": 93.85,
+     "after_s": 20.9,
+     "before_x_realtime": 0.88,
+     "after_x_realtime": 3.956
+    },
+    "p7": {
+     "feature": "Subtitles and on-screen text (Phase 7)",
+     "before_s": 108.21,
+     "after_s": 99.6,
+     "before_x_realtime": 0.763,
+     "after_x_realtime": 0.829
+    },
+    "p8": {
+     "feature": "Search index (Phase 8)",
+     "before_s": 49.43,
+     "after_s": 18.3,
+     "before_x_realtime": 1.671,
+     "after_x_realtime": 4.518
+    }
+   },
+   "before_2h_h": 15.0,
+   "after_2h_h": 5.0,
+   "speedup": 2.42
+  },
+  {
+   "clip": "goldeneye",
+   "duration_s": 82.58,
+   "run": "pipeline_goldeneye_torch-w2",
+   "backend": "torch",
+   "workers": 2,
+   "before_wall_s": 666.27,
+   "after_wall_s": 326.85,
+   "decode_s": 34.198,
+   "per_feature": {
+    "p0": {
+     "feature": "Shots, palettes, camera moves (Phase 0)",
+     "before_s": 22.2,
+     "after_s": 14.8,
+     "before_x_realtime": 3.72,
+     "after_x_realtime": 5.577
+    },
+    "p1": {
+     "feature": "Framing per shot (Phase 1)",
+     "before_s": 17.91,
+     "after_s": 4.8,
+     "before_x_realtime": 4.611,
+     "after_x_realtime": 17.215
+    },
+    "p3": {
+     "feature": "Faces, who is talking, characters (Phase 3)",
+     "before_s": 328.26,
+     "after_s": 194.8,
+     "before_x_realtime": 0.252,
+     "after_x_realtime": 0.424
+    },
+    "p5": {
+     "feature": "Camera path of one shot (Phase 5)",
+     "before_s": 46.41,
+     "after_s": 72.5,
+     "before_x_realtime": 1.779,
+     "after_x_realtime": 1.138
+    },
+    "p6": {
+     "feature": "People, poses, action events, scene types (Phase 6)",
+     "before_s": 93.85,
+     "after_s": 18.9,
+     "before_x_realtime": 0.88,
+     "after_x_realtime": 4.359
+    },
+    "p7": {
+     "feature": "Subtitles and on-screen text (Phase 7)",
+     "before_s": 108.21,
+     "after_s": 114.2,
+     "before_x_realtime": 0.763,
+     "after_x_realtime": 0.723
+    },
+    "p8": {
+     "feature": "Search index (Phase 8)",
+     "before_s": 49.43,
+     "after_s": 15.8,
+     "before_x_realtime": 1.671,
+     "after_x_realtime": 5.224
+    }
+   },
+   "before_2h_h": 15.0,
+   "after_2h_h": 6.2,
+   "speedup": 2.04
+  },
+  {
+   "clip": "testvideo",
+   "duration_s": 24.02,
+   "run": "pipeline_testvideo_onnx-w2",
+   "backend": "onnx",
+   "workers": 2,
+   "before_wall_s": 153.25,
+   "after_wall_s": 66.5,
+   "decode_s": 15.888,
+   "per_feature": {
+    "p0": {
+     "feature": "Shots, palettes, camera moves (Phase 0)",
+     "before_s": 9.13,
+     "after_s": 6.4,
+     "before_x_realtime": 2.631,
+     "after_x_realtime": 3.739
+    },
+    "p1": {
+     "feature": "Framing per shot (Phase 1)",
+     "before_s": 9.29,
+     "after_s": 1.0,
+     "before_x_realtime": 2.586,
+     "after_x_realtime": 23.23
+    },
+    "p3": {
+     "feature": "Faces, who is talking, characters (Phase 3)",
+     "before_s": 24.33,
+     "after_s": 36.9,
+     "before_x_realtime": 0.987,
+     "after_x_realtime": 0.651
+    },
+    "p5": {
+     "feature": "Camera path of one shot (Phase 5)",
+     "before_s": 20.75,
+     "after_s": 14.3,
+     "before_x_realtime": 1.158,
+     "after_x_realtime": 1.68
+    },
+    "p6": {
+     "feature": "People, poses, action events, scene types (Phase 6)",
+     "before_s": 41.94,
+     "after_s": 10.0,
+     "before_x_realtime": 0.573,
+     "after_x_realtime": 2.406
+    },
+    "p7": {
+     "feature": "Subtitles and on-screen text (Phase 7)",
+     "before_s": 22.45,
+     "after_s": 23.4,
+     "before_x_realtime": 1.07,
+     "after_x_realtime": 1.024
+    },
+    "p8": {
+     "feature": "Search index (Phase 8)",
+     "before_s": 25.36,
+     "after_s": 10.8,
+     "before_x_realtime": 0.947,
+     "after_x_realtime": 2.231
+    }
+   },
+   "before_2h_h": 11.0,
+   "after_2h_h": 4.4,
+   "speedup": 2.3
+  }
+ ]
+}

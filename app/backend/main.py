@@ -20,6 +20,9 @@ Endpoints (all JSON unless noted):
     GET  /api/clips/{clip}/search?q=&k=     Phase 8 scene search over the clip's index
     GET  /api/clips/{clip}/ask?q=           Phase 8 "chat with the movie" (template answer, LLM optional)
     GET  /api/clips/{clip}/campath          the camera path of one shot (Phase 5)
+    GET  /api/clips/{clip}/cutout?t=&method=&box=x0,y0,x1,y1
+                                            Phase 4: RGBA PNG cut-out of the person in `box` (default:
+                                            the largest person YOLOv8n-seg finds) at time t; cached
 
 Configuration (environment):
     CINESCOPE_CLIPS    folders to list clips from, separated by the OS path separator
@@ -322,6 +325,57 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         if "camera_path" not in rep:
             raise HTTPException(404, "no camera path for this clip")
         return JSONResponse(json.loads((out / clip / rep["camera_path"]["file"]).read_text(encoding="utf-8")))
+
+    cutout_lock = threading.Lock()
+
+    @app.get("/api/clips/{clip}/cutout")
+    def cutout(clip: str, t: float = Query(0.0, ge=0), method: str = Query("grabcut"),
+               box: str | None = Query(None, pattern=r"^[0-9.]+,[0-9.]+,[0-9.]+,[0-9.]+$"),
+               matting: bool = True, width: int = Query(640, ge=64, le=1920)):
+        """On demand, not a pipeline stage by default: GrabCut + matting take seconds
+        per frame on a CPU. Box coordinates are in pixels of the frame at `width`."""
+        import numpy as np
+        from PIL import Image
+
+        from cinescope.io.video import VideoReader
+        from cinescope.segment.pipeline import (
+            SEGMENTERS,
+            get_segmenter,
+            largest_person,
+            rgba_cutout,
+        )
+
+        if method not in SEGMENTERS:
+            raise HTTPException(400, f"method must be one of {SEGMENTERS}")
+        key = f"{t:.2f}_{method}_{width}_{box or 'auto'}_{int(matting)}".replace(",", "-")
+        dest = out / clip / "assets" / "cutouts" / f"{key}.png"
+        if not dest.exists():
+            with cutout_lock:
+                with VideoReader(clip_path(clip), width=width) as vr:
+                    f = next(iter(vr.frames(start_s=t)), None)
+                if f is None:
+                    raise HTTPException(404, "past the end of the clip")
+                det = None
+                if box:
+                    b = np.asarray([float(v) for v in box.split(",")])
+                else:
+                    from cinescope.segment.models import PersonDetector
+
+                    det = PersonDetector(threads=int(os.environ.get("OMP_NUM_THREADS", 2) or 2))
+                    b = largest_person(f.rgb, det)
+                    if b is None:
+                        raise HTTPException(404, f"no person found at {t:.2f} s; pass box=x0,y0,x1,y1")
+                try:
+                    seg = get_segmenter(method, detector=det)
+                except FileNotFoundError as e:
+                    raise HTTPException(400, str(e)) from e
+                mask = seg(f.rgb, b[None])[0]
+                if not mask.any():
+                    raise HTTPException(404, "empty mask; try another method or box")
+                rgba, xy = rgba_cutout(f.rgb, mask, matting=matting)
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                Image.fromarray(rgba, "RGBA").save(dest)
+        return FileResponse(dest, media_type="image/png")
 
     # ------------------------------------------------------------------ the built front end
     if (dist / "index.html").exists():

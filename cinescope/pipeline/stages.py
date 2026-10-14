@@ -14,6 +14,9 @@
     framing     1      post    shots,frames,  framing label per shot: the Phase 1 ResNet-18 if a
                                search,faces   checkpoint exists, else zero-shot CLIP + face size
     campath     5      post    shots,camera   camera path of one shot (SfM or rotation only)
+    pose        6      frame   960 px, 4 fps  people, poses, action events per shot (YOLOv8n-pose)
+    scenes      6      post    search         scene type per shot (CLIP prompts on the key-frame vectors)
+    cutouts     4      post    frames         opt-in: RGBA cut-out of the largest person per shot
 
 Model stages honour Options.backend (torch / onnx / tensorrt) through
 cinescope.pipeline.accel. Heavy per-shot loops (palettes, camera moves) use a
@@ -739,3 +742,190 @@ class CamPath(Stage):
         (ctx.stage_dir(self.name) / "path.json").write_text(json.dumps(doc), encoding="utf-8")
         return {"mode": mode, "shot": s["index"], "n_frames": len(frames), "n_points": len(pts),
                 "file": "path.json"}
+
+
+# =========================================================================== Phase 6
+@register
+class Pose(Stage):
+    """People, poses and action events per shot (Phase 6's breakdown, pose half).
+
+    YOLOv8n-pose (or Phase 6's own SimpleBaseline on YOLO boxes, when its
+    checkpoint exists) on frames sampled at `fps` during the one decoding
+    pass, batched; end() tracks people within each shot and detects strikes,
+    falls and runs (cinescope/pose/events.py)."""
+    name = "pose"
+    version = "1"
+    requires = ("shots",)
+    streams = {"pose": Stream(width=960, fps=4.0)}
+    defaults = {"model": "auto", "ckpt": None, "conf": 0.4, "batch": 8}
+    transient = ("det", "net", "pending")
+
+    def setup(self, ctx: Context) -> None:
+        from ..pose.yolo import YoloPose
+
+        ck = Path(self.params["ckpt"] or REPO / "outputs" / "p6" / "pose_sb.pt")
+        kind = self.params["model"]
+        if kind == "auto":
+            kind = "ours" if ck.exists() else "yolo"
+        self.kind = kind
+        self.det = YoloPose(pose=kind == "yolo", conf=self.params["conf"])
+        self.net = None
+        if kind == "ours":
+            from ..pose.simplebaseline import load_checkpoint
+
+            self.net, c = load_checkpoint(str(ck))
+            self.input_hw = tuple(c.get("input_hw", (128, 96)))
+        self.pending = []
+
+    def begin(self, ctx: Context) -> None:
+        self.t: list[float] = []
+        self.frame_idx: list[int] = []
+        self.people: list[dict] = []        # per sample: boxes (P,4), kpts (P,17,3), in full-frame pixels
+        self.height = 1
+
+    def _flush(self) -> None:
+        if not self.pending:
+            return
+        frames = [f.rgb for f in self.pending]
+        res = self.det(frames)
+        if self.kind == "ours":
+            from ..pose.simplebaseline import predict
+
+            for f, p in zip(frames, res, strict=True):
+                if len(p):
+                    p.kpts = predict(self.net, f, p.boxes, self.input_hw)
+        for f, p in zip(self.pending, res, strict=True):
+            self.height = f.rgb.shape[0]
+            self.t.append(float(f.t))
+            self.frame_idx.append(int(f.index))
+            self.people.append({"boxes": p.boxes, "kpts": p.kpts})
+        self.pending = []
+
+    def frame(self, ctx: Context, views) -> None:
+        self.pending.append(views["pose"])
+        if len(self.pending) >= self.params["batch"]:
+            self._flush()
+
+    def state(self) -> dict:
+        self._flush()                       # a checkpoint holds no unprocessed frames
+        return super().state()
+
+    def end(self, ctx: Context) -> dict:
+        from ..pose.events import EventParams, detect_events
+        from ..pose.track import track_people
+
+        self._flush()
+        fi = np.asarray(self.frame_idx)
+        per_shot, timeline = [], []
+        for s in ctx.results["shots"]["shots"]:
+            idx = np.flatnonzero((fi >= s["start"]) & (fi <= s["end"]))
+            tracks = track_people([self.t[j] for j in idx], [self.people[j]["boxes"] for j in idx],
+                                  [self.people[j]["kpts"] for j in idx])
+            events = [e.to_dict() for e in detect_events(tracks, EventParams())]
+            counts = [len(self.people[j]["boxes"]) for j in idx]
+            heights = [float((b[3] - b[1]) / self.height) for j in idx for b in self.people[j]["boxes"]]
+            per_shot.append({"max_people": int(max(counts)) if counts else 0,
+                             "mean_people": round(float(np.mean(counts)), 2) if counts else 0.0,
+                             "tracks": len(tracks),
+                             "median_height_frac": round(float(np.median(heights)), 3) if heights else None,
+                             "events": events})
+            timeline += [{"t0": e["t0"], "t1": e["t1"], "label": e["type"]} for e in events]
+        np.savez_compressed(ctx.stage_dir(self.name) / "people.npz", t=np.asarray(self.t),
+                            frame=fi, n=np.asarray([len(p["boxes"]) for p in self.people]),
+                            boxes=np.concatenate([p["boxes"] for p in self.people] or [np.zeros((0, 4))]),
+                            kpts=np.concatenate([p["kpts"] for p in self.people] or [np.zeros((0, 17, 3))]))
+        return {"model": self.kind, "fps": self.streams["pose"].fps, "n_samples": len(self.t),
+                "people": "people.npz", "per_shot": per_shot, "timeline": sorted(timeline, key=lambda e: e["t0"])}
+
+
+@register
+class Scenes(Stage):
+    """Scene type per shot (Phase 6's CLIP teacher: dialogue / action /
+    establishing / crowd / text), from the key-frame vectors the search stage
+    already computed: only the prompts go through the text tower."""
+    name = "scenes"
+    version = "1"
+    requires = ("shots", "search")
+    uses_backend = True
+
+    def end(self, ctx: Context) -> dict:
+        from ..search.shotindex import ShotIndex
+        from ..video.scenes import CLASSES, PROMPTS, softmax
+        from .accel import clip_encoder
+
+        spec = ctx.results["search"].get("spec", "openclip")
+        if not spec.startswith("openclip"):
+            return {"method": "none", "per_shot": [], "timeline": []}
+        ix = ShotIndex.load(ctx.out / "stages" / "search" / "index")
+        enc = clip_encoder(spec, ctx.options)
+        owner = [c for c in CLASSES for _ in PROMPTS[c]]
+        tvec = enc.encode_texts([p for c in CLASSES for p in PROMPTS[c]])
+        by_shot: dict[int, list[int]] = {}
+        for i, o in enumerate(ix.kf_owner):
+            by_shot.setdefault(ix.docs[int(o)]["shot"], []).append(i)
+        per_shot, timeline = [], []
+        for s in ctx.results["shots"]["shots"]:
+            rows = by_shot.get(s["index"], [])
+            if not rows:
+                per_shot.append(None)
+                continue
+            lg = 100.0 * ix.kf_vectors[rows] @ tvec.T
+            cls = np.stack([lg[:, [j for j, c in enumerate(owner) if c == k]].mean(1) for k in CLASSES], 1)
+            p = softmax(cls).mean(0)
+            k = int(p.argmax())
+            per_shot.append({"type": CLASSES[k], "probs": {c: round(float(v), 3) for c, v in zip(CLASSES, p, strict=True)}})
+            if timeline and timeline[-1]["label"] == CLASSES[k] and abs(timeline[-1]["t1"] - s["t0"]) < 0.1:
+                timeline[-1]["t1"] = s["t1"]
+            else:
+                timeline.append({"t0": s["t0"], "t1": s["t1"], "label": CLASSES[k]})
+        return {"method": "zero-shot CLIP prompts on key frames (Phase 6 teacher)", "per_shot": per_shot,
+                "timeline": timeline}
+
+
+# =========================================================================== Phase 4
+@register
+class Cutouts(Stage):
+    """Phase 4: a matted RGBA cut-out of the largest person in the middle key
+    frame of each shot. Opt-in (`--stages cutouts`): GrabCut with our own
+    max-flow plus closed-form matting takes seconds per frame on a CPU. The web
+    app also cuts out any frame on demand (/api/clips/{clip}/cutout)."""
+    name = "cutouts"
+    version = "1"
+    requires = ("shots", "frames")
+    defaults = {"method": "grabcut", "matting": True, "min_height": 0.2, "width": 640}
+    default = False
+
+    def end(self, ctx: Context) -> dict:
+        from PIL import Image
+
+        from ..segment.models import PersonDetector
+        from ..segment.pipeline import get_segmenter, largest_person, rgba_cutout
+
+        p = self.params
+        store = FrameStore(ctx)
+        det = PersonDetector(threads=ctx.options.threads)
+        seg = get_segmenter(p["method"], ctx.options.threads, detector=det)
+        d = ctx.stage_dir(self.name)
+        shots = ctx.results["shots"]["shots"]
+        per_shot = []
+        for i, s in enumerate(shots):
+            ctx.report(self.name, i / max(len(shots), 1), f"shot {i + 1}/{len(shots)}")
+            if not len(store.idx):
+                per_shot.append(None)
+                continue
+            pos = store.nearest((s["start"] + s["end"]) // 2, s["start"], s["end"])
+            rgb = store.load(pos)
+            box = largest_person(rgb, det)
+            if box is None or (box[3] - box[1]) < p["min_height"] * rgb.shape[0]:
+                per_shot.append(None)
+                continue
+            mask = seg(rgb, box[None])[0]
+            if not mask.any():
+                per_shot.append(None)
+                continue
+            rgba, (x0, y0) = rgba_cutout(rgb, mask, matting=p["matting"])
+            name = f"shot_{s['index']:05d}.png"
+            Image.fromarray(rgba, "RGBA").save(d / name)
+            per_shot.append({"file": f"stages/cutouts/{name}", "t": float(store.t[pos]), "xy": [x0, y0],
+                             "box": np.round(box, 1).tolist()})
+        return {"method": p["method"], "per_shot": per_shot}

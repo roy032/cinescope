@@ -147,3 +147,12 @@ main { display: flex; flex-direction: column; gap: 14px; }
 .timing .num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 
 footer { color: var(--dim); font-size: 12px; margin-top: 24px; text-align: center; }
+.chip.scene { background: #203a2c; color: #9fe0b4; }
+.chip.people { background: #2a2f3a; color: #c8d2e6; }
+.shot img.cut { height: 48px; width: auto; aspect-ratio: auto; object-fit: contain; margin-top: 4px;
+  background: repeating-conic-gradient(#555 0 25%, #333 0 50%) 0 0 / 10px 10px; }
+.cutout { margin-top: 8px; }
+.cutout .row-inline { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.cutout select { background: var(--panel2); border: 1px solid var(--line); border-radius: 6px; padding: 5px 6px; }
+.cutout img { max-height: 220px; margin-top: 8px; border-radius: 6px;
+  background: repeating-conic-gradient(#555 0 25%, #333 0 50%) 0 0 / 16px 16px; }
