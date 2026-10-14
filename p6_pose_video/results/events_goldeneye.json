@@ -1,0 +1,112 @@
+{
+ "labels": "p6_pose_video/labels/goldeneye_events.json",
+ "n_labelled_events": 0,
+ "pose=ours": {
+  "breakdown": "outputs/goldeneye/breakdown.json",
+  "minutes": 1.38,
+  "predicted": 7,
+  "false_alarms_per_minute": 5.09,
+  "match": {
+   "strike": {
+    "tp": 0,
+    "fp": 7,
+    "fn": 0,
+    "precision": 0.0,
+    "recall": null,
+    "f1": 0.0
+   }
+  },
+  "on_hard_negatives": 0,
+  "events": [
+   {
+    "type": "strike",
+    "t": 9.446,
+    "t0": 9.321,
+    "t1": 9.446,
+    "score": 2.39
+   },
+   {
+    "type": "strike",
+    "t": 19.911,
+    "t0": 19.536,
+    "t1": 19.911,
+    "score": 4.188
+   },
+   {
+    "type": "strike",
+    "t": 35.055,
+    "t0": 34.93,
+    "t1": 35.055,
+    "score": 2.695
+   },
+   {
+    "type": "strike",
+    "t": 36.18,
+    "t0": 36.055,
+    "t1": 36.18,
+    "score": 2.513
+   },
+   {
+    "type": "strike",
+    "t": 57.869,
+    "t0": 57.744,
+    "t1": 57.869,
+    "score": 1.655
+   },
+   {
+    "type": "strike",
+    "t": 59.369,
+    "t0": 59.244,
+    "t1": 59.369,
+    "score": 4.678
+   },
+   {
+    "type": "strike",
+    "t": 61.869,
+    "t0": 61.619,
+    "t1": 61.869,
+    "score": 5.675
+   }
+  ]
+ },
+ "pose=yolo": {
+  "breakdown": "outputs/goldeneye_yolo/goldeneye/breakdown.json",
+  "minutes": 1.38,
+  "predicted": 3,
+  "false_alarms_per_minute": 2.18,
+  "match": {
+   "strike": {
+    "tp": 0,
+    "fp": 3,
+    "fn": 0,
+    "precision": 0.0,
+    "recall": null,
+    "f1": 0.0
+   }
+  },
+  "on_hard_negatives": 2,
+  "events": [
+   {
+    "type": "strike",
+    "t": 15.911,
+    "t0": 15.786,
+    "t1": 15.911,
+    "score": 1.55
+   },
+   {
+    "type": "strike",
+    "t": 52.74,
+    "t0": 52.615,
+    "t1": 52.74,
+    "score": 1.481
+   },
+   {
+    "type": "strike",
+    "t": 69.254,
+    "t0": 69.129,
+    "t1": 69.504,
+    "score": 1.619
+   }
+  ]
+ }
+}
