@@ -1,0 +1,21 @@
+{
+ "n": 30,
+ "methods": {
+  "Criminisi (ours)": {
+   "psnr": 22.954,
+   "ssim": 0.781,
+   "ms": 14535.0
+  },
+  "cv2 Telea": {
+   "psnr": 23.979,
+   "ssim": 0.841,
+   "ms": 44.0
+  },
+  "cv2 Navier-Stokes": {
+   "psnr": 24.558,
+   "ssim": 0.844,
+   "ms": 41.0
+  }
+ },
+ "criminisi_wins_psnr": 10
+}
