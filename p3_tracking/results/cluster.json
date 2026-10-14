@@ -1,0 +1,326 @@
+{
+ "goldeneye": {
+  "tracks": {
+   "ours (triplet)": {
+    "threshold": 0.0758,
+    "purity": 0.9285714285714286,
+    "purity_time": 0.9761368752814048,
+    "inverse_purity": 0.5357142857142857,
+    "pair_precision": 0.8571428571428571,
+    "pair_recall": 0.1978021978021978,
+    "pair_f1": 0.32142857142857134,
+    "clusters": 15,
+    "identities": 8,
+    "tracks_scored": 28,
+    "tracks_total": 36,
+    "oracle_k": {
+     "purity": 0.8571428571428571,
+     "pair_f1": 0.6103896103896105
+    }
+   },
+   "ours (arcface)": {
+    "threshold": 0.1853,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 0.6071428571428571,
+    "pair_precision": 1.0,
+    "pair_recall": 0.31868131868131866,
+    "pair_f1": 0.4833333333333333,
+    "clusters": 13,
+    "identities": 8,
+    "tracks_scored": 28,
+    "tracks_total": 36,
+    "oracle_k": {
+     "purity": 0.8928571428571429,
+     "pair_f1": 0.7225806451612904
+    }
+   },
+   "SFace (opencv_zoo)": {
+    "threshold": 0.6352,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 1.0,
+    "pair_precision": 1.0,
+    "pair_recall": 1.0,
+    "pair_f1": 1.0,
+    "clusters": 8,
+    "identities": 8,
+    "tracks_scored": 28,
+    "tracks_total": 36,
+    "oracle_k": {
+     "purity": 0.7857142857142857,
+     "pair_f1": 0.7489711934156378
+    }
+   }
+  },
+  "tracklets": {
+   "ours (triplet)": {
+    "threshold": 0.0737,
+    "purity": 0.9464285714285714,
+    "purity_time": 0.9661791590493601,
+    "inverse_purity": 0.5178571428571429,
+    "pair_precision": 0.9572649572649573,
+    "pair_recall": 0.23779193205944799,
+    "pair_f1": 0.38095238095238093,
+    "clusters": 18,
+    "identities": 8,
+    "tracks_scored": 56,
+    "tracks_total": 71,
+    "oracle_k": {
+     "purity": 0.875,
+     "pair_f1": 0.5361702127659576
+    }
+   },
+   "ours (arcface)": {
+    "threshold": 0.1853,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 0.5357142857142857,
+    "pair_precision": 1.0,
+    "pair_recall": 0.3036093418259023,
+    "pair_f1": 0.46579804560260585,
+    "clusters": 18,
+    "identities": 8,
+    "tracks_scored": 56,
+    "tracks_total": 71,
+    "oracle_k": {
+     "purity": 0.9285714285714286,
+     "pair_f1": 0.6639892904953146
+    }
+   },
+   "SFace (opencv_zoo)": {
+    "threshold": 0.6368,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 0.9821428571428571,
+    "pair_precision": 1.0,
+    "pair_recall": 0.9469214437367304,
+    "pair_f1": 0.9727371864776445,
+    "clusters": 9,
+    "identities": 8,
+    "tracks_scored": 56,
+    "tracks_total": 71,
+    "oracle_k": {
+     "purity": 0.7857142857142857,
+     "pair_f1": 0.7664768104149715
+    }
+   }
+  }
+ },
+ "head-pose-face-detection-female-and-male": {
+  "tracks": {
+   "ours (triplet)": {
+    "threshold": 0.1502,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 1.0,
+    "pair_precision": 1.0,
+    "pair_recall": 1.0,
+    "pair_f1": 1.0,
+    "clusters": 2,
+    "identities": 2,
+    "tracks_scored": 2,
+    "tracks_total": 2,
+    "oracle_k": {
+     "purity": 1.0,
+     "pair_f1": 1.0
+    }
+   },
+   "ours (arcface)": {
+    "threshold": 0.2047,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 1.0,
+    "pair_precision": 1.0,
+    "pair_recall": 1.0,
+    "pair_f1": 1.0,
+    "clusters": 2,
+    "identities": 2,
+    "tracks_scored": 2,
+    "tracks_total": 2,
+    "oracle_k": {
+     "purity": 1.0,
+     "pair_f1": 1.0
+    }
+   },
+   "SFace (opencv_zoo)": {
+    "threshold": 0.4248,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 1.0,
+    "pair_precision": 1.0,
+    "pair_recall": 1.0,
+    "pair_f1": 1.0,
+    "clusters": 2,
+    "identities": 2,
+    "tracks_scored": 2,
+    "tracks_total": 2,
+    "oracle_k": {
+     "purity": 1.0,
+     "pair_f1": 1.0
+    }
+   }
+  },
+  "tracklets": {
+   "ours (triplet)": {
+    "threshold": 0.0605,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 0.6597222222222222,
+    "pair_precision": 1.0,
+    "pair_recall": 0.44033646322378717,
+    "pair_f1": 0.6114355561591742,
+    "clusters": 29,
+    "identities": 2,
+    "tracks_scored": 144,
+    "tracks_total": 144,
+    "oracle_k": {
+     "purity": 0.9375,
+     "pair_f1": 0.8401486988847583
+    }
+   },
+   "ours (arcface)": {
+    "threshold": 0.0903,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 0.6527777777777778,
+    "pair_precision": 1.0,
+    "pair_recall": 0.4336854460093897,
+    "pair_f1": 0.6049938600081867,
+    "clusters": 29,
+    "identities": 2,
+    "tracks_scored": 144,
+    "tracks_total": 144,
+    "oracle_k": {
+     "purity": 0.9375,
+     "pair_f1": 0.8541561966026737
+    }
+   },
+   "SFace (opencv_zoo)": {
+    "threshold": 0.3103,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 0.7638888888888888,
+    "pair_precision": 1.0,
+    "pair_recall": 0.5897887323943662,
+    "pair_f1": 0.7419712070874862,
+    "clusters": 18,
+    "identities": 2,
+    "tracks_scored": 144,
+    "tracks_total": 144,
+    "oracle_k": {
+     "purity": 1.0,
+     "pair_f1": 1.0
+    }
+   }
+  }
+ },
+ "face-demographics-walking": {
+  "tracks": {
+   "ours (triplet)": {
+    "threshold": 0.3383,
+    "purity": 0.5714285714285714,
+    "purity_time": 0.5811965811965812,
+    "inverse_purity": 1.0,
+    "pair_precision": 0.0,
+    "pair_recall": 1.0,
+    "pair_f1": 0.0,
+    "clusters": 4,
+    "identities": 7,
+    "tracks_scored": 7,
+    "tracks_total": 8,
+    "oracle_k": {
+     "purity": 0.8571428571428571,
+     "pair_f1": 0.0
+    }
+   },
+   "ours (arcface)": {
+    "threshold": 0.3871,
+    "purity": 0.42857142857142855,
+    "purity_time": 0.47863247863247865,
+    "inverse_purity": 1.0,
+    "pair_precision": 0.0,
+    "pair_recall": 1.0,
+    "pair_f1": 0.0,
+    "clusters": 3,
+    "identities": 7,
+    "tracks_scored": 7,
+    "tracks_total": 8,
+    "oracle_k": {
+     "purity": 0.8571428571428571,
+     "pair_f1": 0.0
+    }
+   },
+   "SFace (opencv_zoo)": {
+    "threshold": 0.5148,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 1.0,
+    "pair_precision": 1.0,
+    "pair_recall": 1.0,
+    "pair_f1": 1.0,
+    "clusters": 7,
+    "identities": 7,
+    "tracks_scored": 7,
+    "tracks_total": 8,
+    "oracle_k": {
+     "purity": 1.0,
+     "pair_f1": 1.0
+    }
+   }
+  },
+  "tracklets": {
+   "ours (triplet)": {
+    "threshold": 0.3043,
+    "purity": 0.5,
+    "purity_time": 0.5364806866952789,
+    "inverse_purity": 0.5454545454545454,
+    "pair_precision": 0.1724137931034483,
+    "pair_recall": 0.20833333333333334,
+    "pair_f1": 0.18867924528301888,
+    "clusters": 7,
+    "identities": 7,
+    "tracks_scored": 22,
+    "tracks_total": 24,
+    "oracle_k": {
+     "purity": 0.5,
+     "pair_f1": 0.18867924528301888
+    }
+   },
+   "ours (arcface)": {
+    "threshold": 0.3202,
+    "purity": 0.45454545454545453,
+    "purity_time": 0.5021459227467812,
+    "inverse_purity": 0.8636363636363636,
+    "pair_precision": 0.24285714285714285,
+    "pair_recall": 0.7083333333333334,
+    "pair_f1": 0.36170212765957444,
+    "clusters": 4,
+    "identities": 7,
+    "tracks_scored": 22,
+    "tracks_total": 24,
+    "oracle_k": {
+     "purity": 0.5454545454545454,
+     "pair_f1": 0.3768115942028985
+    }
+   },
+   "SFace (opencv_zoo)": {
+    "threshold": 0.5047,
+    "purity": 1.0,
+    "purity_time": 1.0,
+    "inverse_purity": 1.0,
+    "pair_precision": 1.0,
+    "pair_recall": 1.0,
+    "pair_f1": 1.0,
+    "clusters": 7,
+    "identities": 7,
+    "tracks_scored": 22,
+    "tracks_total": 24,
+    "oracle_k": {
+     "purity": 1.0,
+     "pair_f1": 1.0
+    }
+   }
+  }
+ }
+}

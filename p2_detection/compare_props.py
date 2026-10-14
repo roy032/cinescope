@@ -1,17 +1,19 @@
 """Production detectors on movie frames: YOLO vs. RT-DETR on COCO props (week 8).
 
     pip install ultralytics
-    python p2_detection/compare_props.py p2_detection/labels/*.boxes.json --models yolo11n.pt rtdetr-l.pt
+    python p2_detection/compare_props.py p2_detection/labels/*.boxes.json   # yolov8n, yolo11n, rtdetr-l from data/weights
 
 Scores every labelled class that is also a COCO class (person, car, cell
 phone, knife, bottle, ...). COCO has no "gun" class: guns are exactly the kind
-of prop a film-specific model would need fine-tuning for. Weights download on
-first use. Writes p2_detection/results/compare_props.{json,md}.
+of prop a film-specific model would need fine-tuning for. Ultralytics downloads
+a bare model name on first use; pass a path to use a local file (offline).
+Writes p2_detection/results/compare_props.{json,md}.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -26,12 +28,29 @@ from cinescope.detect.coco_eval import COCOEvaluator  # noqa: E402
 HERE = Path(__file__).resolve().parent
 
 
+def set_threads(n: int) -> None:
+    """Pin torch and OpenCV to `n` threads so ms/frame is comparable between runs and machines."""
+    import cv2
+
+    cv2.setNumThreads(n)
+    try:
+        import torch
+
+        torch.set_num_threads(n)
+    except ImportError:
+        pass
+
+
 def main(argv: list[str] | None = None) -> dict:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("labels", nargs="+")
-    ap.add_argument("--models", nargs="+", default=["yolo11n.pt", "rtdetr-l.pt"])
+    wdir = Path(os.environ.get("CINESCOPE_WEIGHTS", HERE.parent / "data" / "weights"))
+    ap.add_argument("--models", nargs="+", default=[str(wdir / m) for m in ("yolov8n.pt", "yolo11n.pt", "rtdetr-l.pt")],
+                    help="ultralytics weight files (default: yolov8n, yolo11n, rtdetr-l in the weights folder)")
     ap.add_argument("--out", default=str(HERE / "results"))
+    ap.add_argument("--threads", type=int, default=2, help="CPU threads (timings are per frame at this count)")
     args = ap.parse_args(argv)
+    set_threads(args.threads)
     try:
         from ultralytics import RTDETR, YOLO
     except ImportError:
@@ -70,7 +89,7 @@ def main(argv: list[str] | None = None) -> dict:
             per_clip[lab["name"]] = {"AP": round(ev["AP"], 4), "AP50": round(ev["AP50"], 4),
                                      "per_class_AP": {classes[k - 1]: round(v, 4)
                                                       for k, v in ev["per_category_AP"].items() if v >= 0}}
-        report[mpath] = {"clips": per_clip, "ms_per_frame": round(float(np.median(times)) * 1000, 1) if times else None}
+        report[Path(mpath).name] = {"clips": per_clip, "ms_per_frame": round(float(np.median(times)) * 1000, 1) if times else None}
     lines = ["| Model | " + " | ".join(f"{c} AP50" for c in next(iter(report.values()))["clips"]) + " | ms/frame |",
              "|---|" + "---|" * (len(next(iter(report.values()))["clips"]) + 1)]
     for m, r in report.items():

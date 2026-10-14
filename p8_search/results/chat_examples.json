@@ -1,0 +1,937 @@
+[
+ {
+  "clip": "goldeneye.mp4",
+  "question": "When does the car chase start?",
+  "query": "the car chase",
+  "kind": "when",
+  "answer": "I could not find \"the car chase\" in this clip: no segment stands out (best match 1:01.6\u20131:06.3, shot 17 part 2/2, similarity 0.211 < 0.219, +0.035 vs the clip's median). Closest-looking segment: a close-up shot, a blurry image, a window.",
+  "confident": false,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "goldeneye",
+    "shot": 17,
+    "part": 1,
+    "t0": 61.645,
+    "t1": 66.316,
+    "clip_score": 0.2115,
+    "lexical": 0.0,
+    "contrast": 0.0352,
+    "tags": [
+     "a close-up shot",
+     "a blurry image",
+     "a window",
+     "a computer screen",
+     "a face in close-up"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 15,
+    "part": 0,
+    "t0": 53.428,
+    "t1": 55.639,
+    "clip_score": 0.207,
+    "lexical": 0.0,
+    "contrast": 0.0307,
+    "tags": [
+     "a phone call",
+     "a close-up shot",
+     "a person shouting",
+     "a police officer",
+     "a fight"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 20,
+    "part": 0,
+    "t0": 78.036,
+    "t1": 79.913,
+    "clip_score": 0.2011,
+    "lexical": 0.0,
+    "contrast": 0.0249,
+    "tags": [
+     "a lighter",
+     "a phone",
+     "a close-up shot",
+     "a cigarette",
+     "a knife"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 11,
+    "part": 0,
+    "t0": 45.837,
+    "t1": 48.966,
+    "clip_score": 0.1986,
+    "lexical": 0.0,
+    "contrast": 0.0224,
+    "tags": [
+     "a face in close-up",
+     "a close-up shot",
+     "a person with glasses",
+     "a computer screen",
+     "a phone call"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 13,
+    "part": 0,
+    "t0": 51.134,
+    "t1": 52.553,
+    "clip_score": 0.1977,
+    "lexical": 0.0,
+    "contrast": 0.0215,
+    "tags": [
+     "a window",
+     "a lighter",
+     "a phone call",
+     "a person shouting",
+     "a blurry image"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ },
+ {
+  "clip": "goldeneye.mp4",
+  "question": "Is there an explosion?",
+  "query": "an explosion",
+  "kind": "yesno",
+  "answer": "I could not find \"an explosion\" in this clip: no segment stands out (best match 0:28.7\u20130:34.1, shot 6, similarity 0.199 < 0.219, +0.031 vs the clip's median). Closest-looking segment: a map, a computer screen, a black screen.",
+  "confident": false,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "goldeneye",
+    "shot": 6,
+    "part": 0,
+    "t0": 28.737,
+    "t1": 34.117,
+    "clip_score": 0.1986,
+    "lexical": 0.0,
+    "contrast": 0.0311,
+    "tags": [
+     "a map",
+     "a computer screen",
+     "a black screen",
+     "text on screen",
+     "a television"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 23,
+    "part": 0,
+    "t0": 81.999,
+    "t1": 82.582,
+    "clip_score": 0.1947,
+    "lexical": 0.0,
+    "contrast": 0.0273,
+    "tags": [
+     "a blurry image",
+     "water",
+     "a black screen",
+     "the sky",
+     "a dark scene"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 17,
+    "part": 1,
+    "t0": 61.645,
+    "t1": 66.316,
+    "clip_score": 0.1934,
+    "lexical": 0.0,
+    "contrast": 0.026,
+    "tags": [
+     "a close-up shot",
+     "a blurry image",
+     "a window",
+     "a computer screen",
+     "a face in close-up"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 13,
+    "part": 0,
+    "t0": 51.134,
+    "t1": 52.553,
+    "clip_score": 0.188,
+    "lexical": 0.0,
+    "contrast": 0.0205,
+    "tags": [
+     "a window",
+     "a lighter",
+     "a phone call",
+     "a person shouting",
+     "a blurry image"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 18,
+    "part": 0,
+    "t0": 66.316,
+    "t1": 70.779,
+    "clip_score": 0.187,
+    "lexical": 0.0,
+    "contrast": 0.0196,
+    "tags": [
+     "a door",
+     "a lighter",
+     "a close-up shot",
+     "a window",
+     "a dark scene"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ },
+ {
+  "clip": "goldeneye.mp4",
+  "question": "When does someone light a cigarette?",
+  "query": "someone light a cigarette",
+  "kind": "when",
+  "answer": "\"someone light a cigarette\" first appears at 1:18.0 (1:18.0\u20131:19.9).",
+  "confident": true,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "goldeneye",
+    "shot": 20,
+    "part": 0,
+    "t0": 78.036,
+    "t1": 79.913,
+    "clip_score": 0.2835,
+    "lexical": 3.457,
+    "contrast": 0.0919,
+    "tags": [
+     "a lighter",
+     "a phone",
+     "a close-up shot",
+     "a cigarette",
+     "a knife"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 17,
+    "part": 1,
+    "t0": 61.645,
+    "t1": 66.316,
+    "clip_score": 0.2391,
+    "lexical": 0.0,
+    "contrast": 0.0475,
+    "tags": [
+     "a close-up shot",
+     "a blurry image",
+     "a window",
+     "a computer screen",
+     "a face in close-up"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 18,
+    "part": 0,
+    "t0": 66.316,
+    "t1": 70.779,
+    "clip_score": 0.2362,
+    "lexical": 0.0,
+    "contrast": 0.0445,
+    "tags": [
+     "a door",
+     "a lighter",
+     "a close-up shot",
+     "a window",
+     "a dark scene"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 4,
+    "part": 1,
+    "t0": 21.355,
+    "t1": 27.11,
+    "clip_score": 0.2026,
+    "lexical": 1.548,
+    "contrast": 0.011,
+    "tags": [
+     "a face in close-up",
+     "a close-up shot",
+     "a person with glasses",
+     "a computer screen",
+     "someone reading"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 7,
+    "part": 0,
+    "t0": 34.117,
+    "t1": 36.536,
+    "clip_score": 0.2034,
+    "lexical": 1.476,
+    "contrast": 0.0117,
+    "tags": [
+     "a computer screen",
+     "a person with glasses",
+     "a phone call",
+     "someone typing on a computer",
+     "an office"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ },
+ {
+  "clip": "goldeneye.mp4",
+  "question": "Is there a plane?",
+  "query": "a plane",
+  "kind": "yesno",
+  "answer": "Yes, most likely: \"a plane\" matches 0:55.6\u20130:56.9, 1:22.0\u20131:22.6 (best 1:22.0\u20131:22.6, shot 23).",
+  "confident": true,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "goldeneye",
+    "shot": 23,
+    "part": 0,
+    "t0": 81.999,
+    "t1": 82.582,
+    "clip_score": 0.2503,
+    "lexical": 0.0,
+    "contrast": 0.0732,
+    "tags": [
+     "a blurry image",
+     "water",
+     "a black screen",
+     "the sky",
+     "a dark scene"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 16,
+    "part": 0,
+    "t0": 55.639,
+    "t1": 56.932,
+    "clip_score": 0.2021,
+    "lexical": 2.192,
+    "contrast": 0.025,
+    "tags": [
+     "a computer screen",
+     "a control room",
+     "someone typing on a computer",
+     "a plane",
+     "a phone call"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 14,
+    "part": 0,
+    "t0": 52.553,
+    "t1": 53.428,
+    "clip_score": 0.1867,
+    "lexical": 2.298,
+    "contrast": 0.0097,
+    "tags": [
+     "a control room",
+     "a computer screen",
+     "an office",
+     "someone typing on a computer",
+     "a plane"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 6,
+    "part": 0,
+    "t0": 28.737,
+    "t1": 34.117,
+    "clip_score": 0.2138,
+    "lexical": 0.0,
+    "contrast": 0.0368,
+    "tags": [
+     "a map",
+     "a computer screen",
+     "a black screen",
+     "text on screen",
+     "a television"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 8,
+    "part": 0,
+    "t0": 36.536,
+    "t1": 42.501,
+    "clip_score": 0.2041,
+    "lexical": 0.0,
+    "contrast": 0.0271,
+    "tags": [
+     "a computer screen",
+     "a television",
+     "a black screen",
+     "a map",
+     "text on screen"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ },
+ {
+  "clip": "goldeneye.mp4",
+  "question": "What happens in the snow?",
+  "query": "happens in the snow",
+  "kind": "what",
+  "answer": "Best match: 1:20.6\u20131:22.0 (shot 22), which looks like snow, a close-up shot, a person shouting. Other matching moments: 1:10.8\u20131:14.4.",
+  "confident": true,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "goldeneye",
+    "shot": 22,
+    "part": 0,
+    "t0": 80.581,
+    "t1": 81.999,
+    "clip_score": 0.2438,
+    "lexical": 2.079,
+    "contrast": 0.1211,
+    "tags": [
+     "snow",
+     "a close-up shot",
+     "a person shouting",
+     "a person with glasses",
+     "a face in close-up"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 19,
+    "part": 0,
+    "t0": 70.779,
+    "t1": 74.408,
+    "clip_score": 0.2298,
+    "lexical": 2.456,
+    "contrast": 0.1071,
+    "tags": [
+     "snow",
+     "a night scene",
+     "a dark scene",
+     "a wide shot",
+     "the sky"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 19,
+    "part": 1,
+    "t0": 74.408,
+    "t1": 78.036,
+    "clip_score": 0.217,
+    "lexical": 2.456,
+    "contrast": 0.0943,
+    "tags": [
+     "snow",
+     "the sky",
+     "a wide shot",
+     "a dark scene",
+     "a close-up shot"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 21,
+    "part": 0,
+    "t0": 79.913,
+    "t1": 80.581,
+    "clip_score": 0.1904,
+    "lexical": 0.0,
+    "contrast": 0.0677,
+    "tags": [
+     "a blurry image",
+     "a rock",
+     "a person from behind",
+     "a close-up shot",
+     "a face in close-up"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 20,
+    "part": 0,
+    "t0": 78.036,
+    "t1": 79.913,
+    "clip_score": 0.1655,
+    "lexical": 0.0,
+    "contrast": 0.0428,
+    "tags": [
+     "a lighter",
+     "a phone",
+     "a close-up shot",
+     "a cigarette",
+     "a knife"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ },
+ {
+  "clip": "goldeneye.mp4",
+  "question": "Who is at the computer?",
+  "query": "at the computer",
+  "kind": "who",
+  "answer": "The best match is 0:55.6\u20130:56.9 (shot 16); no character names are attached to this index yet (Phase 3 fills them). The frames look like: a computer screen, a control room, someone typing on a computer.",
+  "confident": true,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "goldeneye",
+    "shot": 16,
+    "part": 0,
+    "t0": 55.639,
+    "t1": 56.932,
+    "clip_score": 0.2588,
+    "lexical": 0.679,
+    "contrast": 0.0705,
+    "tags": [
+     "a computer screen",
+     "a control room",
+     "someone typing on a computer",
+     "a plane",
+     "a phone call"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 14,
+    "part": 0,
+    "t0": 52.553,
+    "t1": 53.428,
+    "clip_score": 0.2391,
+    "lexical": 0.702,
+    "contrast": 0.0508,
+    "tags": [
+     "a control room",
+     "a computer screen",
+     "an office",
+     "someone typing on a computer",
+     "a plane"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 7,
+    "part": 0,
+    "t0": 34.117,
+    "t1": 36.536,
+    "clip_score": 0.2298,
+    "lexical": 0.679,
+    "contrast": 0.0416,
+    "tags": [
+     "a computer screen",
+     "a person with glasses",
+     "a phone call",
+     "someone typing on a computer",
+     "an office"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 2,
+    "part": 0,
+    "t0": 8.759,
+    "t1": 10.802,
+    "clip_score": 0.2298,
+    "lexical": 0.48,
+    "contrast": 0.0415,
+    "tags": [
+     "a computer screen",
+     "a person with glasses",
+     "a phone call",
+     "a person smiling",
+     "someone reading"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "goldeneye",
+    "shot": 10,
+    "part": 0,
+    "t0": 44.002,
+    "t1": 45.837,
+    "clip_score": 0.228,
+    "lexical": 0.529,
+    "contrast": 0.0397,
+    "tags": [
+     "a computer screen",
+     "text on screen",
+     "a black screen",
+     "a television",
+     "a phone"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ },
+ {
+  "clip": "people-detection.mp4",
+  "question": "When do three people walk in together?",
+  "query": "three people walk in together",
+  "kind": "when",
+  "answer": "I could not find \"three people walk in together\" in this clip: no segment stands out (best match 0:27.6\u20130:33.1, shot 0 part 6/9, similarity 0.212 < 0.219, +0.082 vs the clip's median). Closest-looking segment: an empty room, a corridor, a door.",
+  "confident": false,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 5,
+    "t0": 27.583,
+    "t1": 33.083,
+    "clip_score": 0.2118,
+    "lexical": 0.0,
+    "contrast": 0.082,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a door",
+     "a blurry image",
+     "a person running"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 3,
+    "t0": 16.583,
+    "t1": 22.083,
+    "clip_score": 0.1612,
+    "lexical": 0.0,
+    "contrast": 0.0314,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a door",
+     "a bedroom"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 0,
+    "t0": 0.0,
+    "t1": 5.5,
+    "clip_score": 0.1458,
+    "lexical": 0.0,
+    "contrast": 0.016,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a door",
+     "a person standing"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 2,
+    "t0": 11.0,
+    "t1": 16.583,
+    "clip_score": 0.1434,
+    "lexical": 0.0,
+    "contrast": 0.0136,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a door",
+     "a bedroom"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 8,
+    "t0": 44.167,
+    "t1": 49.667,
+    "clip_score": 0.1298,
+    "lexical": 0.0,
+    "contrast": 0.0,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a door",
+     "a bedroom"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ },
+ {
+  "clip": "people-detection.mp4",
+  "question": "How many times is the room empty?",
+  "query": "the room empty",
+  "kind": "count",
+  "answer": "4 separate stretches match \"the room empty\": 0:00.0\u20130:05.5, 0:11.0\u20130:22.1, 0:33.1\u20130:38.7, 0:44.2\u20130:49.7.",
+  "confident": true,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 8,
+    "t0": 44.167,
+    "t1": 49.667,
+    "clip_score": 0.2564,
+    "lexical": 0.104,
+    "contrast": 0.0058,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a door",
+     "a bedroom"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 6,
+    "t0": 33.083,
+    "t1": 38.667,
+    "clip_score": 0.2562,
+    "lexical": 0.104,
+    "contrast": 0.0057,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a bedroom",
+     "a door"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 0,
+    "t0": 0.0,
+    "t1": 5.5,
+    "clip_score": 0.2544,
+    "lexical": 0.098,
+    "contrast": 0.0038,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a door",
+     "a person standing"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 2,
+    "t0": 11.0,
+    "t1": 16.583,
+    "clip_score": 0.2541,
+    "lexical": 0.104,
+    "contrast": 0.0036,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a door",
+     "a bedroom"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "people-detection",
+    "shot": 0,
+    "part": 3,
+    "t0": 16.583,
+    "t1": 22.083,
+    "clip_score": 0.2506,
+    "lexical": 0.104,
+    "contrast": 0.0,
+    "tags": [
+     "an empty room",
+     "a corridor",
+     "a blurry image",
+     "a door",
+     "a bedroom"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ },
+ {
+  "clip": "Megamind.avi",
+  "question": "Where are they having dinner?",
+  "query": "they having dinner",
+  "kind": "where",
+  "answer": "I could not find \"they having dinner\" in this clip: no segment stands out (best match 0:00.0\u20130:04.1, shot 0, similarity 0.209 < 0.219, +0.021 vs the clip's median). Closest-looking segment: an animated character, a glass of wine, a bar.",
+  "confident": false,
+  "source": "template",
+  "evidence": [
+   {
+    "clip": "Megamind",
+    "shot": 0,
+    "part": 0,
+    "t0": 0.042,
+    "t1": 4.129,
+    "clip_score": 0.2091,
+    "lexical": 0.0,
+    "contrast": 0.0214,
+    "tags": [
+     "an animated character",
+     "a glass of wine",
+     "a bar",
+     "a restaurant",
+     "a woman"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "Megamind",
+    "shot": 2,
+    "part": 0,
+    "t0": 6.465,
+    "t1": 8.383,
+    "clip_score": 0.1992,
+    "lexical": 0.0,
+    "contrast": 0.0114,
+    "tags": [
+     "an animated character",
+     "a glass of wine",
+     "a cartoon",
+     "a woman",
+     "a face in close-up"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "Megamind",
+    "shot": 1,
+    "part": 0,
+    "t0": 4.129,
+    "t1": 6.465,
+    "clip_score": 0.1763,
+    "lexical": 0.0,
+    "contrast": -0.0114,
+    "tags": [
+     "an animated character",
+     "a cartoon",
+     "a person shouting",
+     "a face in close-up",
+     "a person smiling"
+    ],
+    "subtitles": [],
+    "characters": []
+   },
+   {
+    "clip": "Megamind",
+    "shot": 3,
+    "part": 0,
+    "t0": 8.383,
+    "t1": 11.303,
+    "clip_score": 0.1376,
+    "lexical": 0.0,
+    "contrast": -0.0501,
+    "tags": [
+     "an animated character",
+     "a person with glasses",
+     "a cartoon",
+     "a face in close-up",
+     "a close-up shot"
+    ],
+    "subtitles": [],
+    "characters": []
+   }
+  ]
+ }
+]

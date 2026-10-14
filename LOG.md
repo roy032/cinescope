@@ -117,3 +117,58 @@ One entry per week: what I built, what broke, what I would explain in an intervi
 - Filling DIBR holes from the background side is worth +3.5 dB inside the holes.
 - CPU Gaussian splatting: 24.8 dB on held-out frames vs 17.4 dB for a point
   render; actors walking through the shot break the static-scene assumption.
+
+## Weeks 23–24 — scene search and chat with the movie
+
+- Exact, IVF and IVF-PQ search with asymmetric distance, in NumPy: recall
+  matches FAISS, speed is 4–6x lower (Python loops over the lists).
+- The benchmark caught two bugs: lists probed by L2 instead of inner product,
+  and too few k-means samples per centroid.
+- open_clip finds the right shot first for 85% of hand-written queries within
+  a clip, and in the top 5 for 78% with nine clips pooled; misses are fine
+  details about people (clothes, how many, head pose).
+- The from-scratch CLIP-style encoder combines unseen colour-shape pairs but
+  ignores word order, and is at chance on real queries: vocabulary and data,
+  not the method.
+- Chat with the movie: retrieval plus timestamped answers, an LLM optional;
+  the "not found" threshold is the weak part.
+
+## Weeks 9–11 — character timeline and who's talking
+
+- ByteTrack-style face tracker with resets at shot cuts: MOTA 0.978 / IDF1
+  0.989 on goldeneye, against 0.892 / 0.943 for ultralytics' ByteTrack with
+  default settings. Hungarian and MOT metrics match scipy and motmetrics.
+- A self-supervised face embedding trained on only 23 tracks splits people
+  (purity 0.93, pair F1 0.32); SFace clusters goldeneye perfectly. Too little
+  data, not the loss: the triplet loss hit zero early.
+- Hand-built speaking score (voice activity + mouth motion + synchrony): AP
+  0.39 against Light-ASD's 0.92. The audio cue does most of the work;
+  synchrony adds nothing measurable.
+- Decoding long clips grew the heap by about one frame per frame (glibc
+  keeps freed arenas); mmap for large buffers fixed the out-of-memory kills.
+
+## Weeks 21–22 — reading subtitles
+
+- CTC as a log-space alpha recursion matches PyTorch's loss and gradient to
+  1e-10, about 2.5x slower (a Python loop over time steps).
+- The CRNN read synthetic validation lines at 3% CER but real subtitle crops
+  at 68%: training crops were cut at the font's line height, the detector
+  cuts around the ink. Cutting synthetic crops around the ink fixed it.
+- On a busy CPU one PyTorch thread trained 3x faster than two.
+- A subtitle stays still while the picture moves: per-line tracks plus a
+  temporal median give one clean crop per line. Watermarks and screens in the
+  same band are the main remaining error.
+
+## Weeks 5 and 8, finished on public clips
+
+- The teacher's cues are pluggable: open_clip ViT-B-32 when SigLIP is not
+  available, YuNet when there is no CenterNet checkpoint.
+- 66 public-clip shots labelled by eye before any prediction existed.
+  ResNet-18s trained on a CPU in two folds by time: teacher 0.431, students
+  0.176 / 0.137, below the 0.275 majority baseline. With 23–33 training shots
+  per fold the students collapse onto two classes; the result needs the
+  episode-scale shot set, not a different model.
+- Week 8: dark / profile / crowd frames boxed by eye. YuNet face AP50 0.99 /
+  0.98 / 0.61; the crowd loss is box convention (eyebrows vs hairline), not
+  missed faces. YOLOv8n / YOLO11n / RT-DETR-L reach AP50 ≥ 0.93 on people;
+  RT-DETR-L is best at tight IoU in the dark clip and about 5x slower.
