@@ -172,3 +172,16 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   0.98 / 0.61; the crowd loss is box convention (eyebrows vs hairline), not
   missed faces. YOLOv8n / YOLO11n / RT-DETR-L reach AP50 ≥ 0.93 on people;
   RT-DETR-L is best at tight IoU in the dark clip and about 5x slower.
+
+## Weeks 18–20 — pose, action events, scene types
+
+- OKS and keypoint AP from scratch match pycocotools. A SimpleBaseline pose net
+  distilled from YOLOv8n-pose reaches 0.72 AP50 against its teacher on clips
+  like its training clips, and fails on film close-ups it never saw.
+- Pose tracks plus a strike / fall / run detector: macro F1 0.943 on held-out
+  synthetic scenes; on goldeneye 5.1 false strikes per minute, all in close
+  two-shots with jittery keypoints.
+- A ViT and a VideoMAE trained from scratch on a CPU: 0.37 scene-type
+  accuracy against 0.85 for OpenCLIP zero-shot, and below always guessing
+  "dialogue" (0.59). Pre-training beat random init, but a few hundred windows
+  are far too few for a transformer.

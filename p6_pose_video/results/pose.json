@@ -1,0 +1,54 @@
+{
+ "checkpoint": {
+  "steps": 1254,
+  "imagenet_init": true,
+  "n_train_crops": 1765
+ },
+ "teacher_agreement": {
+  "goldeneye": {
+   "AP": 0.02,
+   "AP50": 0.071,
+   "AP75": 0.001,
+   "AR": 0.047,
+   "mean_best_OKS": 0.271,
+   "people": 122,
+   "frames": 83,
+   "ms_per_frame_student": 438.3
+  },
+  "people-detection": {
+   "AP": 0.31,
+   "AP50": 0.72,
+   "AP75": 0.242,
+   "AR": 0.38,
+   "mean_best_OKS": 0.608,
+   "people": 35,
+   "frames": 50,
+   "ms_per_frame_student": 341.5
+  }
+ },
+ "by_eye_goldeneye": {
+  "YOLOv8n-pose (library)": {
+   "AP": 0.293,
+   "AP50": 0.647,
+   "AP75": 0.182,
+   "AR": 0.331,
+   "mean_best_OKS": 0.582,
+   "people": 13,
+   "ms_per_frame": 665.0
+  },
+  "SimpleBaseline (ours) on YOLOv8n boxes": {
+   "AP": 0.087,
+   "AP50": 0.252,
+   "AP75": 0.0,
+   "AR": 0.092,
+   "mean_best_OKS": 0.333,
+   "people": 13,
+   "ms_per_frame": 4186.7
+  },
+  "_n": {
+   "people": 13,
+   "keypoints": 62,
+   "frames": 12
+  }
+ }
+}

@@ -1,0 +1,10 @@
+{
+ "clip": "goldeneye",
+ "how": "Labelled by eye from contact sheets at 2 frames/s over the whole clip (and the three-frames-per-shot sheets), before the event detector was run on it. The clip is a dialogue scene: there are no strikes, falls or running, so it measures false alarms. Hard negatives are listed: fast arm movements with no one to hit.",
+ "events": [],
+ "hard_negatives": [
+  {"t0": 51.1, "t1": 52.6, "what": "a man pumps his fist in celebration (fast arm, alone in frame)"},
+  {"t0": 53.4, "t1": 55.6, "what": "the same man, arm raised, talking"},
+  {"t0": 66.3, "t1": 78.0, "what": "a man climbs out of a hatch in the snow (body moves, no running)"}
+ ]
+}

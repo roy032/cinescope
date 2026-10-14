@@ -1,0 +1,6 @@
+{
+ "clip": "Megamind",
+ "how": "Labelled by eye from p6_pose_video/label_scenes.py sheets (three frames per Phase 0 shot), before any scene classifier was run on this clip.",
+ "shots": {"0": "dialogue", "1": "dialogue", "2": "dialogue", "3": "dialogue"},
+ "notes": {"all": "animated restaurant conversation, shot / reverse shot"}
+}
