@@ -185,3 +185,16 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   accuracy against 0.85 for OpenCLIP zero-shot, and below always guessing
   "dialogue" (0.59). Pre-training beat random init, but a few hundred windows
   are far too few for a transformer.
+
+## Weeks 12–13 — actor cutouts and object removal
+
+- Box-prompted GrabCut on our own max-flow, a U-Net trained on distilled
+  YOLOv8n-seg masks plus exact-mask composites, closed-form matting,
+  Criminisi inpainting and temporal-plate object removal.
+- SAM 2 tiny is the most accurate (0.971 IoU on exact truth) and the slowest
+  (6–9 s a frame on a CPU); our GrabCut reaches 0.914 at 0.2–0.6 s.
+- A unit test exposed GrabCut collapsing to an empty mask on small crops
+  (coarse superpixels on the boundary taught the background model the
+  object's colours); rejecting empty cuts and a superpixel floor fixed it.
+- Borrowing pixels from other frames beats per-frame inpainting by 10–16 dB.
+  Criminisi loses on PSNR to diffusion fills but keeps texture.

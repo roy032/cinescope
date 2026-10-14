@@ -1,0 +1,55 @@
+{
+ "args": {
+  "data": "outputs/p4data",
+  "steps": 1500,
+  "bs": 16,
+  "lr": 0.003,
+  "base": 16,
+  "p_distill": 0.5,
+  "threads": 1,
+  "out": "p4_segmentation/checkpoints/unet_person.pt",
+  "seed": 0,
+  "eval_every": 250
+ },
+ "n_distilled": 357,
+ "n_cutouts": 357,
+ "n_backgrounds": 207,
+ "log": [
+  {
+   "step": 250,
+   "loss": 0.3439,
+   "dev_iou": 0.9077,
+   "minutes": 4.5
+  },
+  {
+   "step": 500,
+   "loss": 0.2335,
+   "dev_iou": 0.9391,
+   "minutes": 8.9
+  },
+  {
+   "step": 750,
+   "loss": 0.1766,
+   "dev_iou": 0.947,
+   "minutes": 14.8
+  },
+  {
+   "step": 1000,
+   "loss": 0.1448,
+   "dev_iou": 0.9609,
+   "minutes": 18.6
+  },
+  {
+   "step": 1250,
+   "loss": 0.1143,
+   "dev_iou": 0.9659,
+   "minutes": 22.3
+  },
+  {
+   "step": 1500,
+   "loss": 0.1072,
+   "dev_iou": 0.9686,
+   "minutes": 25.9
+  }
+ ]
+}

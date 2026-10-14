@@ -1,0 +1,76 @@
+{
+ "clip": "vtest.avi",
+ "start": 30.0,
+ "end": 42.0,
+ "frames": 120,
+ "walker_px_tall": 97,
+ "cutout_from": "one-by-one-person-detection.mp4",
+ "fast walker": {
+  "temporal plate (ours)": {
+   "psnr": 40.35,
+   "ssim": 0.9873,
+   "ms_per_frame": 128.5,
+   "never_seen_px": 0
+  },
+  "temporal plate (ours), Criminisi frames only": {
+   "psnr": 40.57,
+   "ssim": 0.9876
+  },
+  "per-frame cv2 Telea": {
+   "psnr": 23.85,
+   "ssim": 0.8648,
+   "ms_per_frame": 17.0
+  },
+  "per-frame cv2 Navier-Stokes": {
+   "psnr": 23.47,
+   "ssim": 0.8609,
+   "ms_per_frame": 14.8
+  },
+  "per-frame Criminisi (ours), every 10th frame": {
+   "psnr": 24.18,
+   "ssim": 0.8106,
+   "ms_per_frame": 3907.0
+  },
+  "end-to-end: tracked GrabCut masks + plate (ours)": {
+   "psnr": 39.03,
+   "ssim": 0.9793,
+   "ms_per_frame": 426.2,
+   "mask_iou": 0.923,
+   "tracked_by_detection": 0.783
+  }
+ },
+ "slow walker": {
+  "temporal plate (ours)": {
+   "psnr": 30.83,
+   "ssim": 0.942,
+   "ms_per_frame": 93.9,
+   "never_seen_px": 945
+  },
+  "temporal plate (ours), Criminisi frames only": {
+   "psnr": 30.51,
+   "ssim": 0.9406
+  },
+  "per-frame cv2 Telea": {
+   "psnr": 20.67,
+   "ssim": 0.8305,
+   "ms_per_frame": 19.9
+  },
+  "per-frame cv2 Navier-Stokes": {
+   "psnr": 20.12,
+   "ssim": 0.8289,
+   "ms_per_frame": 14.8
+  },
+  "per-frame Criminisi (ours), every 10th frame": {
+   "psnr": 18.68,
+   "ssim": 0.7571,
+   "ms_per_frame": 3938.6
+  },
+  "end-to-end: tracked GrabCut masks + plate (ours)": {
+   "psnr": 29.57,
+   "ssim": 0.93,
+   "ms_per_frame": 435.5,
+   "mask_iou": 0.936,
+   "tracked_by_detection": 0.7
+  }
+ }
+}
