@@ -66,3 +66,46 @@ def asd_crop(rgb: np.ndarray, box: np.ndarray, crop_scale: float = 0.40) -> np.n
         return np.full((112, 112), 110, np.uint8)
     face = cv2.resize(face, (224, 224))
     return cv2.cvtColor(face[56:168, 56:168], cv2.COLOR_RGB2GRAY)
+
+
+def _asd_square(box: np.ndarray, crop_scale: float = 0.40) -> tuple[float, float, float]:
+    """The frame square that asd_crop's final 112x112 covers: (centre x, centre y, side).
+    asd_crop cuts a 2s(1+cs) square whose top is s above the box centre, resizes
+    it to 224 and keeps the middle half: side s(1+cs), centred s*cs below the box centre."""
+    x1, y1, x2, y2 = box
+    bs = max(x2 - x1, y2 - y1) / 2
+    return (x1 + x2) / 2, (y1 + y2) / 2 + bs * crop_scale, bs * (1 + crop_scale)
+
+
+def asd_patch(gray: np.ndarray, box: np.ndarray, size: int = 168, margin: float = 1.5,
+              crop_scale: float = 0.40) -> tuple[np.ndarray, tuple[float, float, float]]:
+    """A grey patch around one detection, big enough to cut asd_crop's square
+    later from a *smoothed* box (the Phase 9 pipeline cuts crops during its one
+    decoding pass, before the tracks -- and so the smoothed boxes -- exist).
+
+    Covers `margin` x the square's side, at size px (168 = 1.5 x 112: the final
+    crop is cut at its native resolution). Returns (patch, (x0, y0, px per frame px))."""
+    import cv2
+
+    cx, cy, side = _asd_square(box, crop_scale)
+    big = side * margin
+    s = size / max(big, 1e-6)
+    x0, y0 = cx - big / 2, cy - big / 2
+    m = np.array([[s, 0, -x0 * s], [0, s, -y0 * s]])
+    patch = cv2.warpAffine(gray, m, (size, size), flags=cv2.INTER_AREA if s < 1 else cv2.INTER_LINEAR,
+                           borderMode=cv2.BORDER_CONSTANT, borderValue=110)
+    return patch, (float(x0), float(y0), float(s))
+
+
+def asd_from_patch(patch: np.ndarray, geom: tuple[float, float, float], box: np.ndarray,
+                   crop_scale: float = 0.40) -> np.ndarray:
+    """asd_crop's 112x112 for `box` (frame coordinates), cut from a stored asd_patch."""
+    import cv2
+
+    x0, y0, s = geom
+    cx, cy, side = _asd_square(box, crop_scale)
+    k = 112 / max(side * s, 1e-6)                 # patch px -> output px
+    px, py = (cx - x0) * s, (cy - y0) * s          # square centre in patch px
+    m = np.array([[k, 0, 56 - px * k], [0, k, 56 - py * k]])
+    return cv2.warpAffine(patch, m, (112, 112), flags=cv2.INTER_LINEAR,
+                          borderMode=cv2.BORDER_CONSTANT, borderValue=110)

@@ -1,0 +1,14 @@
+.git
+.venv
+outputs
+data
+trailers
+**/node_modules
+**/dist
+**/__pycache__
+**/checkpoints
+*.mp4
+*.mkv
+*.avi
+*.mov
+*.pdf
