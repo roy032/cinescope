@@ -1,0 +1,17 @@
+{
+  "tag": "public_f0_scratch",
+  "pretrained": false,
+  "best_epoch": 43,
+  "best_val_acc": 0.8,
+  "epochs": 60,
+  "lr": 0.05,
+  "batch_size": 8,
+  "synthetic": false,
+  "size": [
+    224,
+    384
+  ],
+  "weights": null,
+  "device": "CPU",
+  "finished": "2026-10-13 17:29"
+}

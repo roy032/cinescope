@@ -1,0 +1,22 @@
+{
+  "tag": "public_scratch",
+  "pretrained": false,
+  "epochs": 60,
+  "lr": 0.05,
+  "batch_size": 8,
+  "size": [
+    224,
+    384
+  ],
+  "weights": null,
+  "device": "CPU",
+  "folds": 2,
+  "best_epoch_per_fold": [
+    43,
+    1
+  ],
+  "best_val_acc_vs_teacher_per_fold": [
+    0.8,
+    0.8
+  ]
+}

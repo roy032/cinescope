@@ -87,12 +87,16 @@ by hand. The footage and key frames are never committed.
    time (70/10/20%), so no scene is on both sides.
 2. **Automatic labels** (`autolabel.py`, `cinescope/framing/teacher.py`). Two
    independent cues, fused per shot:
-   - zero-shot image-text matching with SigLIP (so400m), three prompts per class;
-   - the height of the largest face from the Phase 2 detector relative to the
-     frame height, turned into a soft class prior (a Gaussian in log space
-     around each class's typical ratio). Scale is defined by how much of a
-     person the frame shows, so this cue is strong when a face is visible and
-     silent when none is.
+   - zero-shot image-text matching, three prompts per class: SigLIP (so400m)
+     by default; open_clip ViT-B-32-quickgelu from a local LAION-400M file
+     (`--text openclip`, also the automatic fallback when SigLIP cannot be
+     loaded, e.g. without HuggingFace access);
+   - the height of the largest face relative to the frame height, turned into
+     a soft class prior (a Gaussian in log space around each class's typical
+     ratio). Scale is defined by how much of a person the frame shows, so this
+     cue is strong when a face is visible and silent when none is. The face
+     detector is our Phase 2 CenterNet (`--face-ckpt`) or, without a
+     checkpoint, OpenCV's YuNet (`cinescope/detect/yunet.py`).
 3. **Hand-labelled test set.** `label_scales.py` builds a keyboard page with
    300 random shots from the test split; it never shows a prediction, so
    the labels do not lean towards any system. `eval_own.py` scores every cue,
@@ -124,21 +128,79 @@ check the loop on a CPU:
 python p1_cnn/train_framing.py --synthetic --epochs 2 --tag smoke
 ```
 
+### The public-clip run (CPU only)
+
+The whole experiment also runs on the public sample clips, on a CPU, with the
+offline back-ends of both cues (open_clip + YuNet):
+
+```powershell
+python p1_cnn/build_own_shots.py --videos data/public_clips --out data/public_shots --no-zip
+python p1_cnn/label_scales.py --shots data/public_shots/shots.csv --set public --split all  # labelling page
+python p1_cnn/run_public.py      # teacher, 2 folds x 2 inits, predictions, eval_own.py --set public; ~57 min
+python tools/update_results.py
+```
+
+- **Clips**: 19 public videos (the trailers in `trailers/`, Big Buck Bunny,
+  and more of Intel's sample videos for detection demos), cut into 66
+  shots. Most of the sample videos are a single static shot.
+- **Hand labels** (`labels/public_test.labels.json`): all 66 shots, labelled
+  by eye from contact sheets of their three key frames **before the teacher
+  or any network had run** (51 usable; 15 marked *skip*: black frames,
+  kinetic-typography titles). How each borderline case was decided is in the
+  file's note.
+- **2-fold cross-validation by time.** 66 shots are too few for a held-out
+  20%, so each clip is split in two halves by time; fold 0 trains on the
+  second halves and predicts the first, fold 1 the reverse (validation is
+  the 10% of a clip just before its test half, wrapping round to the clip's
+  last 10% for fold 0). Every shot is predicted once, by
+  a network that never saw it.
+- **Hyper-parameters fixed before the run**, not tuned: batch 8, lr 0.01
+  (ImageNet init, 30 epochs) / 0.05 (random init, 60 epochs), 2 warm-up
+  epochs, 224×384, 2 CPU threads.
+- **ImageNet weights**: download.pytorch.org is unreachable from the build
+  machine, so the ImageNet init is timm's ResNet-18 `resnet18_a1_0-d63eafa0.pth`
+  (*ResNet strikes back*, A1 recipe), from the official pytorch-image-models
+  GitHub release `v0.1-rsb-weights`
+  (`github.com/huggingface/pytorch-image-models/releases/download/v0.1-rsb-weights/resnet18_a1_0-d63eafa0.pth`,
+  the URL timm itself uses for `resnet18.a1_in1k`). Its SHA-256 begins with
+  `d63eafa0`, matching the hash in the file name. It uses torchvision's
+  parameter names, so `resnet18(pretrained=True, weights=path)` loads it
+  directly (`train_framing.py --weights`).
+
 ### Results
 
-Shot-level accuracy on the hand-labelled test shots (3 key frames averaged).
-Filled in by `tools/update_results.py`.
+Shot-level accuracy on the hand-labelled test shots (3 key frames averaged;
+95% CI by bootstrap over shots). Filled in by `tools/update_results.py`.
 
 <!-- auto:p1-results -->
 | System | Trained on | Accuracy [95% CI] | Mean class acc. | Train time |
 |---|---|---|---|---|
-| SigLIP zero-shot (prompts only) | nothing | — | — | — |
-| Teacher: prompts + face size | nothing | — | — | — |
-| ResNet-18, ImageNet init | teacher labels, 30 epochs | — | — | — |
-| ResNet-18, random init | teacher labels, 60 epochs | — | — | — |
+| open_clip ViT-B/32 zero-shot (prompts only) | nothing (zero-shot / rule) | 0.412 [0.27–0.55] | 0.379 | — |
+| Face size only (OpenCV YuNet), shots with a face | nothing (zero-shot / rule) | 0.158 [0.00–0.32] | 0.155 | — |
+| Teacher: prompts + face size | nothing (zero-shot / rule) | 0.431 [0.29–0.57] | 0.396 | — |
+| ResNet-18, ImageNet init | teacher labels, 30 epochs, init resnet18_a1_0-d63eafa0.pth | 0.176 [0.08–0.29] | 0.131 | 0.3 h (CPU) |
+| ResNet-18, random init | teacher labels, 60 epochs | 0.137 [0.06–0.24] | 0.100 | 0.5 h (CPU) |
+
+51 hand-labelled shots (public clips, 2-fold by time: each shot predicted by the network that did not train on its half; labels `p1_cnn/labels/public_test.labels.json`); majority-class accuracy 0.275. Face size only is scored on the shots where a face was found. Train time is the sum of the two folds.
 <!-- /auto:p1-results -->
 
-Confusion matrices: `p1_cnn/results/own/confusion_<system>.png`. Expected
+**What the public-clip run shows.** The teacher (0.43) beats the majority
+class (0.27) and its own text cue alone (0.41), but its confidence interval is
+wide: 51 shots. Both students do **worse than the majority class** — they
+collapsed onto the teacher's most frequent labels (the ImageNet-init student
+predicts MS or CS for 65 of 66 shots, the random-init one MS for 49). This is
+a data failure, not a model one: each fold trains on 23–33 shots, and because
+most sample videos are a single shot, a whole clip lands in one half — fold 0
+saw no FS or LS shot at all in training. The validation halves hold 5 shots,
+so "best epoch" is noise (every run peaks at 4/5). The face cue alone is
+weak (0.16 on the 19 shots with a face): it reads 16 of them one class too
+close (CS as ECS, MS as CS). The typical face ratio per class was set by hand,
+not fitted, and is evidently a class off for YuNet's boxes; fitting it on
+training shots (never the test ones) is the obvious next step. The experiment is the pipeline working end to end on a CPU;
+the result that counts needs the hundreds of shots of the episode set.
+
+Confusion matrices: `p1_cnn/results/own/confusion_<system>.png` (public run:
+`p1_cnn/results/public/`). Expected
 confusions are between neighbours on the scale (ECS↔CS, MS↔FS): the classes
 are points on a continuum, and annotators disagree at the boundaries too.
 
