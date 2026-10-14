@@ -1,0 +1,413 @@
+{
+ "n": 51,
+ "distribution": {
+  "ECS": 7,
+  "CS": 13,
+  "MS": 14,
+  "FS": 5,
+  "LS": 12
+ },
+ "teacher": {
+  "text_cue": "open_clip ViT-B/32 (LAION-400M)",
+  "face_cue": "OpenCV YuNet",
+  "w_face": 1.0
+ },
+ "labels": "p1_cnn/labels/public_test.labels.json",
+ "systems": {
+  "text": {
+   "accuracy": 0.4117647058823529,
+   "mean_class_accuracy": 0.37945054945054946,
+   "per_class": {
+    "ECS": 0.14285714285714285,
+    "CS": 0.46153846153846156,
+    "MS": 0.6428571428571429,
+    "FS": 0.4,
+    "LS": 0.25
+   },
+   "confusion": [
+    [
+     1,
+     3,
+     3,
+     0,
+     0
+    ],
+    [
+     2,
+     6,
+     5,
+     0,
+     0
+    ],
+    [
+     0,
+     5,
+     9,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     2,
+     2,
+     0
+    ],
+    [
+     0,
+     1,
+     1,
+     7,
+     3
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "LS",
+     "pred": "FS",
+     "count": 7
+    },
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 5
+    },
+    {
+     "true": "CS",
+     "pred": "MS",
+     "count": 5
+    },
+    {
+     "true": "ECS",
+     "pred": "MS",
+     "count": 3
+    },
+    {
+     "true": "ECS",
+     "pred": "CS",
+     "count": 3
+    }
+   ],
+   "n": 51,
+   "accuracy_ci95": [
+    0.27450980392156865,
+    0.5490196078431373
+   ],
+   "coverage": 1.0,
+   "name": "open_clip ViT-B/32 zero-shot (prompts only)"
+  },
+  "face": {
+   "accuracy": 0.15789473684210525,
+   "mean_class_accuracy": 0.15476190476190477,
+   "per_class": {
+    "ECS": NaN,
+    "CS": 0.14285714285714285,
+    "MS": 0.16666666666666666,
+    "FS": NaN,
+    "LS": NaN
+   },
+   "confusion": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     6,
+     1,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     10,
+     2,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     0,
+     0,
+     0
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 10
+    },
+    {
+     "true": "CS",
+     "pred": "ECS",
+     "count": 6
+    }
+   ],
+   "n": 19,
+   "accuracy_ci95": [
+    0.0,
+    0.3157894736842105
+   ],
+   "coverage": 0.37254901960784315,
+   "name": "Face size only (OpenCV YuNet), shots with a face"
+  },
+  "fused": {
+   "accuracy": 0.43137254901960786,
+   "mean_class_accuracy": 0.39593406593406594,
+   "per_class": {
+    "ECS": 0.14285714285714285,
+    "CS": 0.6153846153846154,
+    "MS": 0.5714285714285714,
+    "FS": 0.4,
+    "LS": 0.25
+   },
+   "confusion": [
+    [
+     1,
+     3,
+     3,
+     0,
+     0
+    ],
+    [
+     2,
+     8,
+     3,
+     0,
+     0
+    ],
+    [
+     0,
+     6,
+     8,
+     0,
+     0
+    ],
+    [
+     0,
+     1,
+     2,
+     2,
+     0
+    ],
+    [
+     0,
+     1,
+     1,
+     7,
+     3
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "LS",
+     "pred": "FS",
+     "count": 7
+    },
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 6
+    },
+    {
+     "true": "ECS",
+     "pred": "MS",
+     "count": 3
+    },
+    {
+     "true": "ECS",
+     "pred": "CS",
+     "count": 3
+    },
+    {
+     "true": "CS",
+     "pred": "MS",
+     "count": 3
+    }
+   ],
+   "n": 51,
+   "accuracy_ci95": [
+    0.29411764705882354,
+    0.5686274509803921
+   ],
+   "coverage": 1.0,
+   "name": "Teacher: prompts + face size"
+  },
+  "pretrained": {
+   "accuracy": 0.17647058823529413,
+   "mean_class_accuracy": 0.13076923076923078,
+   "per_class": {
+    "ECS": 0.0,
+    "CS": 0.15384615384615385,
+    "MS": 0.5,
+    "FS": 0.0,
+    "LS": 0.0
+   },
+   "confusion": [
+    [
+     0,
+     0,
+     7,
+     0,
+     0
+    ],
+    [
+     0,
+     2,
+     11,
+     0,
+     0
+    ],
+    [
+     0,
+     7,
+     7,
+     0,
+     0
+    ],
+    [
+     0,
+     4,
+     1,
+     0,
+     0
+    ],
+    [
+     0,
+     8,
+     3,
+     1,
+     0
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "CS",
+     "pred": "MS",
+     "count": 11
+    },
+    {
+     "true": "LS",
+     "pred": "CS",
+     "count": 8
+    },
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 7
+    },
+    {
+     "true": "ECS",
+     "pred": "MS",
+     "count": 7
+    },
+    {
+     "true": "FS",
+     "pred": "CS",
+     "count": 4
+    }
+   ],
+   "n": 51,
+   "accuracy_ci95": [
+    0.0784313725490196,
+    0.29411764705882354
+   ],
+   "coverage": 1.0,
+   "name": "ResNet-18, ImageNet init"
+  },
+  "scratch": {
+   "accuracy": 0.13725490196078433,
+   "mean_class_accuracy": 0.1,
+   "per_class": {
+    "ECS": 0.0,
+    "CS": 0.0,
+    "MS": 0.5,
+    "FS": 0.0,
+    "LS": 0.0
+   },
+   "confusion": [
+    [
+     0,
+     0,
+     7,
+     0,
+     0
+    ],
+    [
+     0,
+     0,
+     13,
+     0,
+     0
+    ],
+    [
+     0,
+     7,
+     7,
+     0,
+     0
+    ],
+    [
+     1,
+     3,
+     1,
+     0,
+     0
+    ],
+    [
+     4,
+     1,
+     7,
+     0,
+     0
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "CS",
+     "pred": "MS",
+     "count": 13
+    },
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 7
+    },
+    {
+     "true": "LS",
+     "pred": "MS",
+     "count": 7
+    },
+    {
+     "true": "ECS",
+     "pred": "MS",
+     "count": 7
+    },
+    {
+     "true": "LS",
+     "pred": "ECS",
+     "count": 4
+    }
+   ],
+   "n": 51,
+   "accuracy_ci95": [
+    0.058823529411764705,
+    0.23529411764705882
+   ],
+   "coverage": 1.0,
+   "name": "ResNet-18, random init"
+  }
+ }
+}

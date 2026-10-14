@@ -189,25 +189,67 @@ recall on crowd images). The likely suspects and the fix for each:
 ## Week 8 — against production detectors, on movie frames
 
 Three clips that stress detectors differently — **dark**, **profile**,
-**crowd** — about 30 frames each, labelled by hand:
+**crowd** — about 30 frames each, labelled by hand (faces, and the COCO
+classes visible in them: person everywhere, tv in the dark clip):
 
 ```powershell
 python p2_detection/label_boxes.py trailers/your_clip.mp4 --start 300 --seconds 60 --tag dark
 # draw boxes in outputs/boxes_.../index.html, "Download labels", move the JSON to p2_detection/labels/
-python p2_detection/compare_faces.py p2_detection/labels/*.boxes.json --ckpt p2_detection/checkpoints/centernet_r18.pt --yunet models/face_detection_yunet_2023mar.onnx
-pip install ultralytics
-python p2_detection/compare_props.py p2_detection/labels/*.boxes.json --models yolo11n.pt rtdetr-l.pt
+python p2_detection/compare_faces.py p2_detection/labels/*.boxes.json --yunet data/weights/yunet.onnx [--ckpt p2_detection/checkpoints/centernet_r18.pt]
+python p2_detection/compare_props.py p2_detection/labels/*.boxes.json   # yolov8n, yolo11n, rtdetr-l from data/weights
+python tools/update_results.py
 ```
 
-| Faces | dark AP50 | profile AP50 | crowd AP50 | all AP | ms/frame |
-|---|---|---|---|---|---|
-| CenterNet-R18 (ours) | — | — | — | — | — |
-| OpenCV YuNet | — | — | — | — | — |
+The three labelled clips are public: GoldenEye's trailer (43–82 s: low-key
+interiors, a snowy night, a face lit by a match), Intel's head-pose sample
+video (tilts, three-quarter views, full profiles) and Intel's classroom video
+(four people at desks; a small crowd, since no public clip at hand has a big
+one with faces larger than a few pixels). The boxes were drawn **by eye**,
+reading corners off a pixel grid on each frame, before any detector ran on
+these frames, and were not changed afterwards: `labels/README.md` has the
+details and the commands that regenerate the frames.
 
-| Props (COCO classes) | dark AP50 | profile AP50 | crowd AP50 | ms/frame |
-|---|---|---|---|---|
-| YOLO11n | — | — | — | — |
-| RT-DETR-L | — | — | — | — |
+<!-- auto:p2-faces -->
+| Faces | dark AP50 | profile AP50 | crowd AP50 | all AP50 | all AP | ms/frame |
+|---|---|---|---|---|---|---|
+| CenterNet-R18 (ours) | — | — | — | — | — | — |
+| OpenCV YuNet | 0.989 | 0.980 | 0.605 | 0.748 | 0.216 | 43.0 |
+<!-- /auto:p2-faces -->
+
+<!-- auto:p2-props -->
+| Props (COCO classes) | dark AP50 | profile AP50 | crowd AP50 | dark AP | profile AP | crowd AP | ms/frame |
+|---|---|---|---|---|---|---|---|
+| YOLOv8n | 0.933 | 1.000 | 1.000 | 0.662 | 0.990 | 0.850 | 1234.3 |
+| YOLO11n | 0.978 | 1.000 | 0.990 | 0.737 | 1.000 | 0.842 | 1823.9 |
+| RT-DETR-L | 0.977 | 1.000 | 1.000 | 0.780 | 0.995 | 0.866 | 5967.1 |
+<!-- /auto:p2-props -->
+
+AP50 / AP are COCO-style (the week-6 evaluator), per clip; "all" pools the
+three clips. ms/frame is the median over the frames (1280 px wide, warm-up
+excluded) with 2 CPU threads, measured on a 4-core cloud CPU **shared with
+other jobs** (load average about 13 during the runs): compare the rows with
+each other, not with published speeds (the face and prop runs were separate,
+under different loads, so YuNet's 43 ms and YOLO's seconds are not comparable
+either).
+
+- **Our CenterNet row is empty** because its checkpoint is not on the
+  machine that ran this comparison: it was trained on a Kaggle GPU and
+  checkpoints are git-ignored. `compare_faces.py --ckpt` adds the row
+  wherever the checkpoint is.
+- **YuNet finds every crowd face, but AP50 says 0.6.** With score ≥ 0.5,
+  every one of the 124 classroom faces has a YuNet box at IoU ≥ 0.3, yet only
+  75% reach 0.5 (median IoU 0.56). The hand boxes run from the hairline to
+  the chin, as WIDER FACE's do; YuNet's top edge sits a median 15 px lower,
+  around the eyebrows. On faces 50–90 px tall that alone costs the IoU.
+  The low AP@[.5:.95] in every clip is the same mismatch: box conventions,
+  not detections. A detector trained on WIDER FACE (ours) draws the
+  convention the labels use.
+- **Props.** At IoU 0.5 all three models nearly solve all three clips
+  (AP50 ≥ 0.93); they differ at tight IoU and in the dark clip. There
+  RT-DETR-L has the best tv AP (computer monitors, one filling the frame):
+  0.82 against 0.65 (YOLO11n) and 0.48 (YOLOv8n), but the lowest person AP
+  (0.74 against 0.82 and 0.84). It costs about 5× YOLOv8n's time per frame.
+  YOLO11n beats YOLOv8n on the dark clip at about 1.5× the time.
 
 COCO has no "gun" class — the roadmap's example prop. Recognising one needs a
 fine-tuned model, which is exactly the argument for owning a training pipeline.

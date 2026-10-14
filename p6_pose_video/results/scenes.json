@@ -1,0 +1,386 @@
+{
+ "open_clip zero-shot (teacher, library)": {
+  "accuracy": 0.8518518518518519,
+  "n": 27,
+  "per_class": {
+   "dialogue": {
+    "n": 16,
+    "correct": 16
+   },
+   "establishing": {
+    "n": 3,
+    "correct": 0
+   },
+   "text": {
+    "n": 8,
+    "correct": 7
+   }
+  },
+  "confusion": {
+   "dialogue": {
+    "dialogue": 16
+   },
+   "text": {
+    "text": 7,
+    "dialogue": 1
+   },
+   "establishing": {
+    "dialogue": 2,
+    "text": 1
+   }
+  },
+  "agreement_with_teacher": 1.0,
+  "predictions": {
+   "Megamind/0": "dialogue",
+   "Megamind/1": "dialogue",
+   "Megamind/2": "dialogue",
+   "Megamind/3": "dialogue",
+   "goldeneye/0": "text",
+   "goldeneye/1": "text",
+   "goldeneye/2": "dialogue",
+   "goldeneye/3": "text",
+   "goldeneye/4": "dialogue",
+   "goldeneye/5": "text",
+   "goldeneye/6": "text",
+   "goldeneye/7": "dialogue",
+   "goldeneye/8": "text",
+   "goldeneye/9": "dialogue",
+   "goldeneye/10": "text",
+   "goldeneye/11": "dialogue",
+   "goldeneye/12": "dialogue",
+   "goldeneye/13": "dialogue",
+   "goldeneye/14": "dialogue",
+   "goldeneye/15": "dialogue",
+   "goldeneye/16": "dialogue",
+   "goldeneye/17": "dialogue",
+   "goldeneye/18": "dialogue",
+   "goldeneye/19": "dialogue",
+   "goldeneye/20": "action",
+   "goldeneye/21": "dialogue",
+   "goldeneye/22": "dialogue",
+   "goldeneye/23": "text"
+  }
+ },
+ "VideoMAE pre-trained + fine-tuned": {
+  "accuracy": 0.37037037037037035,
+  "n": 27,
+  "per_class": {
+   "dialogue": {
+    "n": 16,
+    "correct": 7
+   },
+   "establishing": {
+    "n": 3,
+    "correct": 0
+   },
+   "text": {
+    "n": 8,
+    "correct": 3
+   }
+  },
+  "confusion": {
+   "dialogue": {
+    "text": 9,
+    "dialogue": 7
+   },
+   "text": {
+    "dialogue": 5,
+    "text": 3
+   },
+   "establishing": {
+    "text": 3
+   }
+  },
+  "agreement_with_teacher": 0.42857142857142855,
+  "predictions": {
+   "Megamind/0": "text",
+   "Megamind/1": "text",
+   "Megamind/2": "text",
+   "Megamind/3": "text",
+   "goldeneye/0": "dialogue",
+   "goldeneye/1": "text",
+   "goldeneye/2": "dialogue",
+   "goldeneye/3": "text",
+   "goldeneye/4": "text",
+   "goldeneye/5": "text",
+   "goldeneye/6": "dialogue",
+   "goldeneye/7": "dialogue",
+   "goldeneye/8": "dialogue",
+   "goldeneye/9": "text",
+   "goldeneye/10": "dialogue",
+   "goldeneye/11": "text",
+   "goldeneye/12": "dialogue",
+   "goldeneye/13": "dialogue",
+   "goldeneye/14": "dialogue",
+   "goldeneye/15": "dialogue",
+   "goldeneye/16": "text",
+   "goldeneye/17": "dialogue",
+   "goldeneye/18": "text",
+   "goldeneye/19": "text",
+   "goldeneye/20": "dialogue",
+   "goldeneye/21": "text",
+   "goldeneye/22": "dialogue",
+   "goldeneye/23": "text"
+  }
+ },
+ "video ViT, random init, fine-tuned": {
+  "accuracy": 0.2222222222222222,
+  "n": 27,
+  "per_class": {
+   "dialogue": {
+    "n": 16,
+    "correct": 3
+   },
+   "establishing": {
+    "n": 3,
+    "correct": 0
+   },
+   "text": {
+    "n": 8,
+    "correct": 3
+   }
+  },
+  "confusion": {
+   "dialogue": {
+    "text": 12,
+    "action": 1,
+    "dialogue": 3
+   },
+   "text": {
+    "action": 2,
+    "text": 3,
+    "dialogue": 3
+   },
+   "establishing": {
+    "text": 2,
+    "dialogue": 1
+   }
+  },
+  "agreement_with_teacher": 0.2857142857142857,
+  "predictions": {
+   "Megamind/0": "text",
+   "Megamind/1": "text",
+   "Megamind/2": "text",
+   "Megamind/3": "text",
+   "goldeneye/0": "action",
+   "goldeneye/1": "text",
+   "goldeneye/2": "text",
+   "goldeneye/3": "text",
+   "goldeneye/4": "text",
+   "goldeneye/5": "text",
+   "goldeneye/6": "dialogue",
+   "goldeneye/7": "text",
+   "goldeneye/8": "dialogue",
+   "goldeneye/9": "text",
+   "goldeneye/10": "dialogue",
+   "goldeneye/11": "text",
+   "goldeneye/12": "action",
+   "goldeneye/13": "action",
+   "goldeneye/14": "text",
+   "goldeneye/15": "dialogue",
+   "goldeneye/16": "text",
+   "goldeneye/17": "dialogue",
+   "goldeneye/18": "text",
+   "goldeneye/19": "dialogue",
+   "goldeneye/20": "text",
+   "goldeneye/21": "text",
+   "goldeneye/22": "dialogue",
+   "goldeneye/23": "text"
+  }
+ },
+ "image ViT ([CLS]) from scratch": {
+  "accuracy": 0.07407407407407407,
+  "n": 27,
+  "per_class": {
+   "dialogue": {
+    "n": 16,
+    "correct": 2
+   },
+   "establishing": {
+    "n": 3,
+    "correct": 0
+   },
+   "text": {
+    "n": 8,
+    "correct": 0
+   }
+  },
+  "confusion": {
+   "dialogue": {
+    "text": 11,
+    "action": 3,
+    "dialogue": 2
+   },
+   "text": {
+    "crowd": 4,
+    "dialogue": 4
+   },
+   "establishing": {
+    "text": 2,
+    "dialogue": 1
+   }
+  },
+  "agreement_with_teacher": 0.14285714285714285,
+  "predictions": {
+   "Megamind/0": "text",
+   "Megamind/1": "text",
+   "Megamind/2": "text",
+   "Megamind/3": "text",
+   "goldeneye/0": "crowd",
+   "goldeneye/1": "dialogue",
+   "goldeneye/2": "action",
+   "goldeneye/3": "dialogue",
+   "goldeneye/4": "text",
+   "goldeneye/5": "dialogue",
+   "goldeneye/6": "dialogue",
+   "goldeneye/7": "action",
+   "goldeneye/8": "crowd",
+   "goldeneye/9": "text",
+   "goldeneye/10": "crowd",
+   "goldeneye/11": "text",
+   "goldeneye/12": "crowd",
+   "goldeneye/13": "dialogue",
+   "goldeneye/14": "action",
+   "goldeneye/15": "dialogue",
+   "goldeneye/16": "text",
+   "goldeneye/17": "text",
+   "goldeneye/18": "text",
+   "goldeneye/19": "dialogue",
+   "goldeneye/20": "text",
+   "goldeneye/21": "text",
+   "goldeneye/22": "text",
+   "goldeneye/23": "text"
+  }
+ },
+ "VideoMAE pre-trained + linear probe": {
+  "accuracy": 0.25925925925925924,
+  "n": 27,
+  "per_class": {
+   "dialogue": {
+    "n": 16,
+    "correct": 5
+   },
+   "establishing": {
+    "n": 3,
+    "correct": 0
+   },
+   "text": {
+    "n": 8,
+    "correct": 2
+   }
+  },
+  "confusion": {
+   "dialogue": {
+    "text": 11,
+    "dialogue": 5
+   },
+   "text": {
+    "dialogue": 6,
+    "text": 2
+   },
+   "establishing": {
+    "text": 3
+   }
+  },
+  "agreement_with_teacher": 0.32142857142857145,
+  "predictions": {
+   "Megamind/0": "text",
+   "Megamind/1": "text",
+   "Megamind/2": "text",
+   "Megamind/3": "text",
+   "goldeneye/0": "dialogue",
+   "goldeneye/1": "text",
+   "goldeneye/2": "dialogue",
+   "goldeneye/3": "text",
+   "goldeneye/4": "text",
+   "goldeneye/5": "dialogue",
+   "goldeneye/6": "dialogue",
+   "goldeneye/7": "dialogue",
+   "goldeneye/8": "dialogue",
+   "goldeneye/9": "text",
+   "goldeneye/10": "dialogue",
+   "goldeneye/11": "dialogue",
+   "goldeneye/12": "dialogue",
+   "goldeneye/13": "text",
+   "goldeneye/14": "text",
+   "goldeneye/15": "dialogue",
+   "goldeneye/16": "text",
+   "goldeneye/17": "dialogue",
+   "goldeneye/18": "text",
+   "goldeneye/19": "text",
+   "goldeneye/20": "dialogue",
+   "goldeneye/21": "text",
+   "goldeneye/22": "text",
+   "goldeneye/23": "text"
+  }
+ },
+ "random-init encoder + linear probe": {
+  "accuracy": 0.18518518518518517,
+  "n": 27,
+  "per_class": {
+   "dialogue": {
+    "n": 16,
+    "correct": 0
+   },
+   "establishing": {
+    "n": 3,
+    "correct": 0
+   },
+   "text": {
+    "n": 8,
+    "correct": 5
+   }
+  },
+  "confusion": {
+   "dialogue": {
+    "text": 16
+   },
+   "text": {
+    "text": 5,
+    "dialogue": 1,
+    "crowd": 2
+   },
+   "establishing": {
+    "text": 3
+   }
+  },
+  "agreement_with_teacher": 0.17857142857142858,
+  "predictions": {
+   "Megamind/0": "text",
+   "Megamind/1": "text",
+   "Megamind/2": "text",
+   "Megamind/3": "text",
+   "goldeneye/0": "text",
+   "goldeneye/1": "text",
+   "goldeneye/2": "text",
+   "goldeneye/3": "text",
+   "goldeneye/4": "text",
+   "goldeneye/5": "text",
+   "goldeneye/6": "dialogue",
+   "goldeneye/7": "text",
+   "goldeneye/8": "crowd",
+   "goldeneye/9": "text",
+   "goldeneye/10": "crowd",
+   "goldeneye/11": "text",
+   "goldeneye/12": "text",
+   "goldeneye/13": "text",
+   "goldeneye/14": "text",
+   "goldeneye/15": "text",
+   "goldeneye/16": "text",
+   "goldeneye/17": "text",
+   "goldeneye/18": "text",
+   "goldeneye/19": "text",
+   "goldeneye/20": "text",
+   "goldeneye/21": "text",
+   "goldeneye/22": "text",
+   "goldeneye/23": "text"
+  }
+ },
+ "_teacher_label_distribution_train": {
+  "dialogue": 247,
+  "action": 63,
+  "establishing": 38,
+  "crowd": 49,
+  "text": 43
+ }
+}

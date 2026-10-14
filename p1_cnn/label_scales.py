@@ -1,12 +1,13 @@
 """Build a keyboard labelling page for the shot-scale test set.
 
     python p1_cnn/label_scales.py            # 300 random shots from the test split
+    python p1_cnn/label_scales.py --shots data/public_shots/shots.csv --set public   # the public-clip set
 
 Writes outputs/label_scales/index.html. Open it in a browser; for each shot
 press 1-5 (ECS, CS, MS, FS, LS), 0 to skip a shot that has no clear subject
 (black, text, a blur), Backspace to go back. "Download labels" saves
-own_test.labels.json; p1_cnn/eval_own.py picks it up from Downloads or from
-p1_cnn/labels/.
+<set>_test.labels.json (own_test.labels.json by default); p1_cnn/eval_own.py
+picks it up from Downloads or from p1_cnn/labels/.
 
 The page never shows what the teacher or the network predicted: the test labels
 must be independent of the systems they score. Progress is kept in the
@@ -17,6 +18,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import os
 import random
 from pathlib import Path
 
@@ -54,7 +56,7 @@ PAGE = """<!doctype html>
 <script>
 const ITEMS = __ITEMS__;
 const NAMES = ["ECS", "CS", "MS", "FS", "LS"];
-const KEY = "cinescope-scale-labels";
+const KEY = "cinescope-scale-labels-__SET__";
 let st = JSON.parse(localStorage.getItem(KEY) || '{"labels":{},"i":0}');
 function save() { localStorage.setItem(KEY, JSON.stringify(st)); }
 function show() {
@@ -80,7 +82,7 @@ function download() {
   const out = {labeller: "human", classes: NAMES, n: ITEMS.length, labels: st.labels};
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([JSON.stringify(out, null, 1)], {type: "application/json"}));
-  a.download = "own_test.labels.json"; a.click();
+  a.download = "__SET___test.labels.json"; a.click();
 }
 show();
 </script></body></html>
@@ -90,21 +92,25 @@ show();
 def main(argv: list[str] | None = None) -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--n", type=int, default=300)
-    ap.add_argument("--split", default="test")
+    ap.add_argument("--shots", default=str(SHOTS), help="shots.csv from build_own_shots.py")
+    ap.add_argument("--set", default="own", help="name of the shot set (labels file <set>_test.labels.json)")
+    ap.add_argument("--split", default="test", help="which split to label; 'all' for every shot (cross-validated sets)")
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--out", default=str(ROOT / "outputs" / "label_scales"))
     args = ap.parse_args(argv)
 
-    with SHOTS.open(encoding="utf-8") as f:
-        rows = [r for r in csv.DictReader(f) if r["split"] == args.split]
+    shots = Path(args.shots)
+    with shots.open(encoding="utf-8") as f:
+        rows = [r for r in csv.DictReader(f) if args.split in ("all", r["split"])]
     random.Random(args.seed).shuffle(rows)
     rows = rows[:args.n]
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    rel = Path("../../data/own_shots")
+    rel = Path(os.path.relpath(shots.parent.resolve(), out.resolve()))
     items = [{"key": f"{r['episode']}/{r['shot']}",
               "frames": [(rel / p).as_posix() for p in r["frames"].split(";")]} for r in rows]
-    (out / "index.html").write_text(PAGE.replace("__ITEMS__", json.dumps(items)), encoding="utf-8")
+    page = PAGE.replace("__ITEMS__", json.dumps(items)).replace("__SET__", args.set)
+    (out / "index.html").write_text(page, encoding="utf-8")
     print(f"{len(items)} {args.split} shots -> {out / 'index.html'}")
 
 

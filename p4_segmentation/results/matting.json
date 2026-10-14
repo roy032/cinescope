@@ -1,0 +1,100 @@
+{
+ "realistic": {
+  "n": 40,
+  "mean_unknown_px": 5456,
+  "alpha": {
+   "binary mask": {
+    "sad": 0.43,
+    "mse": 0.03731,
+    "ms": 0.042
+   },
+   "feathered mask (Gaussian 1.5 px)": {
+    "sad": 0.161,
+    "mse": 0.00798,
+    "ms": 0.299
+   },
+   "closed-form (ours)": {
+    "sad": 0.308,
+    "mse": 0.02097,
+    "ms": 322.103
+   },
+   "pymatting closed-form": {
+    "sad": 0.308,
+    "mse": 0.02098,
+    "ms": 96.39
+   },
+   "pymatting KNN": {
+    "sad": 0.488,
+    "mse": 0.03378,
+    "ms": 856.514
+   },
+   "pymatting LKM": {
+    "sad": 0.545,
+    "mse": 0.06886,
+    "ms": 423.143
+   }
+  },
+  "foreground": {
+   "blur-fusion (ours)": {
+    "mse": 0.02273,
+    "ms": 12.172
+   },
+   "image as F (no estimation)": {
+    "mse": 0.02524
+   },
+   "pymatting ML (multi-level)": {
+    "mse": 0.00995,
+    "ms": 8.858
+   }
+  }
+ },
+ "clean": {
+  "n": 40,
+  "mean_unknown_px": 5456,
+  "alpha": {
+   "binary mask": {
+    "sad": 0.43,
+    "mse": 0.03731,
+    "ms": 0.045
+   },
+   "feathered mask (Gaussian 1.5 px)": {
+    "sad": 0.161,
+    "mse": 0.00798,
+    "ms": 0.362
+   },
+   "closed-form (ours)": {
+    "sad": 0.165,
+    "mse": 0.00408,
+    "ms": 262.466
+   },
+   "pymatting closed-form": {
+    "sad": 0.165,
+    "mse": 0.00408,
+    "ms": 92.468
+   },
+   "pymatting KNN": {
+    "sad": 0.326,
+    "mse": 0.01241,
+    "ms": 775.434
+   },
+   "pymatting LKM": {
+    "sad": 0.342,
+    "mse": 0.01863,
+    "ms": 364.07
+   }
+  },
+  "foreground": {
+   "blur-fusion (ours)": {
+    "mse": 0.00262,
+    "ms": 12.088
+   },
+   "image as F (no estimation)": {
+    "mse": 0.01262
+   },
+   "pymatting ML (multi-level)": {
+    "mse": 0.00111,
+    "ms": 8.802
+   }
+  }
+ }
+}

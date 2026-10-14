@@ -1,0 +1,137 @@
+{
+ "vs_sam2": {
+  "GrabCut (ours)": {
+   "miou": 0.7316,
+   "per_clip": {
+    "goldeneye.mp4": 0.6223,
+    "vtest.avi": 0.7594,
+    "people-detection.mp4": 0.6992
+   },
+   "ms_per_prompt": 215.8,
+   "ms_per_frame": 589.0
+  },
+  "cv2.grabCut": {
+   "miou": 0.7543,
+   "per_clip": {
+    "goldeneye.mp4": 0.6069,
+    "vtest.avi": 0.7944,
+    "people-detection.mp4": 0.6871
+   },
+   "ms_per_prompt": 77.7,
+   "ms_per_frame": 212.2
+  },
+  "U-Net (ours)": {
+   "miou": 0.7092,
+   "per_clip": {
+    "goldeneye.mp4": 0.6985,
+    "vtest.avi": 0.7143,
+    "people-detection.mp4": 0.6834
+   },
+   "ms_per_prompt": 33.4,
+   "ms_per_frame": 91.2
+  },
+  "YOLOv8n-seg": {
+   "miou": 0.8753,
+   "per_clip": {
+    "goldeneye.mp4": 0.9068,
+    "vtest.avi": 0.8643,
+    "people-detection.mp4": 0.9126
+   },
+   "ms_per_prompt": 71.4,
+   "ms_per_frame": 194.8
+  },
+  "MobileSAM": {
+   "miou": 0.9198,
+   "per_clip": {
+    "goldeneye.mp4": 0.9248,
+    "vtest.avi": 0.9183,
+    "people-detection.mp4": 0.9233
+   },
+   "ms_per_prompt": 1405.0,
+   "ms_per_frame": 3835.4
+  },
+  "SAM 2 tiny": {
+   "miou": 1.0,
+   "per_clip": {
+    "goldeneye.mp4": 1.0,
+    "vtest.avi": 1.0,
+    "people-detection.mp4": 1.0
+   },
+   "ms_per_prompt": 2201.9,
+   "ms_per_frame": 6010.6
+  }
+ },
+ "exact": {
+  "GrabCut (ours)": {
+   "miou": 0.9141,
+   "median_iou": 0.9551,
+   "iou_below_0.5": 2,
+   "per_source_clip": {
+    "goldeneye.mp4": 0.9617,
+    "people-detection.mp4": 0.9553,
+    "vtest.avi": 0.8988
+   },
+   "ms_per_frame": 215.1
+  },
+  "cv2.grabCut": {
+   "miou": 0.9498,
+   "median_iou": 0.9572,
+   "iou_below_0.5": 0,
+   "per_source_clip": {
+    "goldeneye.mp4": 0.9543,
+    "people-detection.mp4": 0.9594,
+    "vtest.avi": 0.9479
+   },
+   "ms_per_frame": 72.0
+  },
+  "U-Net (ours)": {
+   "miou": 0.7555,
+   "median_iou": 0.7715,
+   "iou_below_0.5": 1,
+   "per_source_clip": {
+    "goldeneye.mp4": 0.7735,
+    "people-detection.mp4": 0.7813,
+    "vtest.avi": 0.7489
+   },
+   "ms_per_frame": 33.7
+  },
+  "YOLOv8n-seg": {
+   "miou": 0.7784,
+   "median_iou": 0.9172,
+   "iou_below_0.5": 9,
+   "per_source_clip": {
+    "goldeneye.mp4": 0.8669,
+    "people-detection.mp4": 0.4171,
+    "vtest.avi": 0.7889
+   },
+   "ms_per_frame": 154.3
+  },
+  "MobileSAM": {
+   "miou": 0.964,
+   "median_iou": 0.9675,
+   "iou_below_0.5": 0,
+   "per_source_clip": {
+    "goldeneye.mp4": 0.9844,
+    "people-detection.mp4": 0.9561,
+    "vtest.avi": 0.9598
+   },
+   "ms_per_frame": 4590.2
+  },
+  "SAM 2 tiny": {
+   "miou": 0.9708,
+   "median_iou": 0.9756,
+   "iou_below_0.5": 0,
+   "per_source_clip": {
+    "goldeneye.mp4": 0.9878,
+    "people-detection.mp4": 0.9586,
+    "vtest.avi": 0.9678
+   },
+   "ms_per_frame": 8919.0
+  }
+ },
+ "n_frames": 37,
+ "n_prompts": 101,
+ "n_composites": 60,
+ "n_cutouts": 101,
+ "threads": 1
+}

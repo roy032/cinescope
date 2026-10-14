@@ -4,6 +4,8 @@ detector, save three key frames per shot, and split by video.
 
     python p1_cnn/build_own_shots.py --search path/to/videos   # find, copy, cut, zip
     python p1_cnn/build_own_shots.py --videos data/episodes    # videos already in place
+    python p1_cnn/build_own_shots.py --videos data/public_clips --out data/public_shots \
+        --test-frac 0.4 --no-zip                                # the public-clip set (see README)
 
 Files named like a series episode ("Show.Name.S02E07...", "Show Name 2x07") are
 grouped by show; any other file is a group of its own.
@@ -23,7 +25,7 @@ Splits are by video, never by shot: neighbouring shots of one scene look
 alike, and a shot-level split would leak the test set into training. Per show,
 the last episode is test and the one before it validation; a show with fewer
 than three episodes, or a single film or clip, is split by time instead
-(first 70% / next 10% / last 20%).
+(first 70% / next 10% / last 20%; --val-frac / --test-frac change the last two).
 
 Decoding is one pass per episode: frames are kept at 160 px for the cut
 detector and every 6th frame is JPEG-encoded in memory at 448 px, so the key
@@ -127,7 +129,7 @@ def copy_in(videos: list[Path], dest: Path) -> list[Path]:
     return out
 
 
-def process_episode(video: str, ep: str) -> dict:
+def process_episode(video: str, ep: str, out: Path = OUT) -> dict:
     """Cut one episode into shots and write its key frames. Runs in a worker process."""
     from PIL import Image
 
@@ -155,7 +157,7 @@ def process_episode(video: str, ep: str) -> dict:
     transitions = cuts.detect_transitions(feat)
     shots = cuts.shots_from_transitions(transitions, len(feat), feat.times)
 
-    frame_dir = OUT / "frames" / ep
+    frame_dir = out / "frames" / ep
     frame_dir.mkdir(parents=True, exist_ok=True)
     rows = []
     for s in shots:
@@ -168,19 +170,25 @@ def process_episode(video: str, ep: str) -> dict:
         rel = []
         for k, i in enumerate(picks):
             name = f"frames/{ep}/{s.index:04d}_{k}.jpg"
-            (OUT / name).write_bytes(kept[i])
+            (out / name).write_bytes(kept[i])
             rel.append(name)
         rows.append({"shot": f"{s.index:04d}", "start": s.start, "end": s.end,
                      "t0": round(s.t0, 3), "t1": round(s.t1, 3), "frames": rel})
     info = {"episode": ep, "show": show_of(Path(video)) or ep, "video": str(video), "fps": fps, "n_frames": len(feat),
             "n_shots_detected": len(shots), "shots": rows, "seconds": round(time.time() - t0, 1)}
-    (OUT / "episodes").mkdir(parents=True, exist_ok=True)
-    (OUT / "episodes" / f"{ep}.json").write_text(json.dumps(info), encoding="utf-8")
+    (out / "episodes").mkdir(parents=True, exist_ok=True)
+    (out / "episodes" / f"{ep}.json").write_text(json.dumps(info), encoding="utf-8")
     return info
 
 
-def assign_splits(episodes: list[dict]) -> dict[tuple[str, str], str]:
-    """(episode, shot) -> split. By episode per show; by time within a show with < 3 episodes."""
+def assign_splits(episodes: list[dict], val_frac: float = 0.1, test_frac: float = 0.2,
+                  fold: int | None = None, folds: int = 2) -> dict[tuple[str, str], str]:
+    """(episode, shot) -> split. By episode per show; by time within a show with < 3 episodes.
+
+    With `fold` set, a time-split video is cut into `folds` equal time bands instead:
+    band `fold` is test, the `val_frac` of the clip just before it (wrapping round) is
+    validation, the rest train. Running every fold scores every shot exactly once with a
+    model that never saw it — the way to get a usable test set out of a few short clips."""
     split: dict[tuple[str, str], str] = {}
     by_show: dict[str, list[dict]] = {}
     for e in episodes:
@@ -197,7 +205,13 @@ def assign_splits(episodes: list[dict]) -> dict[tuple[str, str], str]:
                 dur = max(s["t1"] for s in e["shots"]) if e["shots"] else 1.0
                 for s in e["shots"]:
                     f = s["t0"] / dur
-                    split[(e["episode"], s["shot"])] = "train" if f < 0.7 else "val" if f < 0.8 else "test"
+                    if fold is not None:
+                        lo, hi = fold / folds, (fold + 1) / folds
+                        r = "test" if lo <= f < hi else "val" if 0 < (lo - f) % 1 <= val_frac else "train"
+                    else:
+                        tr = 1 - val_frac - test_frac
+                        r = "train" if f < tr else "val" if f < tr + val_frac else "test"
+                    split[(e["episode"], s["shot"])] = r
     return split
 
 
@@ -211,13 +225,19 @@ def main(argv: list[str] | None = None) -> None:
                     help="skip finding and cutting: rebuild shots.csv and the zip from every cut episode")
     ap.add_argument("--max-width", type=int, default=1920, help="skip videos wider than this (4K/HDR)")
     ap.add_argument("--workers", type=int, default=max(1, min(3, (os.cpu_count() or 2) // 2)))
+    ap.add_argument("--out", default=str(OUT), help="dataset folder (frames/, episodes/, shots.csv)")
+    ap.add_argument("--val-frac", type=float, default=0.1, help="time-split videos: share of validation")
+    ap.add_argument("--test-frac", type=float, default=0.2, help="time-split videos: share of test (the end)")
+    ap.add_argument("--no-zip", action="store_true", help="do not build the Kaggle zip")
     args = ap.parse_args(argv)
+    out = Path(args.out)
+    packer = {"out": out, "val_frac": args.val_frac, "test_frac": args.test_frac, "zip_it": not args.no_zip}
 
     if args.pack_only:
-        ids = sorted(p.stem for p in (OUT / "episodes").glob("*.json"))
+        ids = sorted(p.stem for p in (out / "episodes").glob("*.json"))
         if not ids:
-            sys.exit(f"no cut videos in {OUT / 'episodes'}")
-        pack(ids)
+            sys.exit(f"no cut videos in {out / 'episodes'}")
+        pack(ids, **packer)
         return
     if args.search:
         found = find_videos(Path(args.search), args.min_mb)
@@ -238,26 +258,27 @@ def main(argv: list[str] | None = None) -> None:
     ids = [episode_id(v) for v in videos]
     if len(set(ids)) != len(ids):
         ids = [f"{i}_{n}" for n, i in enumerate(ids)]
-    todo = [(str(v), e) for v, e in zip(videos, ids, strict=True) if not (OUT / "episodes" / f"{e}.json").exists()]
+    todo = [(str(v), e) for v, e in zip(videos, ids, strict=True) if not (out / "episodes" / f"{e}.json").exists()]
     print(f"{len(videos)} videos, {len(videos) - len(todo)} already cut, {len(todo)} to do "
           f"({args.workers} in parallel; roughly 5-15 minutes each)", flush=True)
     with ProcessPoolExecutor(args.workers) as pool:
-        futs = {pool.submit(process_episode, v, e): e for v, e in todo}
+        futs = {pool.submit(process_episode, v, e, out): e for v, e in todo}
         for f in as_completed(futs):
             info = f.result()
             print(f"  {info['episode']}: {len(info['shots'])} shots kept of {info['n_shots_detected']} "
                   f"({info['seconds'] / 60:.1f} min)", flush=True)
 
-    pack(ids)
+    pack(ids, **packer)
 
 
-def pack(ids: list[str]) -> None:
+def pack(ids: list[str], out: Path = OUT, val_frac: float = 0.1, test_frac: float = 0.2,
+         zip_it: bool = True) -> None:
     """shots.csv (with the episode-level splits) and the zip for Kaggle, from the cut episodes."""
-    episodes = [json.loads((OUT / "episodes" / f"{e}.json").read_text(encoding="utf-8")) for e in ids]
+    episodes = [json.loads((out / "episodes" / f"{e}.json").read_text(encoding="utf-8")) for e in ids]
     for e in episodes:
         e.setdefault("show", show_of(Path(e["video"])) or e["episode"])
-    split = assign_splits(episodes)
-    with (OUT / "shots.csv").open("w", newline="", encoding="utf-8") as f:
+    split = assign_splits(episodes, val_frac, test_frac)
+    with (out / "shots.csv").open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["split", "episode", "shot", "start", "end", "frames"])
         for e in episodes:
@@ -268,17 +289,19 @@ def pack(ids: list[str]) -> None:
     for v in split.values():
         counts[v] = counts.get(v, 0) + 1
     print(f"shots.csv: {sum(counts.values())} shots {counts}")
+    if not zip_it:
+        return
 
     zdir = ROOT / "kaggle_upload" / "dataset-own"
     zdir.mkdir(parents=True, exist_ok=True)
     zpath = zdir / "own_shots.zip"
     tmp = zdir / "own_shots.zip.part"
     with zipfile.ZipFile(tmp, "w", zipfile.ZIP_STORED) as z:
-        z.write(OUT / "shots.csv", "shots.csv")
+        z.write(out / "shots.csv", "shots.csv")
         for e in episodes:
             for s in e["shots"]:
                 for rel in s["frames"]:
-                    z.write(OUT / rel, rel)
+                    z.write(out / rel, rel)
     tmp.replace(zpath)
     print(f"wrote {zpath} ({zpath.stat().st_size / 1e6:.0f} MB)")
 

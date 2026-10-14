@@ -1,0 +1,14 @@
+{
+ "static_camera": true,
+ "max_shift_px": 0.14,
+ "mode": "temporal plate",
+ "never_seen_px": 0,
+ "masked_px": 5030,
+ "frames": 30,
+ "context_frames": 160,
+ "segmenter": "grabcut",
+ "tracked_by_detection": 0.968,
+ "track_seg_s": 72.6,
+ "fill_s": 31.0,
+ "ms_per_frame": 545.6
+}

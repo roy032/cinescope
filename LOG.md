@@ -158,3 +158,43 @@ One entry per week: what I built, what broke, what I would explain in an intervi
 - A subtitle stays still while the picture moves: per-line tracks plus a
   temporal median give one clean crop per line. Watermarks and screens in the
   same band are the main remaining error.
+
+## Weeks 5 and 8, finished on public clips
+
+- The teacher's cues are pluggable: open_clip ViT-B-32 when SigLIP is not
+  available, YuNet when there is no CenterNet checkpoint.
+- 66 public-clip shots labelled by eye before any prediction existed.
+  ResNet-18s trained on a CPU in two folds by time: teacher 0.431, students
+  0.176 / 0.137, below the 0.275 majority baseline. With 23–33 training shots
+  per fold the students collapse onto two classes; the result needs the
+  episode-scale shot set, not a different model.
+- Week 8: dark / profile / crowd frames boxed by eye. YuNet face AP50 0.99 /
+  0.98 / 0.61; the crowd loss is box convention (eyebrows vs hairline), not
+  missed faces. YOLOv8n / YOLO11n / RT-DETR-L reach AP50 ≥ 0.93 on people;
+  RT-DETR-L is best at tight IoU in the dark clip and about 5x slower.
+
+## Weeks 18–20 — pose, action events, scene types
+
+- OKS and keypoint AP from scratch match pycocotools. A SimpleBaseline pose net
+  distilled from YOLOv8n-pose reaches 0.72 AP50 against its teacher on clips
+  like its training clips, and fails on film close-ups it never saw.
+- Pose tracks plus a strike / fall / run detector: macro F1 0.943 on held-out
+  synthetic scenes; on goldeneye 5.1 false strikes per minute, all in close
+  two-shots with jittery keypoints.
+- A ViT and a VideoMAE trained from scratch on a CPU: 0.37 scene-type
+  accuracy against 0.85 for OpenCLIP zero-shot, and below always guessing
+  "dialogue" (0.59). Pre-training beat random init, but a few hundred windows
+  are far too few for a transformer.
+
+## Weeks 12–13 — actor cutouts and object removal
+
+- Box-prompted GrabCut on our own max-flow, a U-Net trained on distilled
+  YOLOv8n-seg masks plus exact-mask composites, closed-form matting,
+  Criminisi inpainting and temporal-plate object removal.
+- SAM 2 tiny is the most accurate (0.971 IoU on exact truth) and the slowest
+  (6–9 s a frame on a CPU); our GrabCut reaches 0.914 at 0.2–0.6 s.
+- A unit test exposed GrabCut collapsing to an empty mask on small crops
+  (coarse superpixels on the boundary taught the background model the
+  object's colours); rejecting empty cuts and a superpixel floor fixed it.
+- Borrowing pixels from other frames beats per-frame inpainting by 10–16 dB.
+  Criminisi loses on PSNR to diffusion fills but keeps texture.

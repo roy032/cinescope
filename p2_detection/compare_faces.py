@@ -28,24 +28,30 @@ from cinescope.detect.coco_eval import COCOEvaluator  # noqa: E402
 HERE = Path(__file__).resolve().parent
 
 
+def set_threads(n: int) -> None:
+    """Pin torch and OpenCV to `n` threads so ms/frame is comparable between runs and machines."""
+    import cv2
+
+    cv2.setNumThreads(n)
+    try:
+        import torch
+
+        torch.set_num_threads(n)
+    except ImportError:
+        pass
+
+
 class YuNet:
     name = "OpenCV YuNet"
 
     def __init__(self, model: str, score: float = 0.05):
-        import cv2
+        from cinescope.detect.yunet import YuNet as _YuNet
 
-        self.cv2, self.model, self.score = cv2, model, score
-        self.det = None
+        self.det = _YuNet(model, score=score)
 
     def __call__(self, rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
-        h, w = rgb.shape[:2]
-        if self.det is None:
-            self.det = self.cv2.FaceDetectorYN.create(self.model, "", (w, h), self.score, 0.3, 5000)
-        self.det.setInputSize((w, h))
-        _, faces = self.det.detect(self.cv2.cvtColor(rgb, self.cv2.COLOR_RGB2BGR))
-        if faces is None:
-            return np.zeros((0, 4)), np.zeros(0)
-        return faces[:, :4].astype(np.float64), faces[:, 14].astype(np.float64)       # xywh, score
+        b, s = self.det(rgb)
+        return np.c_[b[:, :2], b[:, 2:] - b[:, :2]], s                     # xywh, score
 
 
 class Ours:
@@ -99,7 +105,9 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--ckpt", help="our CenterNet checkpoint")
     ap.add_argument("--yunet", help="path to face_detection_yunet_*.onnx")
     ap.add_argument("--out", default=str(HERE / "results"))
+    ap.add_argument("--threads", type=int, default=2, help="CPU threads (timings are per frame at this count)")
     args = ap.parse_args(argv)
+    set_threads(args.threads)
 
     clips = []
     for p in args.labels:
