@@ -158,3 +158,17 @@ One entry per week: what I built, what broke, what I would explain in an intervi
 - A subtitle stays still while the picture moves: per-line tracks plus a
   temporal median give one clean crop per line. Watermarks and screens in the
   same band are the main remaining error.
+
+## Weeks 5 and 8, finished on public clips
+
+- The teacher's cues are pluggable: open_clip ViT-B-32 when SigLIP is not
+  available, YuNet when there is no CenterNet checkpoint.
+- 66 public-clip shots labelled by eye before any prediction existed.
+  ResNet-18s trained on a CPU in two folds by time: teacher 0.431, students
+  0.176 / 0.137, below the 0.275 majority baseline. With 23–33 training shots
+  per fold the students collapse onto two classes; the result needs the
+  episode-scale shot set, not a different model.
+- Week 8: dark / profile / crowd frames boxed by eye. YuNet face AP50 0.99 /
+  0.98 / 0.61; the crowd loss is box convention (eyebrows vs hairline), not
+  missed faces. YOLOv8n / YOLO11n / RT-DETR-L reach AP50 ≥ 0.93 on people;
+  RT-DETR-L is best at tight IoU in the dark clip and about 5x slower.

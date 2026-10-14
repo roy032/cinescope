@@ -95,21 +95,30 @@ class ResNet(nn.Module):
         return self.fc(self.dropout(self.features(x)))
 
 
-def resnet18(num_classes: int = 1000, pretrained: bool = False, **kw) -> ResNet:
+def resnet18(num_classes: int = 1000, pretrained: bool = False, weights: str | None = None, **kw) -> ResNet:
     model = ResNet((2, 2, 2, 2), num_classes=num_classes, **kw)
     if pretrained:
-        load_imagenet_weights(model)
+        load_imagenet_weights(model, weights)
     return model
 
 
-def load_imagenet_weights(model: ResNet) -> list[str]:
-    """Copy torchvision's ImageNet ResNet-18 weights into `model`, except the
-    classifier when the number of classes differs. Returns the skipped keys.
-    The weights are downloaded once by torchvision into its cache."""
-    from torchvision.models import ResNet18_Weights
-    from torchvision.models import resnet18 as tv_resnet18
+def load_imagenet_weights(model: ResNet, path: str | None = None) -> list[str]:
+    """Copy ImageNet ResNet-18 weights into `model`, except the classifier when
+    the number of classes differs. Returns the skipped keys.
 
-    state = tv_resnet18(weights=ResNet18_Weights.IMAGENET1K_V1).state_dict()
+    Without `path`, torchvision's IMAGENET1K_V1 weights (downloaded once into its
+    cache). With `path`, any state dict that uses torchvision's parameter names,
+    e.g. timm's `resnet18_a1_0-d63eafa0.pth` (ResNet strikes back, A1 recipe),
+    published as a GitHub release of pytorch-image-models — useful where
+    download.pytorch.org is unreachable."""
+    if path:
+        state = torch.load(path, map_location="cpu", weights_only=True)
+        state = state.get("state_dict", state.get("model", state))
+    else:
+        from torchvision.models import ResNet18_Weights
+        from torchvision.models import resnet18 as tv_resnet18
+
+        state = tv_resnet18(weights=ResNet18_Weights.IMAGENET1K_V1).state_dict()
     own = model.state_dict()
     skipped = [k for k, v in state.items() if k not in own or own[k].shape != v.shape]
     for k in skipped:

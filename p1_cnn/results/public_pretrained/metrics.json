@@ -1,0 +1,22 @@
+{
+  "tag": "public_pretrained",
+  "pretrained": true,
+  "epochs": 30,
+  "lr": 0.01,
+  "batch_size": 8,
+  "size": [
+    224,
+    384
+  ],
+  "weights": "data/weights/resnet18_a1_0-d63eafa0.pth",
+  "device": "CPU",
+  "folds": 2,
+  "best_epoch_per_fold": [
+    7,
+    2
+  ],
+  "best_val_acc_vs_teacher_per_fold": [
+    0.8,
+    0.8
+  ]
+}

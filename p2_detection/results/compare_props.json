@@ -1,0 +1,83 @@
+{
+  "yolov8n.pt": {
+    "clips": {
+      "goldeneye_dark": {
+        "AP": 0.6618,
+        "AP50": 0.9327,
+        "per_class_AP": {
+          "person": 0.8419,
+          "tv": 0.4818
+        }
+      },
+      "head-pose-face-detection-female-and-male_profile": {
+        "AP": 0.9902,
+        "AP50": 1.0,
+        "per_class_AP": {
+          "person": 0.9902
+        }
+      },
+      "classroom_crowd": {
+        "AP": 0.8497,
+        "AP50": 1.0,
+        "per_class_AP": {
+          "person": 0.8497
+        }
+      }
+    },
+    "ms_per_frame": 1234.3
+  },
+  "yolo11n.pt": {
+    "clips": {
+      "goldeneye_dark": {
+        "AP": 0.7366,
+        "AP50": 0.9782,
+        "per_class_AP": {
+          "person": 0.819,
+          "tv": 0.6541
+        }
+      },
+      "head-pose-face-detection-female-and-male_profile": {
+        "AP": 1.0,
+        "AP50": 1.0,
+        "per_class_AP": {
+          "person": 1.0
+        }
+      },
+      "classroom_crowd": {
+        "AP": 0.8416,
+        "AP50": 0.9897,
+        "per_class_AP": {
+          "person": 0.8416
+        }
+      }
+    },
+    "ms_per_frame": 1823.9
+  },
+  "rtdetr-l.pt": {
+    "clips": {
+      "goldeneye_dark": {
+        "AP": 0.7805,
+        "AP50": 0.9767,
+        "per_class_AP": {
+          "person": 0.7392,
+          "tv": 0.8218
+        }
+      },
+      "head-pose-face-detection-female-and-male_profile": {
+        "AP": 0.9945,
+        "AP50": 1.0,
+        "per_class_AP": {
+          "person": 0.9945
+        }
+      },
+      "classroom_crowd": {
+        "AP": 0.8664,
+        "AP50": 1.0,
+        "per_class_AP": {
+          "person": 0.8664
+        }
+      }
+    },
+    "ms_per_frame": 5967.1
+  }
+}

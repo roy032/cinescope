@@ -27,8 +27,8 @@ My own implementation is how I learn the idea. The comparison with the library g
 | Phase | Weeks | Feature | CV area | Status |
 |---|---|---|---|---|
 | [0](p0_classical/) | 1–3 | Shot cuts, camera moves, color palettes | Classical CV | Built; scored on public clips |
-| [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | Built; trains on any videos (auto-labelled, hand-labelled test) |
-| [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | Trained on WIDER FACE; hand-labelled clip test pending |
+| [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | Built; runs end to end on public clips on a CPU (hand-labelled test); the episode-scale run is pending |
+| [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | Trained on WIDER FACE; production detectors scored on hand-labelled dark/profile/crowd frames; our detector there pending (checkpoint not on the build machine) |
 | [3](p3_tracking/) | 9–11 | Character timeline, who's talking | Tracking, metric learning, audio-visual | Built; scored on hand-labelled public clips |
 | [4](p4_segmentation/) | 12–13 | Actor cutouts, object removal | Segmentation, matting, inpainting | Planned |
 | [5](p5_3d/) | 14–17 | Camera path, 2D→3D, set fly-through | Calibration, SfM, depth, Gaussian splatting | Built; scored on synthetic ground truth and public clips |
@@ -44,8 +44,9 @@ Filled in as each phase ships.
 | Phase | Metric | From scratch | Library baseline |
 |---|---|---|---|
 | 0 | Shot-cut F1 (public clips) | 0.945 | 0.960 (PySceneDetect) |
-| 1 | Shot-framing accuracy (hand-labelled test episodes) | — | — |
+| 1 | Shot-framing accuracy (hand-labelled public-clip shots, n=51) | 0.176 (ResNet-18, ImageNet init) · 0.137 (random init) | 0.431 (teacher: open_clip + YuNet) |
 | 2 | Face AP (WIDER FACE Easy / Medium / Hard) | 0.593 / 0.726 / 0.792 | — |
+| 2 | Face AP50 on hand-labelled clip frames (dark / profile / crowd) | — (checkpoint not on the build machine) | 0.989 / 0.980 / 0.605 (YuNet) |
 | 3 | Character clustering purity / pair F1 (goldeneye, 8 people) | 0.93 / 0.32 (self-supervised triplet; 15 clusters) | 1.00 / 1.00 (SFace; 8 clusters) |
 | 4 | Mask IoU / speed vs. SAM 2 | — | — |
 | 5 | SfM reprojection error (px), on the public-clip shots both reconstruct | 0.27 (3 of 12 shots) | 0.68 (COLMAP; 10 of 12 shots) |
