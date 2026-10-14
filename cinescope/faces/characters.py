@@ -73,7 +73,7 @@ def character_timeline(video: str | Path, out_dir: str | Path, detector: str = "
         cuts = shot_starts(video)
         sp.write_text(json.dumps({"video": video, "starts": cuts}))
     tracks = track_clip(dets, cuts)
-    fps, times = dets.fps, dets.times
+    fps = dets.fps
     tracks = [t for t in tracks if len(t) >= min_track_s * fps and np.mean(t.scores) >= min_score]
     cc = out / f"crops_{detector}_timeline.npz"
     if cc.exists():
@@ -84,9 +84,27 @@ def character_timeline(video: str | Path, out_dir: str | Path, detector: str = "
         crops = extract_crops(video, dets, tracks, max_rgb=24)
         save_crops(cc, crops)
     log(f"  {len(dets.frames)} frames, {len(cuts)} shots, {len(crops)} tracks kept")
+    return timeline_from_crops(video, dets.times, dets.fps, cuts, crops, detector=detector, embedder=embedder,
+                               embed_ckpt=embed_ckpt, asd=asd, speak_threshold=speak_threshold)
+
+
+def timeline_from_crops(video: str, times: np.ndarray, fps: float, cuts: list[int], crops: list[TrackCrops],
+                        detector: str = "yunet", embedder: str = "ours", embed_ckpt: str | None = None,
+                        asd: str = "ours", speak_threshold: float | None = None, emb=None,
+                        asd_model=None, speak: dict | None = None) -> dict:
+    """Identities and speaking from finished track crops. The second half of
+    character_timeline, separate so the Phase 9 pipeline (which cuts the crops
+    during its single decoding pass) can share it. `emb` / `asd_model`:
+    ready-made embedder (crops -> unit vectors) and Light-ASD object, e.g. ONNX-backed;
+    `speak`: per-track speaking scores computed elsewhere ({track id: (T,) scores})."""
+
+    if not crops:                       # no face tracked long enough (e.g. a clip without people)
+        return {"video": video, "fps": fps, "duration_s": round(float(times[-1] + 1 / fps), 2) if len(times) else 0,
+                "detector": detector, "embedder": embedder, "asd": asd, "cluster_threshold": None,
+                "n_shots": len(cuts), "n_tracks": 0, "characters": [], "tracks": [], "_thumbs": []}
 
     # ---- identities
-    emb = _embedder(embedder, embed_ckpt)
+    emb = emb or _embedder(embedder, embed_ckpt)
     E, same = [], []
     for c in crops:
         e = emb(c.rgb)
@@ -104,7 +122,8 @@ def character_timeline(video: str | Path, out_dir: str | Path, detector: str = "
     labels = agglomerative(D, thr, cannot_link=cl)
 
     # ---- who is talking
-    speak = _speaking(video, crops, times, fps, asd)
+    if speak is None:
+        speak = _speaking(video, crops, times, fps, asd, asd_model)
     if speak_threshold is None:
         speak_threshold = 0.25 if asd == "ours" else 0.0
 
@@ -145,7 +164,8 @@ def chars_id(chars: list[dict], track_id: int) -> str:
     return ""
 
 
-def _speaking(video: str, crops: list[TrackCrops], times: np.ndarray, fps: float, kind: str) -> dict:
+def _speaking(video: str, crops: list[TrackCrops], times: np.ndarray, fps: float, kind: str,
+              model=None) -> dict:
     from ..speaker.audio import load_audio, vad
 
     audio = load_audio(video)
@@ -154,7 +174,7 @@ def _speaking(video: str, crops: list[TrackCrops], times: np.ndarray, fps: float
     if kind == "lightasd":
         from ..speaker.lightasd import LightASD
 
-        m = LightASD()
+        m = model or LightASD()
         return {c.track.id: m.score(c.asd, times[np.asarray(c.track.frames)], audio) for c in crops}
     from ..speaker.active import score_track
 

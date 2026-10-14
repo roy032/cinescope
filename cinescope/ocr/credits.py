@@ -92,56 +92,76 @@ class CreditsReader:
         self.p = params or CreditsParams()
 
     def run(self, frames: Iterable[tuple[float, np.ndarray]]) -> list[dict]:
-        p = self.p
-        active: list[Track] = []
-        done: list[Track] = []
-        offset, prev_prof, period, last_t = 0.0, None, None, None
+        s = self.session()
         for t, rgb in frames:
-            if last_t is not None and period is None:
-                period = t - last_t
-            last_t = t
-            h = rgb.shape[0]
-            scale = min(1.0, p.work_h / h)
-            small = _resize(rgb, scale)
-            boxes, strokes = detect_lines(small, p.text, frame_h=small.shape[0])
-            prof = strokes.sum(1).astype(np.float64)
-            if prev_prof is not None:
-                offset += scroll_shift(prev_prof, prof, int(p.max_scroll * small.shape[0]))
-            prev_prof = prof
-            gap = (p.max_gap_samples + 0.5) * (period or 1.0)
-            still = []
-            for tr in active:
-                (still if t - tr.last_t <= gap else done).append(tr)
-            active = still
-            # match lines to tracks by page position first; read only the
-            # crops of tracks that do not have enough readings yet
-            to_read = []
-            for b in boxes:
-                py, x0, x1, bh = (b[1] + b[3]) / 2 + offset, b[0], b[2], b[3] - b[1]
-                match = None
-                for tr in active:
-                    ov = min(x1, tr.x1) - max(x0, tr.x0)
-                    if abs(py - tr.page_y) < 0.5 * max(bh, tr.h) and tr.last_t < t \
-                            and ov > 0.5 * min(x1 - x0, tr.x1 - tr.x0):
-                        match = tr
-                        break
-                if match is None:
-                    match = Track(py, x0, x1, bh, t, t)
-                    active.append(match)
-                match.page_y, match.x0, match.x1, match.h = py, x0, x1, bh
-                match.last_t = t
-                match.seen += 1
-                if len(match.reads) < p.max_reads:
-                    fb = tuple(int(round(v / scale)) for v in b)
-                    x0f, y0f, x1f, y1f = pad_box(fb, rgb.shape[0], rgb.shape[1])
-                    to_read.append((match, rgb[y0f:y1f, x0f:x1f]))
-            if to_read:
-                for (tr, _), (text, conf) in zip(to_read, self.read_fn([c for _, c in to_read]), strict=True):
-                    if text.strip():
-                        tr.reads.append((text.strip(), conf))
-        done += active
-        min_conf = reader_threshold(self.read_fn, "credits_min_conf", 0.6) if p.min_conf is None else p.min_conf
-        lines = []
+            s.push(t, rgb)
+        return s.finish()
+
+    def session(self) -> CreditsSession:
+        """Push interface (one sample at a time), for callers that own the decoding loop."""
+        return CreditsSession(self)
+
+
+class CreditsSession:
+    """CreditsReader.run, one sample at a time; its state is plain data."""
+
+    def __init__(self, reader: CreditsReader):
+        self.reader = reader
+        self.active: list[Track] = []
+        self.done: list[Track] = []
+        self.offset, self.prev_prof, self.period, self.last_t = 0.0, None, None, None
+
+    def push(self, t: float, rgb: np.ndarray) -> None:
+        p = self.reader.p
+        if self.last_t is not None and self.period is None:
+            self.period = t - self.last_t
+        self.last_t = t
+        h = rgb.shape[0]
+        scale = min(1.0, p.work_h / h)
+        small = _resize(rgb, scale)
+        boxes, strokes = detect_lines(small, p.text, frame_h=small.shape[0])
+        prof = strokes.sum(1).astype(np.float64)
+        if self.prev_prof is not None:
+            self.offset += scroll_shift(self.prev_prof, prof, int(p.max_scroll * small.shape[0]))
+        self.prev_prof = prof
+        gap = (p.max_gap_samples + 0.5) * (self.period or 1.0)
+        still = []
+        for tr in self.active:
+            (still if t - tr.last_t <= gap else self.done).append(tr)
+        self.active = still
+        # match lines to tracks by page position first; read only the
+        # crops of tracks that do not have enough readings yet
+        to_read = []
+        for b in boxes:
+            py, x0, x1, bh = (b[1] + b[3]) / 2 + self.offset, b[0], b[2], b[3] - b[1]
+            match = None
+            for tr in self.active:
+                ov = min(x1, tr.x1) - max(x0, tr.x0)
+                if abs(py - tr.page_y) < 0.5 * max(bh, tr.h) and tr.last_t < t \
+                        and ov > 0.5 * min(x1 - x0, tr.x1 - tr.x0):
+                    match = tr
+                    break
+            if match is None:
+                match = Track(py, x0, x1, bh, t, t)
+                self.active.append(match)
+            match.page_y, match.x0, match.x1, match.h = py, x0, x1, bh
+            match.last_t = t
+            match.seen += 1
+            if len(match.reads) < p.max_reads:
+                fb = tuple(int(round(v / scale)) for v in b)
+                x0f, y0f, x1f, y1f = pad_box(fb, rgb.shape[0], rgb.shape[1])
+                to_read.append((match, rgb[y0f:y1f, x0f:x1f]))
+        if to_read:
+            for (tr, _), (text, conf) in zip(to_read, self.reader.read_fn([c for _, c in to_read]), strict=True):
+                if text.strip():
+                    tr.reads.append((text.strip(), conf))
+
+    def finish(self) -> list[dict]:
+        p = self.reader.p
+        done = self.done + self.active
+        min_conf = (reader_threshold(self.reader.read_fn, "credits_min_conf", 0.6)
+                    if p.min_conf is None else p.min_conf)
+        lines: list[dict] = []
         for tr in sorted(done, key=lambda tr: (tr.first_t, tr.page_y)):
             if not tr.reads:
                 continue

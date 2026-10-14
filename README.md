@@ -35,7 +35,7 @@ My own implementation is how I learn the idea. The comparison with the library g
 | [6](p6_pose_video/) | 18–20 | Fight breakdowns, scene types | Pose, ViT, VideoMAE | Built; scored on public clips with by-eye labels; from-scratch scene models trail CLIP |
 | [7](p7_ocr/) | 21–22 | Subtitles and credits read | OCR (CRNN + CTC, TrOCR) | Built; scored on subtitles burned into public clips |
 | [8](p8_search/) | 23–24 | Scene search, chat with the movie | CLIP/SigLIP, multimodal RAG | Built; scored on hand-written queries over public clips (LLM answers optional) |
-| [9](p9_production/) | 25–26 | Full-film pipeline, web app | ONNX/TensorRT, FastAPI, React | Planned |
+| [9](p9_production/) | 25–26 | Full-film pipeline, web app | ONNX/TensorRT, FastAPI, React | Built; one-pass pipeline with cache and resume, ONNX Runtime, FastAPI + React app |
 
 ## Results
 
@@ -53,7 +53,7 @@ Filled in as each phase ships.
 | 6 | Scene-type accuracy (27 hand-labelled public-clip shots) | 0.370 (VideoMAE, fine-tuned) | 0.852 (OpenCLIP zero-shot) |
 | 7 | Subtitle character error rate (burned-in subtitles, 3 public clips) | 0.460 | 0.478 (PP-OCRv3 rec) / 0.494 (PP-OCRv3 det+rec) |
 | 8 | Scene search Recall@5 (46 test queries, 9 public clips pooled) | 0.783 (own exact index) · 0.457 (own IVF-PQ) · 0.000 (own dual encoder) | 0.783 (open_clip + FAISS Flat) · 0.435 (FAISS IVF-PQ) |
-| 9 | Time to process a 2-hour film | — | — |
+| 9 | Time to process a 2-hour film (4-core CPU, extrapolated from goldeneye) | 15.0 h (phase tools one after another, PyTorch) | 5.0 h (one-pass pipeline, ONNX Runtime) |
 
 ---
 
@@ -96,7 +96,10 @@ Put a video clip in `trailers/` (or `data/clips/`) and run:
 python -m cinescope.io.preview trailers/your_clip.mkv      # thumbnail grid -> outputs/
 python p0_classical/analyse.py trailers/your_clip.mkv      # shots, camera moves, palettes
 python -m pytest                                           # the test suite
+python -m cinescope.pipeline trailers/your_clip.mkv       # every phase in one pass -> outputs/<clip>/report.json
 ```
+
+The web app (FastAPI + React) and the Docker image are described in [p9_production/](p9_production/).
 
 **Main tools:** Python · NumPy · PyTorch · OpenCV · PyAV · FAISS/Qdrant · FastAPI · React
 

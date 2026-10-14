@@ -1,0 +1,52 @@
+{
+ "video": "testvideo.mp4",
+ "duration_s": 24.023,
+ "backend": "onnx",
+ "workers": 2,
+ "threads": 2,
+ "wall_s": 66.5,
+ "decode_s": 15.888,
+ "frames_decoded": 720,
+ "stages": {
+  "shots": 4.697,
+  "palette": 0.359,
+  "camera": 1.368,
+  "frames": 0.784,
+  "faces": 36.883,
+  "speaking": 0.005,
+  "characters": 0.002,
+  "subtitles": 23.449,
+  "search": 10.766,
+  "framing": 1.034,
+  "campath": 14.296,
+  "pose": 9.064,
+  "scenes": 0.92
+ },
+ "frame_s": {
+  "shots": 4.647,
+  "palette": 0.0,
+  "camera": 0.0,
+  "frames": 0.784,
+  "faces": 36.846,
+  "speaking": 0.0,
+  "characters": 0.0,
+  "subtitles": 23.431,
+  "search": 0.0,
+  "framing": 0.0,
+  "campath": 0.0,
+  "pose": 8.745,
+  "scenes": 0.0
+ },
+ "loadavg_before": [
+  1.59,
+  1.2,
+  3.47
+ ],
+ "loadavg_after": [
+  1.97,
+  1.44,
+  3.39
+ ],
+ "cpu_count": 4,
+ "when": "2026-10-14 13:57"
+}

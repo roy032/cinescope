@@ -198,3 +198,17 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   object's colours); rejecting empty cuts and a superpixel floor fixed it.
 - Borrowing pixels from other frames beats per-frame inpainting by 10–16 dB.
   Criminisi loses on PSNR to diffusion fills but keeps texture.
+
+## Weeks 25–26 — one pipeline, one app
+
+- `python -m cinescope.pipeline` decodes a clip once for all stages, caches
+  each stage by clip hash + version + parameters, and resumes after an
+  interruption. Phases 4 and 6 went in as stages with a few lines each.
+- ONNX exports of six models match PyTorch to 1.3e-5; ONNX Runtime is 1.1–8.9x
+  faster at batch 1.
+- goldeneye: 666 s as separate phase tools, 275 s through the pipeline; a
+  2-hour film 15.0 h → 5.0 h on a 4-core CPU. Timings taken under heavy load
+  were up to 4x worse (PyTorch threads busy-wait), so only low-load runs count.
+- A clip with no faces crashed Phase 3; found on testvideo, fixed with a test.
+- FastAPI + React app: shot strip, barcode, character timeline, subtitles,
+  scene search, camera path, cut-outs.

@@ -130,45 +130,53 @@ class SubtitleReader:
         return band, scale, boxes, strokes
 
     # ---------------------------------------------------------------- tracking
+    def step(self, active: list[LineTrack], t: float, rgb: np.ndarray) -> tuple[list[LineTrack], list[LineTrack]]:
+        """One sample: match its lines to the live tracks. Returns (still live,
+        finished). Push form, so a caller that owns the decoding loop (the
+        Phase 9 pipeline) can feed frames one at a time."""
+        p = self.p
+        finished: list[LineTrack] = []
+        band, scale, boxes, strokes = self.detect(rgb)
+        nxt: list[LineTrack] = []
+        for b in boxes:
+            x0, y0, x1, y1 = b
+            patch = strokes[y0:y1, x0:x1]
+            best, best_iou = None, 0.0
+            for tr in active:
+                if tr in nxt or box_iou(b, tr.box) < p.box_iou:
+                    continue
+                ux0, uy0 = min(x0, tr.box[0]), min(y0, tr.box[1])
+                ux1, uy1 = max(x1, tr.box[2]), max(y1, tr.box[3])
+                prev = np.zeros((uy1 - uy0, ux1 - ux0), bool)
+                bx0, by0, bx1, by1 = tr.box
+                prev[by0 - uy0:by1 - uy0, bx0 - ux0:bx1 - ux0] = tr.strokes
+                iou = mask_iou(prev, strokes[uy0:uy1, ux0:ux1])
+                if iou >= p.same_iou and iou > best_iou:
+                    best, best_iou = tr, iou
+            if best is None:
+                full = tuple(int(round(v / scale)) for v in b)
+                region = pad_box(full, band.shape[0], band.shape[1], fy=0.45, fx=0.8)
+                best = LineTrack(b, region, patch, y=(full[1] + full[3]) / 2, h=full[3] - full[1])
+            best.box, best.strokes, best.missed = b, patch, 0
+            best.times.append(t)
+            rx0, ry0, rx1, ry1 = best.region
+            best.crops.append(band[ry0:ry1, rx0:rx1].copy())
+            nxt.append(best)
+        for tr in active:
+            if tr not in nxt:
+                tr.missed += 1
+                if tr.missed > p.max_miss:
+                    finished.append(tr)
+                else:
+                    nxt.append(tr)
+        return nxt, finished
+
     def tracks(self, frames: Iterable[tuple[float, np.ndarray]]) -> Iterable[LineTrack]:
         """Yield each line track when it ends (so only live tracks hold crops)."""
-        p = self.p
         active: list[LineTrack] = []
         for t, rgb in frames:
-            band, scale, boxes, strokes = self.detect(rgb)
-            nxt = []
-            for b in boxes:
-                x0, y0, x1, y1 = b
-                patch = strokes[y0:y1, x0:x1]
-                best, best_iou = None, 0.0
-                for tr in active:
-                    if tr in nxt or box_iou(b, tr.box) < p.box_iou:
-                        continue
-                    ux0, uy0 = min(x0, tr.box[0]), min(y0, tr.box[1])
-                    ux1, uy1 = max(x1, tr.box[2]), max(y1, tr.box[3])
-                    prev = np.zeros((uy1 - uy0, ux1 - ux0), bool)
-                    bx0, by0, bx1, by1 = tr.box
-                    prev[by0 - uy0:by1 - uy0, bx0 - ux0:bx1 - ux0] = tr.strokes
-                    iou = mask_iou(prev, strokes[uy0:uy1, ux0:ux1])
-                    if iou >= p.same_iou and iou > best_iou:
-                        best, best_iou = tr, iou
-                if best is None:
-                    full = tuple(int(round(v / scale)) for v in b)
-                    region = pad_box(full, band.shape[0], band.shape[1], fy=0.45, fx=0.8)
-                    best = LineTrack(b, region, patch, y=(full[1] + full[3]) / 2, h=full[3] - full[1])
-                best.box, best.strokes, best.missed = b, patch, 0
-                best.times.append(t)
-                rx0, ry0, rx1, ry1 = best.region
-                best.crops.append(band[ry0:ry1, rx0:rx1].copy())
-                nxt.append(best)
-            for tr in active:
-                if tr not in nxt:
-                    tr.missed += 1
-                    if tr.missed > p.max_miss:
-                        yield tr
-                    else:
-                        nxt.append(tr)
-            active = nxt
+            active, finished = self.step(active, t, rgb)
+            yield from finished
         yield from active
 
     def read_track(self, tr: LineTrack, scale: float) -> None:
@@ -185,26 +193,52 @@ class SubtitleReader:
         tr.crops = []                                    # free memory
 
     # ---------------------------------------------------------------- whole clip
+    def session(self, period: float) -> SubtitleSession:
+        """Push interface: s = reader.session(period); s.push(t, rgb) per sample; s.finish() -> cues."""
+        return SubtitleSession(self, period)
+
     def run(self, frames: Iterable[tuple[float, np.ndarray]], period: float) -> list[Cue]:
         """frames: (time, RGB) pairs sampled every `period` seconds."""
-        p = self.p
-        scale_box = [1.0]
+        s = self.session(period)
+        for t, rgb in frames:
+            s.push(t, rgb)
+        return s.finish()
 
-        def watch():
-            for t, rgb in frames:
-                scale_box[0] = min(1.0, p.work_h / rgb.shape[0])
-                yield t, rgb
 
-        min_conf = reader_threshold(self.read_fn, "min_conf", 0.35) if p.min_conf is None else p.min_conf
-        lines = []
-        for tr in self.tracks(watch()):
-            dur = tr.end - tr.start + period
-            if dur < p.min_dur or dur > p.max_dur:
-                continue
-            self.read_track(tr, scale_box[0])
-            if plausible(tr.text, tr.conf, min_conf):
-                lines.append(tr)
-        return merge_cues(group_lines(lines, period, p.group_overlap), p.merge_gap, p.merge_cer)
+class SubtitleSession:
+    """SubtitleReader.run, one sample at a time. Finished tracks are read as
+    soon as they end, so memory holds only the crops of live tracks. Its state
+    is plain data (pickles), except the reader, which the caller re-attaches."""
+
+    def __init__(self, reader: SubtitleReader, period: float):
+        self.reader, self.period = reader, period
+        self.active: list[LineTrack] = []
+        self.lines: list[LineTrack] = []
+        self.scale = 1.0
+        p = reader.p
+        self.min_conf = reader_threshold(reader.read_fn, "min_conf", 0.35) if p.min_conf is None else p.min_conf
+
+    def _accept(self, tr: LineTrack) -> None:
+        p = self.reader.p
+        dur = tr.end - tr.start + self.period
+        if dur < p.min_dur or dur > p.max_dur:
+            return
+        self.reader.read_track(tr, self.scale)
+        if plausible(tr.text, tr.conf, self.min_conf):
+            self.lines.append(tr)
+
+    def push(self, t: float, rgb: np.ndarray) -> None:
+        self.scale = min(1.0, self.reader.p.work_h / rgb.shape[0])
+        self.active, finished = self.reader.step(self.active, t, rgb)
+        for tr in finished:
+            self._accept(tr)
+
+    def finish(self) -> list[Cue]:
+        for tr in self.active:
+            self._accept(tr)
+        self.active = []
+        p = self.reader.p
+        return merge_cues(group_lines(self.lines, self.period, p.group_overlap), p.merge_gap, p.merge_cer)
 
 
 def reader_threshold(read_fn, name: str, default: float) -> float:
