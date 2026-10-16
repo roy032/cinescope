@@ -21,7 +21,14 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from cinescope.segment.data import composite, load_people, make_cutout, mask_box, mask_iou, place  # noqa: E402
+from cinescope.segment.data import (  # noqa: E402
+    composite,
+    load_people,
+    make_cutout,
+    mask_box,
+    mask_iou,
+    place,
+)
 from cinescope.segment.grabcut import GrabCutParams, grabcut  # noqa: E402
 
 

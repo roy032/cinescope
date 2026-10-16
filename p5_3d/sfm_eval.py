@@ -30,9 +30,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from cinescope.geometry import twoview  # noqa: E402
 from cinescope.geometry.camera import camera_centre, look_at, rotation_angle_deg  # noqa: E402
-from cinescope.geometry.metrics import trajectory_errors, translation_direction_error_deg  # noqa: E402
+from cinescope.geometry.metrics import (  # noqa: E402
+    trajectory_errors,
+    translation_direction_error_deg,
+)
 from cinescope.geometry.sfm import OurSolvers, SfMParams, run_sfm  # noqa: E402
-from cinescope.geometry.shot import default_k, find_shots, load_shot, normalise_contrast, to_gray  # noqa: E402
+from cinescope.geometry.shot import (  # noqa: E402
+    default_k,
+    find_shots,
+    load_shot,
+    normalise_contrast,
+    to_gray,
+)
 from cinescope.geometry.synthetic import dolly_shot  # noqa: E402
 from cinescope.geometry.tracks import track_shot  # noqa: E402
 

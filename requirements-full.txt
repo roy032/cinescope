@@ -1,0 +1,17 @@
+# Everything the whole pipeline (python -m cinescope.pipeline) and the web app need on top of
+# requirements.txt, with CPU PyTorch installed first:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+#   pip install -r requirements.txt -r requirements-full.txt
+# Used by the Dockerfile and tools/run_everything.py. Weights: python tools/fetch_assets.py
+fastapi
+uvicorn
+python-multipart
+httpx                    # API tests
+onnx
+onnxruntime
+open_clip_torch          # Phase 8 search, Phase 6 scene types
+faiss-cpu
+rapidocr-onnxruntime     # Phase 7 reader
+ultralytics              # Phase 6 people and poses
+scikit-learn
+pycocotools              # Phase 2 evaluator cross-check

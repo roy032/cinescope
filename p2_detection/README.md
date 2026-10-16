@@ -195,7 +195,8 @@ classes visible in them: person everywhere, tv in the dark clip):
 ```powershell
 python p2_detection/label_boxes.py trailers/your_clip.mp4 --start 300 --seconds 60 --tag dark
 # draw boxes in outputs/boxes_.../index.html, "Download labels", move the JSON to p2_detection/labels/
-python p2_detection/compare_faces.py p2_detection/labels/*.boxes.json --yunet data/weights/yunet.onnx [--ckpt p2_detection/checkpoints/centernet_r18.pt]
+python p2_detection/compare_faces.py p2_detection/labels/*.boxes.json --yunet data/weights/yunet.onnx \
+    --ckpt p2_detection/checkpoints/centernet_r18.pt --ckpt p2_detection/checkpoints/centernet_r18_log.pt
 python p2_detection/compare_props.py p2_detection/labels/*.boxes.json   # yolov8n, yolo11n, rtdetr-l from data/weights
 python tools/update_results.py
 ```
@@ -212,8 +213,9 @@ details and the commands that regenerate the frames.
 <!-- auto:p2-faces -->
 | Faces | dark AP50 | profile AP50 | crowd AP50 | all AP50 | all AP | ms/frame |
 |---|---|---|---|---|---|---|
-| CenterNet-R18 (ours) | — | — | — | — | — | — |
-| OpenCV YuNet | 0.989 | 0.980 | 0.605 | 0.748 | 0.216 | 43.0 |
+| CenterNet-R18 (ours) | 0.915 | 0.956 | 0.544 | 0.658 | 0.163 | 528.7 |
+| CenterNet-R18 (ours, log) | 0.912 | 0.936 | 0.524 | 0.635 | 0.165 | 573.9 |
+| OpenCV YuNet | 0.989 | 0.980 | 0.605 | 0.748 | 0.216 | 37.1 |
 <!-- /auto:p2-faces -->
 
 <!-- auto:p2-props -->
@@ -226,24 +228,45 @@ details and the commands that regenerate the frames.
 
 AP50 / AP are COCO-style (the week-6 evaluator), per clip; "all" pools the
 three clips. ms/frame is the median over the frames (1280 px wide, warm-up
-excluded) with 2 CPU threads, measured on a 4-core cloud CPU **shared with
-other jobs** (load average about 13 during the runs): compare the rows with
-each other, not with published speeds (the face and prop runs were separate,
-under different loads, so YuNet's 43 ms and YOLO's seconds are not comparable
-either).
+excluded) with 2 CPU threads. The face rows were measured together on a
+laptop CPU (Intel Core 5 120U); the prop rows on a 4-core cloud CPU **shared
+with other jobs** (load average about 13), so compare face rows with face
+rows and prop rows with prop rows, not across the two tables or with
+published speeds.
 
-- **Our CenterNet row is empty** because its checkpoint is not on the
-  machine that ran this comparison: it was trained on a Kaggle GPU and
-  checkpoints are git-ignored. `compare_faces.py --ckpt` adds the row
-  wherever the checkpoint is.
+- **Ours vs. YuNet: YuNet wins every clip, at 1/14 of the time.** Both
+  CenterNet checkpoints score 0.64–0.66 AP50 over the three clips against
+  YuNet's 0.75, and the `log` model, better on WIDER FACE val (0.593 vs.
+  0.575 Easy), is slightly *worse* here: half a point of WIDER AP does not
+  transfer to 91 movie frames. ms/frame is ~535 for ours (ResNet-18-FPN at
+  1280 px, PyTorch) against 37 for YuNet (a 75k-parameter network built for
+  this). Where ours loses, counting boxes with score ≥ 0.3:
+  - **dark**: it misses 7 of the 30 faces outright (recall 0.77 at IoU 0.3;
+    YuNet 1.00), the faces lit only by a match or seen against snow at night.
+    WIDER FACE has few faces this dark; this is the gap a fine-tune on
+    darker frames, or brightness augmentation, would target.
+  - **crowd**: it finds 123 of 124 faces at IoU 0.3, as YuNet does, and
+    loses at IoU 0.5 for the same reason (median IoU 0.55 vs. 0.56): its top
+    edge sits a median 15 px below the hand boxes' hairline, exactly
+    where YuNet's does. So the earlier guess that a WIDER-trained detector
+    "draws the label convention" is wrong; at 50–90 px both detectors box
+    from the eyebrows, and the crowd AP is a convention gap shared by both.
+  - **profile**: close to YuNet (0.956 vs. 0.980 AP50), no confident false
+    positives.
 - **YuNet finds every crowd face, but AP50 says 0.6.** With score ≥ 0.5,
   every one of the 124 classroom faces has a YuNet box at IoU ≥ 0.3, yet only
   75% reach 0.5 (median IoU 0.56). The hand boxes run from the hairline to
   the chin, as WIDER FACE's do; YuNet's top edge sits a median 15 px lower,
   around the eyebrows. On faces 50–90 px tall that alone costs the IoU.
   The low AP@[.5:.95] in every clip is the same mismatch: box conventions,
-  not detections. A detector trained on WIDER FACE (ours) draws the
-  convention the labels use.
+  not detections.
+- **Post-processing does not fix the large-face duplicates.** `tune_postproc.py`
+  replays the saved WIDER val predictions through stricter suppression
+  (NMS at 0.4/0.3, dropping boxes mostly inside a higher-scoring one, NMS
+  only between large boxes) and re-scores them: every rule moves Easy by
+  0.001 or less, on both checkpoints (`results/centernet_r18*/postproc.md`).
+  The duplicates are too few to matter; the Easy deficit is in localisation
+  and confidence, which needs training changes, not a filter.
 - **Props.** At IoU 0.5 all three models nearly solve all three clips
   (AP50 ≥ 0.93); they differ at tight IoU and in the dark clip. There
   RT-DETR-L has the best tv AP (computer monitors, one filling the frame):

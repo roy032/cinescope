@@ -172,6 +172,12 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   0.98 / 0.61; the crowd loss is box convention (eyebrows vs hairline), not
   missed faces. YOLOv8n / YOLO11n / RT-DETR-L reach AP50 ≥ 0.93 on people;
   RT-DETR-L is best at tight IoU in the dark clip and about 5x slower.
+- Week 8, our detector: CenterNet-R18 scores 0.915 / 0.956 / 0.544 AP50
+  (0.658 overall) against YuNet's 0.748, at ~14x YuNet's time. It misses 7 of
+  30 faces in the dark clip; in the crowd it finds the faces but boxes them
+  from the eyebrows, exactly as YuNet does, so my guess that a WIDER-trained
+  model would match the hairline labels was wrong. The `log` model, better on
+  WIDER val, is slightly worse here. Stricter NMS does not fix WIDER Easy.
 
 ## Weeks 18–20 — pose, action events, scene types
 
