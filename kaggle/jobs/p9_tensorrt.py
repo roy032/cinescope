@@ -2,7 +2,7 @@
 # The development laptop has no NVIDIA GPU, so this is where `--backend tensorrt` gets tested.
 import json
 
-find_code("cinescope/pipeline/accel.py")
+find_code("tools/fetch_assets.py")          # one folder deep: find_code copies the marker's grandparent
 OUT = "/kaggle/working/results/tensorrt"
 os.makedirs(OUT, exist_ok=True)
 

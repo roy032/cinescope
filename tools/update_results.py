@@ -194,7 +194,7 @@ def root_table(p1: dict, p2: dict, clips: dict | None = None) -> None:
         n = f", n={p1['_n']}" if "_n" in p1 else ""
         ours = " · ".join(f"{p1[k]:.3f} ({lab})" for k, lab in
                           (("pretrained", "ResNet-18, ImageNet init"), ("scratch", "random init")) if k in p1)
-        base = f"{p1['fused']:.3f} (teacher: open_clip + YuNet)" if "fused" in p1 else "—"
+        base = f"{p1['fused']:.3f} (teacher: zero-shot prompts + face size)" if "fused" in p1 else "—"
         text = re.sub(r"^\| 1 \| Shot-framing accuracy[^|]*\|.*$",
                       f"| 1 | Shot-framing accuracy (hand-labelled {what}{n}) | {ours or '—'} | {base} |",
                       text, flags=re.M)

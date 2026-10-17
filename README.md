@@ -27,7 +27,7 @@ My own implementation is how I learn the idea. The comparison with the library g
 | Phase | Weeks | Feature | CV area | Status |
 |---|---|---|---|---|
 | [0](p0_classical/) | 1–3 | Shot cuts, camera moves, color palettes | Classical CV | Built; scored on public clips |
-| [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | Built; runs end to end on public clips on a CPU (hand-labelled test); the episode-scale run is pending |
+| [1](p1_cnn/) | 4–5 | Shot-framing labels | CNNs | Built; scored on public clips and on 289 hand-labelled shots of held-out episodes (students match their teacher, 0.80) |
 | [2](p2_detection/) | 6–8 | Face and prop detection | Object detection | Built; trained on WIDER FACE; ours and production detectors scored on hand-labelled dark/profile/crowd frames (YuNet ahead) |
 | [3](p3_tracking/) | 9–11 | Character timeline, who's talking | Tracking, metric learning, audio-visual | Built; scored on hand-labelled public clips |
 | [4](p4_segmentation/) | 12–13 | Actor cutouts, object removal | Segmentation, matting, inpainting | Built; compared with SAM 2, MobileSAM, YOLOv8n-seg and OpenCV on public clips |
@@ -44,7 +44,7 @@ Filled in as each phase ships.
 | Phase | Metric | From scratch | Library baseline |
 |---|---|---|---|
 | 0 | Shot-cut F1 (public clips) | 0.945 | 0.960 (PySceneDetect) |
-| 1 | Shot-framing accuracy (hand-labelled public-clip shots, n=51) | 0.176 (ResNet-18, ImageNet init) · 0.137 (random init) | 0.431 (teacher: open_clip + YuNet) |
+| 1 | Shot-framing accuracy (hand-labelled held-out episodes, n=289) | 0.796 (ResNet-18, ImageNet init) · 0.775 (random init) | 0.806 (teacher: zero-shot prompts + face size) |
 | 2 | Face AP (WIDER FACE Easy / Medium / Hard) | 0.593 / 0.726 / 0.792 | — |
 | 2 | Face AP50 on hand-labelled clip frames (dark / profile / crowd) | 0.915 / 0.956 / 0.544 (ours) · 0.912 / 0.936 / 0.524 (ours, log) | 0.989 / 0.980 / 0.605 (YuNet) |
 | 3 | Character clustering purity / pair F1 (goldeneye, 8 people) | 0.93 / 0.32 (self-supervised triplet; 15 clusters) | 1.00 / 1.00 (SFace; 8 clusters) |

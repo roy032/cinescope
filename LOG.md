@@ -168,6 +168,11 @@ One entry per week: what I built, what broke, what I would explain in an intervi
   0.176 / 0.137, below the 0.275 majority baseline. With 23–33 training shots
   per fold the students collapse onto two classes; the result needs the
   episode-scale shot set, not a different model.
+- Episode scale: 8,107 shots, 300 test shots labelled by eye (289 usable).
+  Teacher 0.806, ImageNet-init student 0.796, random-init 0.775, majority
+  class 0.706 (71% of shots are MS). The students copy the teacher; the
+  teacher copies SigLIP, which calls most close-ups and full shots MS. The
+  face-size cue alone finds 93% of close-ups and is underweighted.
 - Week 8: dark / profile / crowd frames boxed by eye. YuNet face AP50 0.99 /
   0.98 / 0.61; the crowd loss is box convention (eyebrows vs hairline), not
   missed faces. YOLOv8n / YOLO11n / RT-DETR-L reach AP50 ≥ 0.93 on people;
