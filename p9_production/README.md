@@ -307,8 +307,12 @@ docker run --rm -p 8000:8000 -v "${PWD}\trailers:/clips" -v "${PWD}\data\weights
 ```
 
 The image builds the front end in a Node stage and installs CPU PyTorch; weights and
-footage are mounted, never copied in. *The Dockerfile was written but not built here —
-the development machine has no Docker daemon.*
+footage are mounted, never copied in (`python tools/fetch_assets.py` downloads both).
+Its Python dependencies are `requirements.txt` + `requirements-full.txt`, the same files
+`tools/run_everything.py` installs locally, so the image and a local run cannot drift
+apart (the first version of the image lacked `ultralytics`, and the default `pose`
+stage would have failed in it). CI builds the image on every push and smoke-tests it:
+`/api/health` answers, and the pipeline runs Phase 0 on a public clip inside it.
 
 Environment: `CINESCOPE_CLIPS` (clip folders, `;`-separated on Windows), `CINESCOPE_OUT`
 (default `outputs/app`), `CINESCOPE_BACKEND` (`onnx` default, `torch`, `tensorrt`),

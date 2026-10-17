@@ -173,6 +173,20 @@ Shot-level accuracy on the hand-labelled test shots (3 key frames averaged;
 95% CI by bootstrap over shots). Filled in by `tools/update_results.py`.
 
 <!-- auto:p1-results -->
+**Your own videos (held-out episodes)**
+
+| System | Trained on | Accuracy [95% CI] | Mean class acc. | Train time |
+|---|---|---|---|---|
+| SigLIP zero-shot (prompts only) | nothing (zero-shot / rule) | 0.792 [0.74–0.84] | 0.524 | — |
+| Face size only, shots with a face | nothing (zero-shot / rule) | 0.668 [0.61–0.73] | 0.643 | — |
+| Teacher: prompts + face size | nothing (zero-shot / rule) | 0.806 [0.76–0.85] | 0.555 | — |
+| ResNet-18, ImageNet init | teacher labels, 30 epochs | 0.796 [0.75–0.84] | 0.540 | 0.3 h (T4) |
+| ResNet-18, random init | teacher labels, 60 epochs | 0.775 [0.73–0.82] | 0.523 | 0.6 h (T4) |
+
+289 hand-labelled shots (your own videos (held-out episodes); labels `p1_cnn/labels/own_test.labels.json`); majority-class accuracy 0.706. Face size only is scored on the shots where a face was found.
+
+**Public clips, 2-fold by time: each shot predicted by the network that did not train on its half**
+
 | System | Trained on | Accuracy [95% CI] | Mean class acc. | Train time |
 |---|---|---|---|---|
 | open_clip ViT-B/32 zero-shot (prompts only) | nothing (zero-shot / rule) | 0.412 [0.27–0.55] | 0.379 | — |
@@ -183,6 +197,30 @@ Shot-level accuracy on the hand-labelled test shots (3 key frames averaged;
 
 51 hand-labelled shots (public clips, 2-fold by time: each shot predicted by the network that did not train on its half; labels `p1_cnn/labels/public_test.labels.json`); majority-class accuracy 0.275. Face size only is scored on the shots where a face was found. Train time is the sum of the two folds.
 <!-- /auto:p1-results -->
+
+**What the episode-scale run shows.** 8,107 shots from TV episodes (5,162
+train / 1,587 val / 1,358 test, split by episode), auto-labelled and trained
+on a Kaggle T4; 300 random test shots labelled by eye from contact sheets of
+their three key frames, before any prediction was opened (289 usable, 11
+skipped: logos, near-black frames, empty seats). The labels were drawn by
+Claude, following the public set's written rules, not by a person; they are
+git-ignored because their keys name the episodes, and only the scores are
+committed.
+
+- **MS dominates the test shots (71%)**, so the majority class alone scores
+  0.706. The teacher reaches 0.806 and both students land on it (0.796
+  ImageNet init, 0.775 random init, CIs overlapping): with 5,000 training
+  shots the students learn the teacher, errors included, instead of
+  collapsing as on the public clips. Neither beats it.
+- **The teacher's errors are the prompts' errors.** SigLIP alone finds 15% of
+  close-ups and 44% of full shots, calling most of them MS; the fused teacher
+  barely moves that (CS 19%, FS 53%). The face cue alone finds 93% of
+  close-ups, and its mean class accuracy (0.64) is the best of every system,
+  but the fusion weights it too low to override the prompts. On these
+  episodes the face cue is the stronger signal for anything that is not MS,
+  so reweighting the fusion (fitted on validation shots, never on these)
+  is the next step, and should move the students with it.
+- ECS does not occur in the 300 shots.
 
 **What the public-clip run shows.** The teacher (0.43) beats the majority
 class (0.27) and its own text cue alone (0.41), but its confidence interval is

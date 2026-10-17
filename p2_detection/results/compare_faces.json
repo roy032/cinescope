@@ -1,5 +1,65 @@
 {
+  "CenterNet-R18 (ours)": {
+    "classroom_crowd": {
+      "AP": 0.1063,
+      "AP50": 0.5444,
+      "AR100": 0.15,
+      "AP_small": -1.0
+    },
+    "goldeneye_dark": {
+      "AP": 0.4199,
+      "AP50": 0.915,
+      "AR100": 0.4867,
+      "AP_small": -1.0
+    },
+    "head-pose-face-detection-female-and-male_profile": {
+      "AP": 0.3983,
+      "AP50": 0.956,
+      "AR100": 0.4579,
+      "AP_small": -1.0
+    },
+    "all": {
+      "AP": 0.1627,
+      "AP50": 0.6582,
+      "AR100": 0.281,
+      "AP_small": -1.0
+    },
+    "ms_per_frame": 528.7
+  },
+  "CenterNet-R18 (ours, log)": {
+    "classroom_crowd": {
+      "AP": 0.1099,
+      "AP50": 0.524,
+      "AR100": 0.1573,
+      "AP_small": -1.0
+    },
+    "goldeneye_dark": {
+      "AP": 0.4171,
+      "AP50": 0.9116,
+      "AR100": 0.4967,
+      "AP_small": -1.0
+    },
+    "head-pose-face-detection-female-and-male_profile": {
+      "AP": 0.3992,
+      "AP50": 0.936,
+      "AR100": 0.4491,
+      "AP_small": -1.0
+    },
+    "all": {
+      "AP": 0.1653,
+      "AP50": 0.6354,
+      "AR100": 0.2844,
+      "AP_small": -1.0
+    },
+    "ms_per_frame": 573.9
+  },
   "OpenCV YuNet": {
+    "classroom_crowd": {
+      "AP": 0.116,
+      "AP50": 0.6051,
+      "AR100": 0.171,
+      "AP_small": -1.0
+    },
     "goldeneye_dark": {
       "AP": 0.4664,
       "AP50": 0.9894,
@@ -12,18 +72,12 @@
       "AR100": 0.4772,
       "AP_small": -1.0
     },
-    "classroom_crowd": {
-      "AP": 0.116,
-      "AP50": 0.6051,
-      "AR100": 0.171,
-      "AP_small": -1.0
-    },
     "all": {
       "AP": 0.2165,
       "AP50": 0.7475,
       "AR100": 0.3005,
       "AP_small": -1.0
     },
-    "ms_per_frame": 43.0
+    "ms_per_frame": 37.1
   }
 }

@@ -13,7 +13,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install "ruff>=0.6"
+      - run: pip install "ruff==0.16.8"   # pinned: new ruff releases change import sorting and break CI
       - run: ruff check .
 
   test:
@@ -43,3 +43,28 @@ jobs:
           cache-dependency-path: app/frontend/package-lock.json
       - run: npm ci
       - run: npm run build
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: cinescope:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # Smoke test: the web app answers, and the pipeline runs Phase 0 on a public clip inside the image.
+      - run: python tools/fetch_assets.py --only clips
+      - name: web app health
+        run: |
+          docker run -d --name app -p 8000:8000 -v "$PWD/trailers:/clips" cinescope:ci
+          for i in $(seq 30); do curl -fsS http://localhost:8000/api/health && exit 0; sleep 2; done
+          docker logs app; exit 1
+      - name: pipeline in the image
+        run: |
+          docker run --rm -v "$PWD/trailers:/clips" -v "$PWD/outputs:/out" cinescope:ci \
+            python -m cinescope.pipeline /clips/testvideo.mp4 --stages shots palette camera --out /out
+          test -s outputs/testvideo/report.json

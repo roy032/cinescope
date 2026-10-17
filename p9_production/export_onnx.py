@@ -2,6 +2,7 @@
 
     python p9_production/export_onnx.py                 # all models whose weights are present
     python p9_production/export_onnx.py --models resnet18 clip_visual --threads 2
+    python p9_production/export_onnx.py --backend tensorrt --device cuda   # NVIDIA GPU: TensorRT vs. PyTorch on CUDA
 
 For each model: export with dynamic batch (and sequence / width) axes, run the
 same random input through PyTorch and ONNX Runtime -- with a batch size (and
@@ -126,6 +127,9 @@ def main(argv=None) -> dict:
     ap.add_argument("--threads", type=int, default=2)
     ap.add_argument("--reps", type=int, default=10)
     ap.add_argument("--out", default=str(ROOT / "p9_production" / "results" / "onnx.json"))
+    ap.add_argument("--backend", default="onnx", choices=["onnx", "cuda", "tensorrt"],
+                    help="ONNX Runtime provider (cuda/tensorrt need an NVIDIA GPU and onnxruntime-gpu)")
+    ap.add_argument("--device", default="cpu", choices=["cpu", "cuda"], help="where PyTorch runs for the comparison")
     args = ap.parse_args(argv)
 
     import onnxruntime
@@ -135,25 +139,31 @@ def main(argv=None) -> dict:
     rows = []
     for name, (m, ex, inp, ins, outs, dyn, batch, src) in models(args.models).items():
         t0 = time.perf_counter()
-        om = OnnxModule(m, ex, ins, outs, dyn, tag=f"bench-{name}", threads=args.threads)
+        om = OnnxModule(m, ex, ins, outs, dyn, tag=f"bench-{name}", backend=args.backend, threads=args.threads)
         t_export = time.perf_counter() - t0
+        m = m.to(args.device)
+        inp = _on(inp, args.device)
         # crnn's output is (T, B, C): compare per batch row
         check_in = inp(3)
         if name == "crnn":
             def tfn(*a, m=m):
-                return m(*a).transpose(0, 1)
+                return m(*a).transpose(0, 1).cpu()
 
             def ofn(*a, om=om):
                 return om(*a).transpose(0, 1)
         else:
-            tfn, ofn = m, om
+            def tfn(*a, m=m):
+                return m(*a).cpu()
+
+            ofn = om
         num = compare(tfn, ofn, check_in)
         row = {"model": name, "weights": src, "onnx_mb": round(om.path.stat().st_size / 2**20, 1),
+               "provider": om.sess.get_providers()[0],          # what actually ran (ORT falls back silently)
                "export_s": round(t_export, 1), **{k: float(f"{v:.3g}") for k, v in num.items()}}
         for b in (1, batch):
             x = inp(b)
             with torch.no_grad():
-                pt = _median_ms(lambda x=x, m=m: m(*x), args.reps)
+                pt = _median_ms(lambda x=x, m=m: _sync(m(*x), args.device), args.reps)
             ort = _median_ms(lambda x=x, om=om: om(*x), args.reps)
             row[f"torch_ms_b{b}" if b == 1 else "torch_ms_bN"] = round(pt, 2)
             row[f"onnx_ms_b{b}" if b == 1 else "onnx_ms_bN"] = round(ort, 2)
@@ -163,7 +173,8 @@ def main(argv=None) -> dict:
         rows.append(row)
         print(json.dumps(row), flush=True)
     res = {"threads": args.threads, "torch": torch.__version__, "onnxruntime": onnxruntime.__version__,
-           "cpu": _cpu_name(), "reps": args.reps, "rows": rows}
+           "cpu": _cpu_name(), "reps": args.reps, "backend": args.backend, "torch_device": args.device,
+           "gpu": torch.cuda.get_device_name(0) if torch.cuda.is_available() else None, "rows": rows}
     Path(args.out).write_text(json.dumps(res, indent=1))
     print("\n| Model | max abs diff | min cosine | PyTorch b=1 (ms) | ONNX b=1 (ms) | speed-up | "
           "PyTorch b=N (ms) | ONNX b=N (ms) | speed-up |")
@@ -172,6 +183,21 @@ def main(argv=None) -> dict:
         print(f"| {r['model']} | {r['max_abs']:.1e} | {r['min_cosine']:.6f} | {r['torch_ms_b1']} | {r['onnx_ms_b1']} | "
               f"{r['speedup_b1']}x | {r['torch_ms_bN']} (N={r['batch_N']}) | {r['onnx_ms_bN']} | {r['speedup_bN']}x |")
     return res
+
+
+def _on(make_inputs, device: str):
+    """Wrap an input factory so its tensors land on `device` (ONNX Runtime copies them back to numpy)."""
+    if device == "cpu":
+        return make_inputs
+    return lambda b: tuple(t.to(device) if hasattr(t, "to") else t for t in make_inputs(b))
+
+
+def _sync(out, device: str):
+    if device == "cuda":
+        import torch
+
+        torch.cuda.synchronize()
+    return out
 
 
 def _cpu_name() -> str:

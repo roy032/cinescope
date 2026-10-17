@@ -1,7 +1,7 @@
 """Our face detector vs. a production one, on hand-labelled movie frames (week 8).
 
     python p2_detection/compare_faces.py p2_detection/labels/*.boxes.json \
-        --ckpt p2_detection/checkpoints/centernet_r18.pt \
+        --ckpt p2_detection/checkpoints/centernet_r18.pt --ckpt p2_detection/checkpoints/centernet_r18_log.pt \
         --yunet models/face_detection_yunet_2023mar.onnx
 
 The library baseline is OpenCV's YuNet (Wu et al., 2023): a small, fast
@@ -60,6 +60,9 @@ class Ours:
     def __init__(self, ckpt: str, threshold: float = 0.05):
         from cinescope.detect.faces import FaceDetector
 
+        stem = Path(ckpt).stem                                   # centernet_r18_log -> "(ours, log)"
+        if stem != "centernet_r18":
+            self.name = f"CenterNet-R18 (ours, {stem.removeprefix('centernet_r18_')})"
         self.det = FaceDetector(ckpt, threshold=threshold)
 
     def __call__(self, rgb: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
@@ -102,7 +105,7 @@ def run(detector, clips: list[tuple[str, dict, Path]]) -> dict:
 def main(argv: list[str] | None = None) -> dict:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("labels", nargs="+")
-    ap.add_argument("--ckpt", help="our CenterNet checkpoint")
+    ap.add_argument("--ckpt", action="append", default=[], help="our CenterNet checkpoint (repeat for several)")
     ap.add_argument("--yunet", help="path to face_detection_yunet_*.onnx")
     ap.add_argument("--out", default=str(HERE / "results"))
     ap.add_argument("--threads", type=int, default=2, help="CPU threads (timings are per frame at this count)")
@@ -113,7 +116,7 @@ def main(argv: list[str] | None = None) -> dict:
     for p in args.labels:
         lab = load_labels(p)
         clips.append((lab["name"], lab, frames_dir(p, lab)))
-    detectors = ([Ours(args.ckpt)] if args.ckpt else []) + ([YuNet(args.yunet)] if args.yunet else [])
+    detectors = [Ours(c) for c in args.ckpt] + ([YuNet(args.yunet)] if args.yunet else [])
     if not detectors:
         ap.error("give --ckpt and/or --yunet")
     report = {d.name: run(d, clips) for d in detectors}

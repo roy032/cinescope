@@ -29,7 +29,13 @@ sys.path.insert(0, str(ROOT))
 
 from cinescope.faces.clip import extract_crops, load_crops, save_crops, track_clip  # noqa: E402
 from cinescope.faces.cluster import cooccurring_pairs  # noqa: E402
-from cinescope.faces.embed import ArcFaceLoss, EmbedNet, augment, batch_hard_triplet, to_input  # noqa: E402
+from cinescope.faces.embed import (  # noqa: E402
+    ArcFaceLoss,
+    EmbedNet,
+    augment,
+    batch_hard_triplet,
+    to_input,
+)
 
 TEST_CLIPS = {"goldeneye", "head-pose-face-detection-female-and-male", "face-demographics-walking"}
 

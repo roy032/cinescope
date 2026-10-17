@@ -80,11 +80,13 @@ def phase1() -> dict:
     if found:
         blocks, out = [], {}
         for name, path in found:
-            rows, acc = _hand_table(name, json.loads(path.read_text(encoding="utf-8")), res)
+            d = json.loads(path.read_text(encoding="utf-8"))
+            rows, acc = _hand_table(name, d, res)
             if len(found) > 1:
                 rows.insert(0, f"**{SETS[name][0].upper() + SETS[name][1:]}**\n")
             blocks.append("\n".join(rows))
-            out = out or acc                      # the root table shows the first set (own, then public)
+            if not out:                           # the root table shows the first set (own, then public)
+                out = {**acc, "_set": name, "_n": d["n"]}
         replace_block(ROOT / "p1_cnn" / "README.md", "p1-results", "\n\n".join(blocks))
         return out
     rows = {}
@@ -150,7 +152,7 @@ def week8() -> bool:
     if faces.exists():
         rep = json.loads(faces.read_text(encoding="utf-8"))
         lines = ["| Faces | dark AP50 | profile AP50 | crowd AP50 | all AP50 | all AP | ms/frame |", "|---|---|---|---|---|---|---|"]
-        if "CenterNet-R18 (ours)" not in rep:
+        if not any(n.startswith("CenterNet-R18 (ours") for n in rep):
             lines.append("| CenterNet-R18 (ours) | — | — | — | — | — | — |")
         for name, r in rep.items():
             by = {_tag(c): v for c, v in r.items() if isinstance(v, dict) and c != "all"}
@@ -172,14 +174,40 @@ def week8() -> bool:
     return done
 
 
-def root_table(p1: dict, p2: dict) -> None:
+def clip_ap50() -> dict:
+    """{detector: (dark, profile, crowd) AP50} from compare_faces.json, for the root table."""
+    faces = ROOT / "p2_detection" / "results" / "compare_faces.json"
+    if not faces.exists():
+        return {}
+    out = {}
+    for name, r in json.loads(faces.read_text(encoding="utf-8")).items():
+        by = {_tag(c): v for c, v in r.items() if isinstance(v, dict) and c != "all"}
+        out[name] = tuple(by[c]["AP50"] if c in by else None for c in ("dark", "profile", "crowd"))
+    return out
+
+
+def root_table(p1: dict, p2: dict, clips: dict | None = None) -> None:
     path = ROOT / "README.md"
     text = path.read_text(encoding="utf-8")
     if p1:
-        names = {"fused": "teacher", "pretrained": "ImageNet init", "scratch": "random init"}
-        cell = " / ".join(f"{names.get(k, k)} {v:.3f}" for k, v in p1.items())
+        what = {"own": "held-out episodes", "public": "public-clip shots"}.get(p1.get("_set"), "test shots")
+        n = f", n={p1['_n']}" if "_n" in p1 else ""
+        ours = " · ".join(f"{p1[k]:.3f} ({lab})" for k, lab in
+                          (("pretrained", "ResNet-18, ImageNet init"), ("scratch", "random init")) if k in p1)
+        base = f"{p1['fused']:.3f} (teacher: zero-shot prompts + face size)" if "fused" in p1 else "—"
         text = re.sub(r"^\| 1 \| Shot-framing accuracy[^|]*\|.*$",
-                      f"| 1 | Shot-framing accuracy (hand-labelled test episodes) | {cell} | — |", text, flags=re.M)
+                      f"| 1 | Shot-framing accuracy (hand-labelled {what}{n}) | {ours or '—'} | {base} |",
+                      text, flags=re.M)
+    if clips:
+        def ap3(v: tuple) -> str:
+            return " / ".join("—" if x is None else f"{x:.3f}" for x in v)
+
+        ours = [f"{ap3(v)} ({n.removeprefix('CenterNet-R18 ').strip('()')})" for n, v in clips.items()
+                if n.startswith("CenterNet-R18 (ours")]
+        base = [f"{ap3(v)} (YuNet)" for n, v in clips.items() if "YuNet" in n]
+        text = re.sub(r"^\| 2 \| Face AP50 on hand-labelled clip frames[^|]*\|.*$",
+                      "| 2 | Face AP50 on hand-labelled clip frames (dark / profile / crowd) | "
+                      f"{' · '.join(ours) or '—'} | {' · '.join(base) or '—'} |", text, flags=re.M)
     if p2:
         best = max(p2.values(), key=lambda r: r["easy"])
         text = re.sub(r"^\| 2 \| Face AP \(WIDER FACE Easy[^)]*\) \|.*$",
@@ -191,8 +219,8 @@ def root_table(p1: dict, p2: dict) -> None:
 def main() -> None:
     p1, p2 = phase1(), phase2()
     week8()
-    root_table(p1, p2)
-    print(f"phase 1 rows: {list(p1)}; phase 2 rows: {list(p2)}")
+    root_table(p1, p2, clip_ap50())
+    print(f"phase 1 rows: {[k for k in p1 if not k.startswith('_')]}; phase 2 rows: {list(p2)}")
 
 
 if __name__ == "__main__":

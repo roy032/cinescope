@@ -15,6 +15,7 @@ What it does, in order (a job is skipped when its results are already on disk):
   4. p1_own         auto-label your own videos' shots (p1_cnn/build_own_shots.py makes them),
                     ImageNet-init and scratch ResNet-18, test-split predictions (~1-2 h GPU)
      (p1_movieshots   the same on MovieShots, once its frames are attached: --only p1_movieshots)
+     (p9_tensorrt     the pipeline's TensorRT and CUDA backends on a T4: --only p9_tensorrt, ~30 min GPU)
   5. downloads each job's results into p1_cnn/results or p2_detection/results,
      fills in the README tables (tools/update_results.py), runs the tests and commits.
 Kaggle runs one job at a time here; the laptop only waits (it can sleep between jobs —
@@ -45,6 +46,8 @@ PLAN = {
     "p1_own": (ROOT / "p1_cnn", "results/own/student_scratch.csv", ["cinescope-ckpt", "cinescope-own-shots"]),
     # MovieShots frames are released by the authors on request; run with --only p1_movieshots once attached
     "p1_movieshots": (ROOT / "p1_cnn", "results/scratch/metrics.json", []),
+    # the TensorRT / CUDA backends of the Phase 9 pipeline (no NVIDIA GPU on the laptop): --only p9_tensorrt
+    "p9_tensorrt": (ROOT / "p9_production", "results/tensorrt/onnx_tensorrt.json", []),
 }
 DEFAULT = ["p2_diagnose", "p2_train_log", "p1_own"]
 OWN_ZIP = WORK / "dataset-own" / "own_shots.zip"
@@ -179,6 +182,7 @@ def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--only", nargs="*", choices=list(PLAN), help="run just these jobs")
     ap.add_argument("--no-upload", action="store_true", help="reuse the code already on Kaggle")
+    ap.add_argument("--no-commit", action="store_true", help="leave the fetched results uncommitted")
     args = ap.parse_args()
     user = kr.username()
     _lock = lock_or_exit()  # noqa: F841 - released when the process exits
@@ -195,7 +199,7 @@ def main() -> None:
         subprocess.run([sys.executable, str(ROOT / "p1_cnn" / "eval_own.py")], check=False)
     subprocess.run([sys.executable, str(ROOT / "tools" / "update_results.py")], check=False)
     tests = subprocess.run([sys.executable, "-m", "pytest", "-q"], cwd=ROOT)
-    if tests.returncode == 0:
+    if tests.returncode == 0 and not args.no_commit:
         subprocess.run(["git", "add", "-A"], cwd=ROOT)
         subprocess.run(["git", "commit", "-m", "Kaggle results: " + ", ".join(j for j, ok in results.items() if ok)],
                        cwd=ROOT)

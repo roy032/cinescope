@@ -30,3 +30,7 @@ checkpoints/
 
 # Kaggle upload bundle (built by kaggle/make_code_zip.py)
 kaggle_upload/
+
+# Phase 1 episode-scale run: predictions and hand labels name your own videos; only the scores are committed
+p1_cnn/results/own/*.csv
+p1_cnn/labels/own_test.labels.json
