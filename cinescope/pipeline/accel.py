@@ -29,8 +29,10 @@ one loaded encoder.
 """
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import os
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -103,7 +105,17 @@ def session(path: str | Path, backend: str = "onnx", threads: int = 2):
     so.inter_op_num_threads = 1
     so.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
     so.log_severity_level = 3
-    return ort.InferenceSession(str(path), so, providers=providers(backend))
+    if backend != "onnx" and hasattr(ort, "preload_dlls"):
+        # CUDA / cuDNN from the nvidia-* pip packages (PyTorch's); best effort, the check below reports
+        with contextlib.suppress(Exception):
+            ort.preload_dlls()
+    sess = ort.InferenceSession(str(path), so, providers=providers(backend))
+    want = providers(backend)[0]
+    want = want[0] if isinstance(want, tuple) else want
+    if sess.get_providers()[0] != want:        # ONNX Runtime falls back to CPU without a word
+        warnings.warn(f"{Path(path).name}: asked for {want}, running on {sess.get_providers()[0]} "
+                      "(GPU libraries not found or not matching this onnxruntime-gpu build)", stacklevel=2)
+    return sess
 
 
 class OnnxModule:
