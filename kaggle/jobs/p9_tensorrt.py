@@ -23,7 +23,7 @@ def step(name, fn):
         json.dump(ERRORS, f, indent=1)
 
 # The CPU and GPU wheels of ONNX Runtime install the same module: keep only the GPU one.
-sh("pip install -q -r requirements-full.txt")
+sh("pip install -q -r requirements.txt -r requirements-full.txt")
 sh("pip uninstall -y -q onnxruntime")
 # A CUDA 12 build to match Kaggle's PyTorch (a newer default wheel loaded neither CUDA nor TensorRT on
 # the first run: both fell back to CPU), and the TensorRT 10 it was built against.

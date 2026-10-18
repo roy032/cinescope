@@ -139,6 +139,7 @@ def main(argv=None) -> dict:
     rows = []
     for name, (m, ex, inp, ins, outs, dyn, batch, src) in models(args.models).items():
         t0 = time.perf_counter()
+        m = m.cpu()                     # trace on the CPU: the CLIP towers share one model, moved by the other
         om = OnnxModule(m, ex, ins, outs, dyn, tag=f"bench-{name}", backend=args.backend, threads=args.threads)
         t_export = time.perf_counter() - t0
         m = m.to(args.device)
