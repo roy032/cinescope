@@ -1,7 +1,8 @@
 import { useEffect, useRef } from "react";
+import Scrub from "./Scrub.jsx";
 
 // The movie barcode drawn from its colours (one per second), with a playhead.
-export default function Barcode({ colors, duration, time, onSeek }) {
+export default function Barcode({ colors, duration, time, onSeek, describe }) {
   const ref = useRef(null);
 
   useEffect(() => {
@@ -17,15 +18,9 @@ export default function Barcode({ colors, duration, time, onSeek }) {
     ctx.putImageData(img, 0, 0);
   }, [colors]);
 
-  const click = (e) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    onSeek(((e.clientX - r.left) / r.width) * duration);
-  };
-
   return (
-    <div className="barcode" onClick={click} role="button" tabIndex={0} aria-label="movie barcode, click to seek">
+    <Scrub className="barcode" duration={duration} time={time} onSeek={onSeek} describe={describe} label="movie barcode: click or use the arrow keys to seek">
       <canvas ref={ref} />
-      {duration > 0 && <div className="playhead" style={{ left: `${(100 * time) / duration}%` }} />}
-    </div>
+    </Scrub>
   );
 }

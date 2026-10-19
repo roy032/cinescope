@@ -254,20 +254,32 @@ app/frontend/            Vite + React (no other runtime dependency): source + pa
 | `GET /api/clips/{clip}/search?q=`, `/ask?q=` | Phase 8 scene search and "ask the movie" over the clip's index |
 | `GET /api/clips/{clip}/campath` | Phase 5 camera path |
 
-The page: clip picker / upload / stage and backend choice / progress bar; the player
-(falls back to decoded frames when the browser cannot play the codec — e.g. AVI); a
-summary; scene search and ask; the movie barcode; the shot strip (thumbnail, framing
-chip, camera-move chip, palette, scrolls with the playhead); the character timeline
-with talking marks; subtitles and other on-screen text; the camera path as an orbitable
-3D polyline with the current camera's frustum; extra timelines from new stages; the
-per-stage timing of the run. Every time-based element seeks the player on click.
+The page: clip picker (analysed and not-yet-analysed clips grouped), upload by button or
+by dropping a file anywhere (with upload progress; a name already taken gets `-2`, so an
+upload never overwrites or hides another clip), stage and backend choice, and a progress
+panel that lists each step (decoding, then every stage in run order) as done, running,
+cached or waiting, with time left. A running job is picked up again after a reload. Then
+the player (falls back to frames decoded on the server, with its own play button, when
+the browser cannot play the codec, e.g. AVI); a summary; scene search and ask, with
+example queries; the movie barcode; **how it was shot**: average and median shot length,
+cuts per minute, the longest shot, the cutting rhythm (one bar per shot) and the share of
+screen time per framing, camera move and scene type; the shot strip (filterable by those
+labels; thumbnails decoded on demand when the `frames` stage has not run); the character
+timeline with talking marks; subtitles and other on-screen text; the camera path as an
+orbitable 3D polyline; extra timelines from new stages; the per-stage timing of the run.
 
-`tests/test_week26.py` (8 tests, ~2 s) drives the back end with FastAPI's `TestClient`:
+Every time-based strip shows the time under the cursor and seeks on click (or with the
+arrow keys when focused). Keyboard: Space/K play, ←/→ 5 s, J/L 10 s, `,`/`.` previous and
+next shot, `/` search, `?` the list. The address bar always holds `?clip=…&t=…`, so a link
+opens the same clip at the same moment ("Copy link to 1:23.4").
+
+`tests/test_week26.py` (10 tests, ~2 s) drives the back end with FastAPI's `TestClient`:
 a real job (cheap stages + search with a stand-in colour encoder) on a synthetic clip,
 report and assets, frame and range requests, search ranking, caching of a second job,
-upload, cancel, the Phase 6 scene stage through the report conventions, and a Phase 4
-GrabCut cut-out through the cut-out endpoint. It skips if FastAPI is not installed (CI installs only the core
-requirements); CI builds the front end (`npm ci && npm run build`).
+the job's step plan and progress, upload (including name clashes), cancel, the Phase 6
+scene stage through the report conventions, and a Phase 4 GrabCut cut-out through the
+cut-out endpoint. CI installs FastAPI for them, runs the front end's unit tests
+(`npm test`: Node's own test runner, no extra packages) and builds it (`npm run build`).
 
 End to end: with the back end serving the public clips (`CINESCOPE_CLIPS=trailers`), a
 job started through `POST /api/jobs` on `Megamind.avi` (11 s, never processed before) ran

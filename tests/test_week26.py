@@ -145,6 +145,19 @@ class TestBackend(unittest.TestCase):
         self.assertGreater(im[..., :3][opaque].mean(), 200)             # the square, not the background
         self.assertEqual(self.c.get("/api/clips/synth/cutout", params={"method": "nope"}).status_code, 400)
 
+    def test_job_plan_and_filter(self):
+        """The job lists its steps in run order, so the app can show a checklist."""
+        plan = self.job["plan"]
+        self.assertEqual(plan[0], "decode")
+        self.assertLess(plan.index("shots"), plan.index("search"))
+        self.assertTrue({"shots", "frames", "search", "scenes"} <= set(plan))
+        self.assertEqual(self.job["stage_progress"].get("shots"), 1.0)
+        self.assertIn(self.job["id"], [j["id"] for j in self.c.get("/api/jobs", params={"clip": "synth"}).json()])
+        self.assertEqual(self.c.get("/api/jobs", params={"clip": "nope"}).json(), [])
+        stages = {s["name"]: s for s in self.c.get("/api/stages").json()}
+        self.assertTrue(stages["shots"]["default"])
+        self.assertFalse(stages["cutouts"]["default"])
+
     def test_second_job_is_cached(self):
         r = self.c.post("/api/jobs", json={"clip": "synth", "stages": ["palette"]}).json()
         j = wait(self.c, r["id"])
@@ -159,10 +172,41 @@ class TestBackend(unittest.TestCase):
         self.assertEqual(r.status_code, 200)
         self.assertEqual(r.json()["clip"], "my_clip")
         self.assertIn("my_clip", {x["clip"] for x in self.c.get("/api/clips").json()})
+        # a second upload of the same name, or one named like a clip in a clip folder, gets a new
+        # name: it must neither overwrite the first upload nor hide the folder's clip
+        again = self.c.post("/api/clips/upload", files={"file": ("my clip.mp4", data, "video/mp4")}).json()
+        self.assertEqual(again["clip"], "my_clip-2")
+        clash = self.c.post("/api/clips/upload", files={"file": ("synth.mp4", data, "video/mp4")}).json()
+        self.assertEqual(clash["clip"], "synth-2")
+        rows = {x["clip"]: x for x in self.c.get("/api/clips").json()}
+        self.assertFalse(rows["synth"]["uploaded"])
+        self.assertTrue(rows["synth-2"]["uploaded"])
         bad = self.c.post("/api/clips/upload", files={"file": ("notes.txt", b"hi", "text/plain")})
         self.assertEqual(bad.status_code, 400)
         self.assertEqual(self.c.post("/api/jobs", json={"clip": "nope"}).status_code, 404)
         self.assertEqual(self.c.get("/api/jobs/nope").status_code, 404)
+
+
+class TestProgress(unittest.TestCase):
+    def test_plan_progress(self):
+        pytest.importorskip("fastapi")
+        from app.backend.main import plan_progress
+
+        plan = ["decode", "shots", "palette", "search"]
+        self.assertEqual(plan_progress(plan, {}), 0.0)
+        self.assertEqual(plan_progress(plan, {"decode": 0.5}), 0.125)
+        # decode and shots never reported before palette did: cached, so counted as done
+        self.assertEqual(plan_progress(plan, {"palette": 0.5}), 0.625)
+        self.assertEqual(plan_progress(plan, {"decode": 1, "shots": 1, "palette": 1, "search": 1}), 0.99)
+        self.assertEqual(plan_progress([], {"x": 1}), 0.0)
+        # never goes backwards as more steps report
+        seen, last = {}, 0.0
+        for step in plan:
+            for f in (0.0, 0.5, 1.0):
+                seen[step] = f
+                p = plan_progress(plan, seen)
+                self.assertGreaterEqual(p, last)
+                last = p
 
 
 class TestCancel(unittest.TestCase):
