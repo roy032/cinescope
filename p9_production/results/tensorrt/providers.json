@@ -1,0 +1,19 @@
+{
+ "onnxruntime": "1.22.0",
+ "available": [
+  "TensorrtExecutionProvider",
+  "CUDAExecutionProvider",
+  "CPUExecutionProvider"
+ ],
+ "torch": "2.11.0+cu128",
+ "torch_cuda": "12.8",
+ "cuda": [
+  "CUDAExecutionProvider",
+  "CPUExecutionProvider"
+ ],
+ "tensorrt": [
+  "TensorrtExecutionProvider",
+  "CUDAExecutionProvider",
+  "CPUExecutionProvider"
+ ]
+}

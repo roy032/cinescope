@@ -233,8 +233,35 @@ trained Phase 1 checkpoint ships with the repo); the speed does not depend on th
 
 **TensorRT.** `--backend tensorrt` asks ONNX Runtime for its TensorRT execution provider
 (fp16, engine cache in `outputs/onnx/trt/`), then CUDA, then CPU, on the same exported
-graphs. It needs an NVIDIA GPU and `onnxruntime-gpu` built with TensorRT and is
-**untested** here.
+graphs. It needs an NVIDIA GPU and `onnxruntime-gpu` built with TensorRT. Measured on a
+Kaggle T4 (`kaggle/run_all.py --only p9_tensorrt`: onnxruntime-gpu 1.22, TensorRT 10.9,
+PyTorch 2.11 on CUDA 12.8; `results/tensorrt/`), median ms per call, each engine against
+PyTorch on the same GPU:
+
+| Model | TensorRT fp16 b=1 | PyTorch b=1 | TensorRT b=N | PyTorch b=N | ORT-CUDA b=N | max abs diff (fp16) |
+|---|---|---|---|---|---|---|
+| ResNet-18 (224x384) | 1.4 | 3.4 | 10.4 (N=16) | 22.7 | 28.1 | 6.2e-4 |
+| CLIP image tower | 4.1 | 8.6 | 12.3 (N=16) | 57.9 | 56.0 | 1.1e-2 |
+| CLIP text tower | 3.1 | 8.1 | 33.5 (N=64) | 150.8 | 159.5 | 1.1e-2 |
+| Light-ASD (1 s chunk) | 3.9 | 16.3 | 23.6 (N=8) | 117.9 | 131.1 | 1.5e-3 |
+
+Every row's minimum cosine against PyTorch is 1.000000. TensorRT is 2.1–4.7x PyTorch
+on the GPU; plain ONNX Runtime on CUDA is no faster than PyTorch.
+
+**The whole pipeline was slower with TensorRT, and why.** goldeneye on the same T4
+machine: 383 s with `--backend onnx` (CPU), **2,140 s** with `--backend tensorrt`. The
+`speaking` stage alone went from 54 s to 1,683 s. Light-ASD's input length changes with
+every face track, and TensorRT builds a new engine for each new shape it meets (tens of
+seconds each); the framing classifier (dynamic height and width) and the CLIP towers (a
+new batch size per last batch) paid the same cost on a smaller scale. Models with a
+dynamic axis other than the batch now run on CUDA under `--backend tensorrt`
+(`OnnxModule` in `accel.py`), and engines are cached in `outputs/onnx/trt/`, so a batch
+size seen once is not built again. This change has not yet been re-timed on a GPU.
+
+ONNX Runtime also falls back to CPU silently when the GPU libraries do not match its
+build: the first T4 run listed both GPU providers but ran every session on CPU.
+`session()` now preloads PyTorch's CUDA libraries and warns when the requested provider
+did not load.
 
 
 ## Week 26 — the web app
@@ -388,8 +415,9 @@ Environment: `CINESCOPE_CLIPS` (clip folders, `;`-separated on Windows), `CINESC
 
 ## Known limitations
 
-- TensorRT (`--backend tensorrt`) and CUDA paths are written but **untested** here: no
-  GPU. The Dockerfile was not built (no Docker daemon on the development machine).
+- TensorRT and CUDA were measured on a Kaggle T4, not on the development machine (no
+  NVIDIA GPU); the fix that keeps variable-length models off TensorRT is not re-timed yet.
+  The Docker image is built and smoke-tested in CI, not locally (no Docker daemon).
 - Phase 1's framing classifier has no trained checkpoint in the repo (it is trained on
   the owner's videos), so the `framing` stage uses Phase 1's zero-shot teacher unless
   `p1_cnn/checkpoints/pretrained.pt` exists; the ResNet-18 ONNX numbers use timm's

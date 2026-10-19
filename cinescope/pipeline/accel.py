@@ -18,8 +18,9 @@ checkpoint is re-exported and a known one is not.
 
 TensorRT. `backend="tensorrt"` asks ONNX Runtime for its TensorRT execution
 provider (then CUDA, then CPU), with fp16 and an engine cache. It needs an
-NVIDIA GPU and onnxruntime-gpu built with TensorRT. **This path is untested
-here** (the development machine has no GPU); the CPU path is what was measured.
+NVIDIA GPU and onnxruntime-gpu built with TensorRT; measured on a Kaggle T4
+(p9_production/README.md). Models with a dynamic axis other than the batch run on
+CUDA instead, since TensorRT builds a new engine for every new shape.
 
 The factories at the bottom (clip_encoder, lightasd, embednet,
 framing_classifier, ocr_reader) return the object each phase already uses,
@@ -52,7 +53,7 @@ def onnx_dir(options=None) -> Path:
 def providers(backend: str, cache_dir: Path | None = None) -> list:
     if backend == "onnx":
         return ["CPUExecutionProvider"]
-    if backend == "tensorrt":                       # untested: needs an NVIDIA GPU
+    if backend == "tensorrt":                       # needs an NVIDIA GPU (timed on a Kaggle T4)
         trt = {"trt_fp16_enable": True, "trt_engine_cache_enable": True,
                "trt_engine_cache_path": str(cache_dir or onnx_dir() / "trt")}
         return [("TensorrtExecutionProvider", trt), "CUDAExecutionProvider", "CPUExecutionProvider"]
@@ -125,6 +126,10 @@ class OnnxModule:
     def __init__(self, module, example: tuple, input_names: list[str], output_names: list[str],
                  dynamic_axes: dict, tag: str, backend: str = "onnx", threads: int = 2, options=None):
         self.module = module
+        if backend == "tensorrt" and any(n != "batch" for ax in dynamic_axes.values() for n in ax.values()):
+            # TensorRT builds a new engine for every new sequence length or line width it meets;
+            # on a T4 that turned Light-ASD's 54 s into 28 min. Those models run on CUDA instead.
+            backend = "cuda"
         path = onnx_dir(options) / f"{tag}-{fingerprint(module)}.onnx"
         if not path.exists():
             export(module, example, path, input_names, output_names, dynamic_axes)
