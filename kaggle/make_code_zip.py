@@ -8,6 +8,7 @@ Kaggle unpacks it. After code changes, run this again and use
 """
 from __future__ import annotations
 
+import argparse
 import zipfile
 from pathlib import Path
 
@@ -28,7 +29,7 @@ def main() -> Path:
             files = [p] if p.is_file() else sorted(q for q in p.rglob("*") if q.is_file())
             for f in files:
                 rel = f.relative_to(ROOT)
-                if SKIP_DIRS & set(rel.parts) or f.suffix in {".pt", ".pth", ".onnx", ".mkv", ".mp4"}:
+                if SKIP_DIRS & set(rel.parts) or f.suffix in {".pt", ".pth", ".onnx", ".mkv", ".mp4", ".avi", ".mov", ".webm"}:
                     continue
                 z.write(f, Path("cinescope-code") / rel)
                 n += 1
@@ -37,4 +38,7 @@ def main() -> Path:
 
 
 if __name__ == "__main__":
+    # No options; parsing still answers --help instead of doing the work.
+    argparse.ArgumentParser(description=__doc__,
+                            formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     main()

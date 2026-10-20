@@ -11,6 +11,7 @@ Missing results leave the existing text alone.
 """
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import re
@@ -224,4 +225,7 @@ def main() -> None:
 
 
 if __name__ == "__main__":
+    # No options; parsing still answers --help instead of doing the work.
+    argparse.ArgumentParser(description=__doc__,
+                            formatter_class=argparse.RawDescriptionHelpFormatter).parse_args()
     main()

@@ -61,25 +61,31 @@ Filled in as each phase ships.
 
 ```
 cinescope/
-├── cinescope/            # Shared pipeline package used by the app
-│   ├── io/               # Video decoding, frame sampling
-│   ├── shots/            # Shot detection and classification
-│   ├── faces/            # Detection, tracking, embeddings
-│   └── ...
-├── p0_classical/         # Phase notebooks, experiments and README
-├── p1_cnn/
-├── ...
-├── p9_production/
+├── cinescope/            # Shared package used by the phase tools, the pipeline and the app
+│   ├── io/               # Video decoding, frame sampling, previews
+│   ├── imgproc/ palette/ motion/ shots/   # Phase 0: filters, colour, flow, shot cuts
+│   ├── nn/ framing/      # Phase 1: autograd, CNNs, shot-framing classifier
+│   ├── detect/ faces/    # Phase 2: CenterNet face detector, face crops and embeddings
+│   ├── track/ speaker/   # Phase 3: tracking, clustering, who's talking
+│   ├── segment/          # Phase 4: GrabCut, U-Net, matting, inpainting
+│   ├── geometry/         # Phase 5: calibration, SfM, depth, stereo, splats
+│   ├── pose/ video/      # Phase 6: pose, action events, ViT/VideoMAE scene types
+│   ├── ocr/              # Phase 7: CRNN + CTC
+│   ├── search/           # Phase 8: CLIP index, scene search, chat
+│   └── pipeline/         # Phase 9: one-pass pipeline (python -m cinescope.pipeline)
+├── p0_classical/ … p9_production/   # One folder per phase: scripts, labels, results and README
 ├── app/                  # FastAPI back end + React front end (Phase 9)
-├── data/                 # Local only — git-ignored
-├── assets/               # GIFs and images for READMEs
+├── kaggle/               # GPU training jobs that run on Kaggle
+├── tests/                # pytest suite, mostly one file per roadmap week
+├── tools/                # run_everything.py, fetch_assets.py, update_results.py
+├── Dockerfile            # CPU image of the web app and pipeline
+├── data/ trailers/ outputs/   # Local only, git-ignored: weights, clips, results
 ├── LOG.md                # Weekly learning log
-└── requirements.txt
+├── requirements.txt      # Core + dev dependencies
+└── requirements-full.txt # Everything the full pipeline and the web app need
 ```
 
-Every phase folder has its own README with a GIF, its metrics and what I learned.
-
----
+Every phase folder has its own README with example output, its metrics and what I learned.
 
 ## Getting started
 
@@ -121,10 +127,26 @@ The web app (FastAPI + React) and the Docker image are described in [p9_producti
 
 ---
 
+## Development
+
+```bash
+pip install -e ".[video,cv,dl,app,dev]"     # or the requirements files above
+ruff check .                                 # lint (CI pins ruff 0.16.8)
+python -m pytest -q                          # tests; ones needing an optional library skip
+cd app/frontend && npm ci && npm test && npm run build
+cinescope trailers/your_clip.mp4             # same as python -m cinescope.pipeline
+```
+
+CI runs lint, the Python tests, the front end's tests and build, and a Docker smoke test
+on every pull request.
+
+---
+
 ## Footage and copyright
 
-- No film footage is committed to this repo. `data/` is git-ignored.
-- Development uses trailers and short clips.
+- No film footage is committed to this repo. `data/`, `trailers/` and `outputs/` are git-ignored.
+- Every tool takes any video as an argument. Scores are measured on public clips, such as
+  PySceneDetect's test videos (`goldeneye.mp4`, `testvideo.mp4`) and Intel's sample videos.
 - Public demos use open films such as Blender's [*Tears of Steel*](https://mango.blender.org/) and [*Sintel*](https://durian.blender.org/) (CC BY), plus short excerpts only.
 - Film titles are the property of their respective owners.
 
@@ -143,6 +165,10 @@ The web app (FastAPI + React) and the Docker image are described in [p9_producti
 
 **Jayanta Roy** · CS, BRAC University
 [GitHub](https://github.com/roy032) · [LinkedIn](https://www.linkedin.com/in/jayanta-roy-b80357407)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests and the house rules.
 
 ## License
 

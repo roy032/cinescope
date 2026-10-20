@@ -13,7 +13,7 @@ scipy>=1.11              # only used in tests as an independent reference
 
 # Dev
 pytest>=8.0
-ruff>=0.6
+ruff==0.16.8             # same pin as CI: newer releases change import sorting
 
 # Optional library baselines (each comparison is skipped if its library is missing)
 # pymatting              # Phase 4: matting comparison
