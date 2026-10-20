@@ -61,20 +61,25 @@ Filled in as each phase ships.
 
 ```
 cinescope/
-├── cinescope/            # The library every phase and the app import
-│   ├── io/               # Decoding, frame sampling, thumbnails
-│   ├── imgproc/ nn/      # NumPy filters and a small autograd engine (Phases 0-1)
-│   ├── shots/ palette/ motion/ framing/   # Cuts, colour, camera moves, shot framing
-│   ├── detect/ faces/ track/ speaker/     # Faces and props, tracking, who is talking
-│   ├── segment/ geometry/                 # Cutouts and removal; calibration, SfM, depth, 3D
-│   ├── pose/ video/ ocr/ search/          # Poses, scene types, subtitles, scene search
-│   └── pipeline/         # One-pass runner with cache and resume (python -m cinescope.pipeline)
-├── p0_classical/ … p9_production/   # One folder per phase: scripts, labels, results, README
-├── app/                  # FastAPI back end (app/backend) + React front end (app/frontend)
+├── cinescope/            # Shared package used by the phase tools, the pipeline and the app
+│   ├── io/               # Video decoding, frame sampling, previews
+│   ├── imgproc/ palette/ motion/ shots/   # Phase 0: filters, colour, flow, shot cuts
+│   ├── nn/ framing/      # Phase 1: autograd, CNNs, shot-framing classifier
+│   ├── detect/ faces/    # Phase 2: CenterNet face detector, face crops and embeddings
+│   ├── track/ speaker/   # Phase 3: tracking, clustering, who's talking
+│   ├── segment/          # Phase 4: GrabCut, U-Net, matting, inpainting
+│   ├── geometry/         # Phase 5: calibration, SfM, depth, stereo, splats
+│   ├── pose/ video/      # Phase 6: pose, action events, ViT/VideoMAE scene types
+│   ├── ocr/              # Phase 7: CRNN + CTC
+│   ├── search/           # Phase 8: CLIP index, scene search, chat
+│   └── pipeline/         # Phase 9: one-pass pipeline (python -m cinescope.pipeline)
+├── p0_classical/ … p9_production/   # One folder per phase: scripts, labels, results and README
+├── app/                  # FastAPI back end + React front end (Phase 9)
+├── kaggle/               # GPU training jobs that run on Kaggle
 ├── tests/                # pytest suite, mostly one file per roadmap week
 ├── tools/                # run_everything.py, fetch_assets.py, update_results.py
-├── kaggle/               # GPU training jobs run on Kaggle
-├── data/ trailers/ outputs/   # Local only, git-ignored: footage, weights, results
+├── Dockerfile            # CPU image of the web app and pipeline
+├── data/ trailers/ outputs/   # Local only, git-ignored: weights, clips, results
 ├── LOG.md                # Weekly learning log
 ├── requirements.txt      # Core + dev dependencies
 └── requirements-full.txt # Everything the full pipeline and the web app need
@@ -139,8 +144,9 @@ on every pull request.
 
 ## Footage and copyright
 
-- No film footage is committed to this repo. `data/` is git-ignored.
-- Development uses trailers and short clips.
+- No film footage is committed to this repo. `data/`, `trailers/` and `outputs/` are git-ignored.
+- Every tool takes any video as an argument. Scores are measured on public clips, such as
+  PySceneDetect's test videos (`goldeneye.mp4`, `testvideo.mp4`) and Intel's sample videos.
 - Public demos use open films such as Blender's [*Tears of Steel*](https://mango.blender.org/) and [*Sintel*](https://durian.blender.org/) (CC BY), plus short excerpts only.
 - Film titles are the property of their respective owners.
 
@@ -159,6 +165,10 @@ on every pull request.
 
 **Jayanta Roy** · CS, BRAC University
 [GitHub](https://github.com/roy032) · [LinkedIn](https://www.linkedin.com/in/jayanta-roy-b80357407)
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, tests and the house rules.
 
 ## License
 

@@ -9,6 +9,14 @@ description = "An X-Ray engine for films, built from pixels up"
 readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "MIT" }
+authors = [{ name = "Jayanta Roy" }]
+keywords = ["computer-vision", "film", "video-analysis", "shot-detection", "face-tracking", "clip"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Scientific/Engineering :: Image Recognition",
+]
 dependencies = ["numpy>=1.26", "pillow>=10.0"]
 
 [project.optional-dependencies]
@@ -21,6 +29,10 @@ dev = ["pytest>=8.0", "ruff==0.16.8", "scipy>=1.11", "matplotlib>=3.8", "httpx"]
 [project.scripts]
 cinescope = "cinescope.pipeline.__main__:main"
 cinescope-preview = "cinescope.io.preview:main"
+
+[project.urls]
+Homepage = "https://github.com/roy032/cinescope"
+Issues = "https://github.com/roy032/cinescope/issues"
 
 [tool.setuptools.packages.find]
 include = ["cinescope*"]
