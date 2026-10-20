@@ -26,7 +26,8 @@ jobs:
           cache: pip
       # CPU wheels: the tests never need a GPU, and they are a fraction of the CUDA download.
       - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-      - run: pip install -r requirements.txt scikit-learn pycocotools
+      # fastapi, python-multipart and httpx: without them the web app's back-end tests are skipped
+      - run: pip install -r requirements.txt scikit-learn pycocotools fastapi python-multipart httpx
       - run: python -m pytest -q
 
   frontend:
@@ -42,6 +43,7 @@ jobs:
           cache: npm
           cache-dependency-path: app/frontend/package-lock.json
       - run: npm ci
+      - run: npm test
       - run: npm run build
 
   docker:

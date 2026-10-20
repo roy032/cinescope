@@ -61,9 +61,12 @@ def main(argv: list[str] | None = None) -> dict | None:
         params.setdefault(stage, {})[p] = _value(v)
     opts = core.Options(backend=args.backend, threads=args.threads, workers=args.workers,
                         force=tuple(args.force), checkpoint_s=args.checkpoint_s, max_seconds=args.max_seconds)
-    import torch
-
-    torch.set_num_threads(args.threads)
+    try:                                          # the classical stages (shots, palette ...) run without PyTorch
+        import torch
+    except ImportError:
+        pass
+    else:
+        torch.set_num_threads(args.threads)
     rep = core.run(args.clip, args.stages, args.out, params, opts, log=None if args.quiet else print)
     print(summary(rep))
     print(f"-> {os.path.join(args.out, rep['clip'], 'report.json')}")

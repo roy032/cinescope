@@ -8,9 +8,10 @@ Endpoints (all JSON unless noted):
     GET  /api/health
     GET  /api/stages                        the registered pipeline stages
     GET  /api/clips                         clips found in the clip folders, and whether processed
-    POST /api/clips/upload                  multipart file -> saved to the uploads folder
+    POST /api/clips/upload                  multipart file -> saved to the uploads folder (renamed if the
+                                            name is taken, so an upload never replaces or hides a clip)
     POST /api/jobs                          {"clip", "stages"?, "backend"?, "params"?} -> job
-    GET  /api/jobs, /api/jobs/{id}          status, current stage, progress 0..1
+    GET  /api/jobs?clip=, /api/jobs/{id}    status, current stage, progress 0..1, the planned steps
     POST /api/jobs/{id}/cancel              stops at the next frame (the decode checkpoint stays:
                                             a new job on the clip resumes there)
     GET  /api/clips/{clip}/report           outputs/<clip>/report.json
@@ -81,11 +82,22 @@ class Job:
     started: float | None = None
     finished: float | None = None
     stage_progress: dict = field(default_factory=dict)
+    plan: list[str] = field(default_factory=list)   # "decode", then the resolved stages in run order
 
     def to_json(self) -> dict:
         d = asdict(self)
         d["elapsed_s"] = round((self.finished or time.time()) - self.started, 1) if self.started else 0.0
         return d
+
+
+def plan_progress(plan: list[str], seen: dict[str, float]) -> float:
+    """Overall progress 0..0.99 of a run whose steps report in `plan` order. A step that
+    never reports before a later one does was cached (or had nothing to decode): done."""
+    if not plan:
+        return 0.0
+    last = max((plan.index(s) for s in seen if s in plan), default=-1)
+    total = sum(1.0 if i < last and s not in seen else seen.get(s, 0.0) for i, s in enumerate(plan))
+    return round(min(0.99, total / len(plan)), 3)
 
 
 def _safe_join(root: Path, rel: str) -> Path:
@@ -153,7 +165,8 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         from cinescope.pipeline import stages as _builtin  # noqa: F401
 
         return [{"name": n, "version": c.version, "requires": list(c.requires),
-                 "kind": "frame" if c.streams else "post", "params": c.defaults} for n, c in STAGES.items()]
+                 "kind": "frame" if c.streams else "post", "params": c.defaults,
+                 "default": getattr(c, "default", True)} for n, c in STAGES.items()]
 
     @app.get("/api/clips")
     def list_clips():
@@ -163,14 +176,26 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
             row = {"clip": name, "file": p.name, "size_mb": round(p.stat().st_size / 2**20, 1),
                    "uploaded": p.parent == uploads, "processed": rp.exists()}
             if rp.exists():
-                try:
-                    r = json.loads(rp.read_text(encoding="utf-8"))
-                    row.update(duration_s=r["info"]["duration_s"], stages=r.get("stages", []),
-                               n_shots=len(r.get("shots", [])))
-                except (OSError, json.JSONDecodeError, KeyError):
-                    pass
+                row.update(report_summary(rp))
             rows.append(row)
         return rows
+
+    summaries: dict[Path, tuple[float, dict]] = {}
+
+    def report_summary(rp: Path) -> dict:
+        """The clip list's facts from a report, re-read only when the report changes
+        (a film's report is megabytes, and the app polls the list)."""
+        try:
+            mtime = rp.stat().st_mtime
+            if rp in summaries and summaries[rp][0] == mtime:
+                return summaries[rp][1]
+            r = json.loads(rp.read_text(encoding="utf-8"))
+            row = {"duration_s": r["info"]["duration_s"], "stages": r.get("stages", []),
+                   "n_shots": len(r.get("shots", []))}
+        except (OSError, json.JSONDecodeError, KeyError):
+            return {}
+        summaries[rp] = (mtime, row)
+        return row
 
     @app.post("/api/clips/upload")
     async def upload(file: UploadFile = File(...)):  # noqa: B008 - FastAPI's way
@@ -178,7 +203,12 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         if Path(name).suffix.lower() not in VIDEO_EXT:
             raise HTTPException(400, f"not a video file: {name}")
         safe = "".join(ch if ch.isalnum() or ch in "-_." else "_" for ch in name)
-        dest = uploads / safe
+        stem, ext = Path(safe).stem or "upload", Path(safe).suffix
+        taken = set(clips())
+        dest, i = uploads / f"{stem}{ext}", 1
+        while dest.stem in taken or dest.exists():      # never overwrite, never hide a clip of the same name
+            i += 1
+            dest = uploads / f"{stem}-{i}{ext}"
         with open(dest, "wb") as f:
             while chunk := await file.read(1 << 20):
                 f.write(chunk)
@@ -187,19 +217,26 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
     # ------------------------------------------------------------------ jobs
     def work(job: Job, req: JobRequest) -> None:
         from cinescope.pipeline import Interrupted, Options, run
+        from cinescope.pipeline import stages as _builtin  # noqa: F401  (registers the stages)
+        from cinescope.pipeline.core import default_stages, resolve
 
         with run_lock:                                   # one pipeline at a time
             if job.id in cancel:
                 job.status = "cancelled"
                 return
             job.status, job.started = "running", time.time()
+            try:
+                job.plan = ["decode"] + resolve(req.stages or default_stages())
+            except (KeyError, ValueError) as e:
+                job.status, job.error, job.finished = "error", str(e), time.time()
+                return
 
             def progress(stage: str, frac: float, msg: str) -> None:
+                if stage == "done":
+                    return
                 job.stage, job.message = stage, msg
                 job.stage_progress[stage] = round(frac, 3)
-                done = sum(1 for v in job.stage_progress.values() if v >= 1.0)
-                n = max(len(job.stage_progress), 1)
-                job.progress = round(min(0.99, (done + (0 if frac >= 1 else frac)) / (n + 1)), 3)
+                job.progress = plan_progress(job.plan, job.stage_progress)
 
             def stop(n: int, t: float) -> bool:
                 return job.id in cancel
@@ -232,8 +269,9 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         return job.to_json()
 
     @app.get("/api/jobs")
-    def list_jobs():
-        return [j.to_json() for j in sorted(jobs.values(), key=lambda j: -j.created)]
+    def list_jobs(clip: str | None = None):
+        return [j.to_json() for j in sorted(jobs.values(), key=lambda j: -j.created)
+                if clip is None or j.clip == clip]
 
     @app.get("/api/jobs/{job_id}")
     def get_job(job_id: str):
