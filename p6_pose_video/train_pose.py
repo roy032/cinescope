@@ -28,7 +28,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from cinescope.pose import FLIP_PAIRS  # noqa: E402
 from cinescope.pose.heatmaps import crop_to_heatmap, gaussian_targets  # noqa: E402
-from cinescope.pose.simplebaseline import SimpleBaseline, flip_heatmaps, heatmap_loss, to_tensor  # noqa: E402
+from cinescope.pose.simplebaseline import (  # noqa: E402
+    SimpleBaseline,
+    flip_heatmaps,
+    heatmap_loss,
+    to_tensor,
+)
 
 IN_HW, HM_HW, SIGMA = (128, 96), (32, 24), 1.5
 ENLARGE = 1.3

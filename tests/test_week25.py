@@ -216,6 +216,7 @@ class TestDiskArray(unittest.TestCase):
             a = back.array()
             self.assertEqual(a.shape, (6, 4, 3))
             self.assertEqual(a[:, 0, 0].tolist(), [0, 1, 2, 3, 4, 7])
+            del a                                        # release the memmap: Windows cannot delete a mapped file
             back.close()
             with self.assertRaises(ValueError):
                 DiskArray(Path(d) / "y.u8", (2, 2)).append(np.zeros((3, 3), np.uint8))

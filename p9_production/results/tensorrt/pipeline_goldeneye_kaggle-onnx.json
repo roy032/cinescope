@@ -1,0 +1,52 @@
+{
+ "video": "goldeneye.mp4",
+ "duration_s": 82.582,
+ "backend": "onnx",
+ "workers": 2,
+ "threads": 2,
+ "wall_s": 382.67,
+ "decode_s": 51.971,
+ "frames_decoded": 1980,
+ "stages": {
+  "shots": 13.514,
+  "palette": 0.998,
+  "camera": 3.337,
+  "frames": 3.244,
+  "faces": 108.308,
+  "speaking": 54.469,
+  "characters": 19.677,
+  "subtitles": 153.591,
+  "search": 31.094,
+  "framing": 4.983,
+  "campath": 109.961,
+  "pose": 8.49,
+  "scenes": 0.879
+ },
+ "frame_s": {
+  "shots": 13.319,
+  "palette": 0.0,
+  "camera": 0.0,
+  "frames": 3.244,
+  "faces": 106.456,
+  "speaking": 0.0,
+  "characters": 0.0,
+  "subtitles": 153.584,
+  "search": 0.0,
+  "framing": 0.0,
+  "campath": 0.0,
+  "pose": 8.326,
+  "scenes": 0.0
+ },
+ "loadavg_before": [
+  0.97,
+  1.05,
+  0.82
+ ],
+ "loadavg_after": [
+  1.15,
+  1.55,
+  1.19
+ ],
+ "cpu_count": 4,
+ "when": "2026-10-18 20:49"
+}

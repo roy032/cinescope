@@ -12,9 +12,10 @@ import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-INCLUDE = ["cinescope", "p0_classical", "p1_cnn", "p2_detection", "tests", "kaggle",
-           "pyproject.toml", "requirements.txt", "README.md", "LICENSE"]
-SKIP_DIRS = {"__pycache__", "checkpoints", "results", ".pytest_cache", ".ruff_cache"}
+INCLUDE = ["cinescope", "p0_classical", "p1_cnn", "p2_detection", "p3_tracking", "p4_segmentation", "p5_3d",
+           "p6_pose_video", "p7_ocr", "p8_search", "p9_production", "app/__init__.py", "app/backend", "tests",
+           "kaggle", "tools", "pyproject.toml", "requirements.txt", "requirements-full.txt", "README.md", "LICENSE"]
+SKIP_DIRS = {"__pycache__", "checkpoints", "results", ".pytest_cache", ".ruff_cache", "node_modules"}
 
 
 def main() -> Path:

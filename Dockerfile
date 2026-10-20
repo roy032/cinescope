@@ -5,7 +5,8 @@
 #              -v "$PWD/outputs:/out" cinescope
 #   # then open http://localhost:8000
 #
-# Weights and footage are mounted, never baked in (see README: Footage and copyright).
+# Weights and footage are mounted, never baked in (see README: Footage and copyright);
+# `python tools/fetch_assets.py` downloads both. CI builds this image and smoke-tests it.
 
 # ---- front end: build the static files
 FROM node:22-slim AS frontend
@@ -23,10 +24,9 @@ ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 OMP_NUM_THREADS=2 \
 RUN apt-get update && apt-get install -y --no-install-recommends libgl1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
-COPY requirements.txt ./
+COPY requirements.txt requirements-full.txt ./
 RUN pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu \
-    && pip install -r requirements.txt \
-       fastapi uvicorn python-multipart onnx onnxruntime open_clip_torch faiss-cpu rapidocr-onnxruntime scikit-learn
+    && pip install -r requirements.txt -r requirements-full.txt
 COPY cinescope/ cinescope/
 COPY app/__init__.py app/
 COPY app/backend/ app/backend/

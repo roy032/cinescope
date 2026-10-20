@@ -1,0 +1,424 @@
+{
+ "n": 289,
+ "distribution": {
+  "ECS": 0,
+  "CS": 27,
+  "MS": 204,
+  "FS": 34,
+  "LS": 24
+ },
+ "teacher": {},
+ "labels": "p1_cnn/labels/own_test.labels.json",
+ "systems": {
+  "text": {
+   "accuracy": 0.7923875432525952,
+   "mean_class_accuracy": 0.5241693899782135,
+   "per_class": {
+    "ECS": NaN,
+    "CS": 0.14814814814814814,
+    "MS": 0.9656862745098039,
+    "FS": 0.4411764705882353,
+    "LS": 0.5416666666666666
+   },
+   "confusion": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     4,
+     23,
+     0,
+     0
+    ],
+    [
+     0,
+     4,
+     197,
+     2,
+     1
+    ],
+    [
+     0,
+     0,
+     19,
+     15,
+     0
+    ],
+    [
+     0,
+     1,
+     3,
+     7,
+     13
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "CS",
+     "pred": "MS",
+     "count": 23
+    },
+    {
+     "true": "FS",
+     "pred": "MS",
+     "count": 19
+    },
+    {
+     "true": "LS",
+     "pred": "FS",
+     "count": 7
+    },
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 4
+    },
+    {
+     "true": "LS",
+     "pred": "MS",
+     "count": 3
+    }
+   ],
+   "n": 289,
+   "accuracy_ci95": [
+    0.7439446366782007,
+    0.8374567474048438
+   ],
+   "coverage": 1.0,
+   "name": "SigLIP zero-shot (prompts only)"
+  },
+  "face": {
+   "accuracy": 0.6684210526315789,
+   "mean_class_accuracy": 0.6426351569171949,
+   "per_class": {
+    "ECS": NaN,
+    "CS": 0.9285714285714286,
+    "MS": 0.6791044776119403,
+    "FS": 0.6551724137931034,
+    "LS": 0.3076923076923077
+   },
+   "confusion": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     1,
+     13,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     32,
+     91,
+     11,
+     0
+    ],
+    [
+     0,
+     0,
+     9,
+     19,
+     1
+    ],
+    [
+     0,
+     0,
+     0,
+     9,
+     4
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 32
+    },
+    {
+     "true": "MS",
+     "pred": "FS",
+     "count": 11
+    },
+    {
+     "true": "LS",
+     "pred": "FS",
+     "count": 9
+    },
+    {
+     "true": "FS",
+     "pred": "MS",
+     "count": 9
+    },
+    {
+     "true": "FS",
+     "pred": "LS",
+     "count": 1
+    }
+   ],
+   "n": 190,
+   "accuracy_ci95": [
+    0.6052631578947368,
+    0.7315789473684211
+   ],
+   "coverage": 0.657439446366782,
+   "name": "Face size only, shots with a face"
+  },
+  "fused": {
+   "accuracy": 0.8062283737024222,
+   "mean_class_accuracy": 0.5554874727668845,
+   "per_class": {
+    "ECS": NaN,
+    "CS": 0.18518518518518517,
+    "MS": 0.9656862745098039,
+    "FS": 0.5294117647058824,
+    "LS": 0.5416666666666666
+   },
+   "confusion": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     5,
+     22,
+     0,
+     0
+    ],
+    [
+     0,
+     4,
+     197,
+     3,
+     0
+    ],
+    [
+     0,
+     0,
+     16,
+     18,
+     0
+    ],
+    [
+     0,
+     0,
+     1,
+     10,
+     13
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "CS",
+     "pred": "MS",
+     "count": 22
+    },
+    {
+     "true": "FS",
+     "pred": "MS",
+     "count": 16
+    },
+    {
+     "true": "LS",
+     "pred": "FS",
+     "count": 10
+    },
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 4
+    },
+    {
+     "true": "MS",
+     "pred": "FS",
+     "count": 3
+    }
+   ],
+   "n": 289,
+   "accuracy_ci95": [
+    0.761159169550173,
+    0.8477508650519031
+   ],
+   "coverage": 1.0,
+   "name": "Teacher: prompts + face size"
+  },
+  "pretrained": {
+   "accuracy": 0.7958477508650519,
+   "mean_class_accuracy": 0.5395561002178649,
+   "per_class": {
+    "ECS": NaN,
+    "CS": 0.18518518518518517,
+    "MS": 0.9656862745098039,
+    "FS": 0.38235294117647056,
+    "LS": 0.625
+   },
+   "confusion": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     5,
+     22,
+     0,
+     0
+    ],
+    [
+     1,
+     3,
+     197,
+     3,
+     0
+    ],
+    [
+     0,
+     0,
+     19,
+     13,
+     2
+    ],
+    [
+     0,
+     0,
+     1,
+     8,
+     15
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "CS",
+     "pred": "MS",
+     "count": 22
+    },
+    {
+     "true": "FS",
+     "pred": "MS",
+     "count": 19
+    },
+    {
+     "true": "LS",
+     "pred": "FS",
+     "count": 8
+    },
+    {
+     "true": "MS",
+     "pred": "FS",
+     "count": 3
+    },
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 3
+    }
+   ],
+   "n": 289,
+   "accuracy_ci95": [
+    0.7474048442906575,
+    0.8408304498269896
+   ],
+   "coverage": 1.0,
+   "name": "ResNet-18, ImageNet init"
+  },
+  "scratch": {
+   "accuracy": 0.7750865051903114,
+   "mean_class_accuracy": 0.5226034858387799,
+   "per_class": {
+    "ECS": NaN,
+    "CS": 0.2962962962962963,
+    "MS": 0.946078431372549,
+    "FS": 0.2647058823529412,
+    "LS": 0.5833333333333334
+   },
+   "confusion": [
+    [
+     0,
+     0,
+     0,
+     0,
+     0
+    ],
+    [
+     0,
+     8,
+     19,
+     0,
+     0
+    ],
+    [
+     0,
+     9,
+     193,
+     2,
+     0
+    ],
+    [
+     0,
+     0,
+     24,
+     9,
+     1
+    ],
+    [
+     0,
+     3,
+     3,
+     4,
+     14
+    ]
+   ],
+   "top_confusions": [
+    {
+     "true": "FS",
+     "pred": "MS",
+     "count": 24
+    },
+    {
+     "true": "CS",
+     "pred": "MS",
+     "count": 19
+    },
+    {
+     "true": "MS",
+     "pred": "CS",
+     "count": 9
+    },
+    {
+     "true": "LS",
+     "pred": "FS",
+     "count": 4
+    },
+    {
+     "true": "LS",
+     "pred": "MS",
+     "count": 3
+    }
+   ],
+   "n": 289,
+   "accuracy_ci95": [
+    0.726643598615917,
+    0.8200692041522492
+   ],
+   "coverage": 1.0,
+   "name": "ResNet-18, random init"
+  }
+ }
+}

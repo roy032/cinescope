@@ -113,7 +113,7 @@ def test_week8_tables_in_readme(tmp_path, monkeypatch):
                       "<!-- /auto:p2-props -->\n")
     monkeypatch.setattr(update_results, "ROOT", tmp_path)
     assert update_results.week8()
-    text = readme.read_text()
+    text = readme.read_text(encoding="utf-8")
     assert "| CenterNet-R18 (ours) | — |" in text
     assert "| OpenCV YuNet | 0.900 | 0.900 | — | 0.900 | 0.400 | 12.0 |" in text
     assert "| YOLO11n | 0.750 | — | — | 0.500 | — | — | 50.0 |" in text and "old" not in text

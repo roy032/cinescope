@@ -41,11 +41,13 @@ def username() -> str:
 
 def run(*args: str, check: bool = True) -> str:
     print("$ kaggle", " ".join(args), flush=True)
-    p = subprocess.run([kaggle_exe(), *args], capture_output=True, text=True,
+    # PYTHONUTF8: the kaggle CLI itself crashes printing non-ASCII file names to a cp1252 pipe
+    p = subprocess.run([kaggle_exe(), *args], capture_output=True, text=True, env={**os.environ, "PYTHONUTF8": "1"},
                        encoding="utf-8", errors="replace")
     out = (p.stdout or "") + (p.stderr or "")
-    if out.strip():
-        print(out.strip()[-2000:], flush=True)
+    if out.strip():                 # the console may not be UTF-8 (cp1252 when redirected on Windows)
+        enc = getattr(sys.stdout, "encoding", None) or "utf-8"
+        print(out.strip()[-2000:].encode(enc, "replace").decode(enc), flush=True)
     if check and p.returncode != 0:
         sys.exit(f"kaggle {' '.join(args[:2])} failed (exit {p.returncode})")
     return out

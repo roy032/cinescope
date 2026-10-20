@@ -12,3 +12,6 @@ trailers
 *.avi
 *.mov
 *.pdf
+kaggle_upload
+.ruff_cache
+.pytest_cache
