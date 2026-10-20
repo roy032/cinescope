@@ -127,7 +127,9 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
     queue_lock = threading.Lock()
     run_lock = threading.Lock()
 
-    app = FastAPI(title="CineScope", version="0.9")
+    from cinescope import __version__
+
+    app = FastAPI(title="CineScope", version=__version__)
 
     # ------------------------------------------------------------------ clips
     def clips() -> dict[str, Path]:

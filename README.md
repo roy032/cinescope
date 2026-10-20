@@ -61,25 +61,26 @@ Filled in as each phase ships.
 
 ```
 cinescope/
-├── cinescope/            # Shared pipeline package used by the app
-│   ├── io/               # Video decoding, frame sampling
-│   ├── shots/            # Shot detection and classification
-│   ├── faces/            # Detection, tracking, embeddings
-│   └── ...
-├── p0_classical/         # Phase notebooks, experiments and README
-├── p1_cnn/
-├── ...
-├── p9_production/
-├── app/                  # FastAPI back end + React front end (Phase 9)
-├── data/                 # Local only — git-ignored
-├── assets/               # GIFs and images for READMEs
+├── cinescope/            # The library every phase and the app import
+│   ├── io/               # Decoding, frame sampling, thumbnails
+│   ├── imgproc/ nn/      # NumPy filters and a small autograd engine (Phases 0-1)
+│   ├── shots/ palette/ motion/ framing/   # Cuts, colour, camera moves, shot framing
+│   ├── detect/ faces/ track/ speaker/     # Faces and props, tracking, who is talking
+│   ├── segment/ geometry/                 # Cutouts and removal; calibration, SfM, depth, 3D
+│   ├── pose/ video/ ocr/ search/          # Poses, scene types, subtitles, scene search
+│   └── pipeline/         # One-pass runner with cache and resume (python -m cinescope.pipeline)
+├── p0_classical/ … p9_production/   # One folder per phase: scripts, labels, results, README
+├── app/                  # FastAPI back end (app/backend) + React front end (app/frontend)
+├── tests/                # pytest suite, mostly one file per roadmap week
+├── tools/                # run_everything.py, fetch_assets.py, update_results.py
+├── kaggle/               # GPU training jobs run on Kaggle
+├── data/ trailers/ outputs/   # Local only, git-ignored: footage, weights, results
 ├── LOG.md                # Weekly learning log
-└── requirements.txt
+├── requirements.txt      # Core + dev dependencies
+└── requirements-full.txt # Everything the full pipeline and the web app need
 ```
 
-Every phase folder has its own README with a GIF, its metrics and what I learned.
-
----
+Every phase folder has its own README with example output, its metrics and what I learned.
 
 ## Getting started
 
@@ -118,6 +119,21 @@ python -m cinescope.pipeline trailers/your_clip.mkv       # every phase in one p
 The web app (FastAPI + React) and the Docker image are described in [p9_production/](p9_production/).
 
 **Main tools:** Python · NumPy · PyTorch · OpenCV · PyAV · FAISS/Qdrant · FastAPI · React
+
+---
+
+## Development
+
+```bash
+pip install -e ".[video,cv,dl,app,dev]"     # or the requirements files above
+ruff check .                                 # lint (CI pins ruff 0.16.8)
+python -m pytest -q                          # tests; ones needing an optional library skip
+cd app/frontend && npm ci && npm test && npm run build
+cinescope trailers/your_clip.mp4             # same as python -m cinescope.pipeline
+```
+
+CI runs lint, the Python tests, the front end's tests and build, and a Docker smoke test
+on every pull request.
 
 ---
 
