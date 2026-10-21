@@ -120,6 +120,25 @@ def _loudness(snd: dict | None, dur: float) -> str:
                  "momentary loudness, LUFS; red: peaks, blue: silences")
 
 
+def _story(st: dict | None, dur: float) -> str:
+    if not st or not (st.get("intensity") or {}).get("value"):
+        return ""
+    iv = st["intensity"]
+    pts = " ".join(f"{_x(iv['t0'] + i * iv['dt'], dur):.1f},{58 - 54 * v:.1f}" for i, v in enumerate(iv["value"]))
+    x0, x1 = _x(iv["t0"], dur), _x(iv["t0"] + (len(iv["value"]) - 1) * iv["dt"], dur)
+    acts = "".join(f'<rect x="{_x(a["t0"], dur):.1f}" y="0" width="{max(_x(a["t1"], dur) - _x(a["t0"], dur), 1):.1f}" '
+                   f'height="60" class="act{a["act"]}"/>' for a in st.get("acts", []))
+    scenes = "".join(f'<line x1="{_x(s["t0"], dur):.1f}" x2="{_x(s["t0"], dur):.1f}" y1="0" y2="8" class="scene"/>'
+                     for s in st.get("scenes", [])[1:])
+    beats = "".join(f'<line x1="{_x(b["t"], dur):.1f}" x2="{_x(b["t"], dur):.1f}" y1="0" y2="60" class="beat">'
+                    f'<title>{_e(b["label"])} {_clock(b["t"])}</title></line>' for b in st.get("beats", []))
+    sm = st.get("summary") or {}
+    note = (f"intensity from {', '.join(sm.get('signals', []))}; shaded: acts 1, 2, 3; lines: "
+            + ", ".join(f"{b['label']} {_clock(b['t'])}" for b in st.get("beats", [])))
+    return _lane("Story", acts + f'<polygon points="{x0:.1f},60 {pts} {x1:.1f},60" class="area"/>'
+                 f'<polyline points="{pts}" class="curve"/>' + scenes + beats, 60, note)
+
+
 def _facts(rep: dict, pc: dict | None) -> list[tuple[str, str]]:
     i = rep["info"]
     fps = f"{i['fps']:.3f}".rstrip("0").rstrip(".")
@@ -138,6 +157,10 @@ def _facts(rep: dict, pc: dict | None) -> list[tuple[str, str]]:
         f += [("Loudness", f"{sd['integrated_lufs']} LUFS"), ("Loudness range", f"{sd['lra_lu']} LU")]
         if sd.get("speech_share") is not None:
             f.append(("Speech", f"{round(100 * sd['speech_share'])}%"))
+    sy = ((rep.get("extra") or {}).get("story") or {}).get("summary") or {}
+    if sy:
+        f += [("Scenes", str(sy["scenes"])), ("Average scene", f"{sy['mean_scene_s']:.0f} s"),
+              ("Arc", sy["arc"])]
     ch = (rep.get("characters") or {}).get("list")
     if ch:
         f.append(("Characters", str(len(ch))))
@@ -200,6 +223,8 @@ h1{font-size:30px;margin:0 0 2px;letter-spacing:-.01em}h2{font-size:18px;margin:
 .lane .ln{font-size:12px;color:var(--dim);margin-top:3px}
 .area{fill:color-mix(in srgb,var(--accent) 40%,transparent)}.curve{fill:none;stroke:var(--accent);stroke-width:1.5;
 vector-effect:non-scaling-stroke}.peak{fill:#e05545;opacity:.25}.silence{fill:#4f7fbf;opacity:.25}
+.act1,.act3{fill:var(--fg);opacity:.04}.act2{fill:var(--fg);opacity:.09}.scene{stroke:var(--fg);stroke-width:1;opacity:.5;
+vector-effect:non-scaling-stroke}.beat{stroke:#e05545;stroke-width:1.5;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
 .chars{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 .char{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:8px;
 padding:6px}.char img,.char .noimg{width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--lane)}
@@ -227,6 +252,7 @@ def breakdown_html(rep: dict, root: str | Path, thumb_width: int = 200) -> str:
     facts = "".join(f'<div class="fact"><b>{_e(v)}</b><span>{_e(k)}</span></div>' for k, v in _facts(rep, pc))
     desc = f'<p class="desc">{_e(look["description"])}</p>' if look.get("description") else ""
     charts = _barcode(rep, dur) + _pace(pc, dur) + _look(rep, dur) + _loudness(extra.get("sound"), dur)
+    charts += _story(extra.get("story"), dur)
     title = f"{rep['clip']}: CineScope breakdown"
     return (
         "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"

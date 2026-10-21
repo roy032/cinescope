@@ -8,6 +8,8 @@ editor or sound mixer would use:
                  teal-and-orange, symmetry, per shot and for the whole clip
     editing.py   pacing curve, recurring camera setups, shot/reverse-shot
                  exchanges and fast-cut montages
+    sound.py     loudness (EBU R 128 style), peaks, silences, onsets, speech
+    story.py     scenes, an intensity curve, three acts, turning points, climax
 
 No models, no training: every number is a few lines of NumPy over pixels, and
 every threshold is fixed up front (none are tuned on the public test clips).
