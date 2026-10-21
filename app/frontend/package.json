@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.10.0",
   "type": "module",
-  "description": "CineScope web app front end: shot strip, barcode, character timeline, subtitles, scene search, camera path",
+  "description": "CineScope web app front end: shot strip, barcode, character timeline, subtitles, scene search, camera path, story, composition, beat, compare",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

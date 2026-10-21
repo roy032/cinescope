@@ -18,11 +18,15 @@ import Cutout from "./components/Cutout.jsx";
 import Look from "./components/Look.jsx";
 import Editing from "./components/Editing.jsx";
 import Sound from "./components/Sound.jsx";
+import Story from "./components/Story.jsx";
+import Composition from "./components/Composition.jsx";
+import Beat from "./components/Beat.jsx";
+import Compare from "./components/Compare.jsx";
 import JobPanel from "./components/JobPanel.jsx";
 import Shortcuts from "./components/Shortcuts.jsx";
 
 const START = parseLocation(window.location.search);
-const PANELLED = ["look", "editing", "sound"];
+const PANELLED = ["look", "editing", "sound", "story", "rhythm"];
 
 export default function App() {
   const [clips, setClips] = useState(null); // null until the first answer
@@ -211,12 +215,18 @@ export default function App() {
   const look = report?.extra?.look?.summary;
   const editing = report?.extra?.editing;
   const sound = report?.extra?.sound;
+  const story = report?.extra?.story;
+  const composition = report?.extra?.composition?.summary;
+  const rhythm = report?.extra?.rhythm;
   const sections = ready
     ? [
         report.shots && ["shots", "Shots"],
+        story?.summary && ["story", "Story"],
         editing && ["editing", "Editing"],
         look && ["look", "Look"],
+        composition && ["composition", "Composition"],
         sound && ["sound", "Sound"],
+        rhythm?.audio && ["beat", "Beat"],
         report.characters && ["characters", "Characters"],
         otherTimelines && ["timelines", "Timelines"],
         report.subtitles && ["subtitles", "Subtitles"],
@@ -363,6 +373,15 @@ export default function App() {
             </section>
           )}
 
+          {story?.summary && (
+            <section className="panel" id="story">
+              <h2>
+                Story <small>scenes, acts and turning points; click a beat to jump</small>
+              </h2>
+              <Story story={story} duration={duration} time={time} onSeek={seekTo} />
+            </section>
+          )}
+
           {look && (
             <section className="panel" id="look">
               <h2>
@@ -372,12 +391,30 @@ export default function App() {
             </section>
           )}
 
+          {composition && (
+            <section className="panel" id="composition">
+              <h2>
+                Composition <small>where the eye goes in the frame, and how each shot is framed</small>
+              </h2>
+              <Composition shots={shots} summary={composition} duration={duration} time={time} onSeek={seekTo} />
+            </section>
+          )}
+
           {sound && (
             <section className="panel" id="sound">
               <h2>
                 Sound <small>loudness, dynamics, speech and how the cuts sit on the soundtrack</small>
               </h2>
               <Sound sound={sound} duration={duration} time={time} onSeek={seekTo} />
+            </section>
+          )}
+
+          {rhythm?.audio && (
+            <section className="panel" id="beat">
+              <h2>
+                Beat <small>the music's tempo, and whether the picture is cut to it</small>
+              </h2>
+              <Beat rhythm={rhythm} duration={duration} time={time} onSeek={seekTo} />
             </section>
           )}
 
@@ -429,6 +466,7 @@ export default function App() {
                 Export <small>hand the cut to an editor: every format cuts the original file at the same frames</small>
               </h2>
               <Exports clip={clip} report={report} />
+              <Compare clip={clip} clips={clips || []} />
             </section>
           )}
 

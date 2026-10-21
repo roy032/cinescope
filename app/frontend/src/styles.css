@@ -325,3 +325,22 @@ footer .link { font-size: 12px; color: var(--dim); }
 .loudness .peak { fill: var(--talk); opacity: 0.25; }
 .loudness .silence { fill: var(--on); opacity: 0.25; }
 .spaced { margin-left: 10px; }
+
+/* story, composition, beat, compare */
+.story-lane svg { width: 100%; height: 64px; display: block; }
+.story-lane .area { fill: color-mix(in srgb, var(--accent) 45%, transparent); }
+.story-lane .act { fill: var(--fg, #ddd); opacity: 0.04; }
+.story-lane .act2 { opacity: 0.1; }
+.story-lane .scene-tick { stroke: var(--dim); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.story-lane .beat-line { stroke: var(--talk); stroke-width: 1.5; stroke-dasharray: 3 2; vector-effect: non-scaling-stroke; }
+.story .legend .link { margin-left: 0; margin-right: 10px; }
+.composition .desc { margin: 0 0 10px; }
+.comp-row { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+.comp-row .facts { flex: 1; min-width: 260px; }
+.heat { width: 240px; max-width: 100%; height: auto; background: var(--panel2); border-radius: 4px; }
+.heat .thirds line { stroke: var(--dim); stroke-width: 0.5; stroke-dasharray: 2 2; }
+.beat-section { fill: var(--accent); opacity: 0.18; }
+.beat-tick { stroke: var(--dim); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.compare { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 14px; }
+.export-btn { border: 1px solid var(--accent); color: var(--accent); border-radius: 6px; padding: 5px 12px; text-decoration: none; }
+.export-btn:hover { background: color-mix(in srgb, var(--accent) 12%, transparent); }

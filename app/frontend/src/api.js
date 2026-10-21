@@ -77,4 +77,5 @@ export const api = {
   video: (clip) => `/api/clips/${enc(clip)}/video`,
   // editing-software hand-off: edl | fcpxml | otio | csv | vtt | pdf (a download unless inline)
   exportUrl: (clip, fmt, inline = false) => `/api/clips/${enc(clip)}/export/${fmt}${inline ? "?download=false" : ""}`,
+  compareUrl: (a, b) => `/api/compare?a=${enc(a)}&b=${enc(b)}&format=html`,
 };
