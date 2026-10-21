@@ -23,6 +23,7 @@
     story       -      post    shots,editing, scenes, intensity curve, three acts, turning points, climax
                                sound
     composition -      post    shots,frames   centre of interest, rule of thirds, balance, headroom, focus
+    rhythm      -      post    shots, audio   tempo, pulse clarity, beats, rhythmic sections, cuts on the beat
 
 Model stages honour Options.backend (torch / onnx / tensorrt) through
 cinescope.pipeline.accel. Heavy per-shot loops (palettes, camera moves) use a
@@ -1107,3 +1108,23 @@ class Composition(Stage):
                 frames = list(_shot_frames(th, s, 1))
             per_shot.append(shot_composition(frames) if len(frames) else None)
         return {"per_shot": per_shot, "summary": summarise(per_shot, [s["duration_s"] for s in shots])}
+
+
+@register
+class Rhythm(Stage):
+    """The soundtrack's beat (cinescope.cinema.rhythm): tempo, pulse clarity, beat
+    times, the rhythmic (music with a beat) sections and how often the picture cuts
+    on the beat. A clip without audio gives {"audio": false}."""
+    name = "rhythm"
+    version = "1"
+    requires = ("shots",)
+
+    def end(self, ctx: Context) -> dict:
+        from ..cinema.rhythm import SR, analyse
+        from ..speaker.audio import load_audio
+
+        x = load_audio(ctx.video, SR)
+        if x is not None and ctx.options.max_seconds:
+            x = x[:int(ctx.options.max_seconds * SR)]
+        ctx.report(self.name, 0.3, "beats")
+        return analyse(x, ctx.results["shots"]["shots"], ctx.duration, SR)

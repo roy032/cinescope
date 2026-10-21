@@ -139,6 +139,21 @@ def _story(st: dict | None, dur: float) -> str:
                  f'<polyline points="{pts}" class="curve"/>' + scenes + beats, 60, note)
 
 
+def _rhythm(rh: dict | None, dur: float) -> str:
+    if not rh or not rh.get("timeline"):
+        return ""
+    bands = "".join(f'<rect x="{_x(e["t0"], dur):.1f}" y="0" width="{max(_x(e["t1"], dur) - _x(e["t0"], dur), 1):.1f}" '
+                    'height="24" class="rhythmic"/>' for e in rh["timeline"])
+    ticks = "".join(f'<line x1="{_x(b, dur):.1f}" x2="{_x(b, dur):.1f}" y1="6" y2="18" class="tick"/>'
+                    for b in rh.get("beats", []))
+    sm = rh.get("summary") or {}
+    cb = sm.get("cuts_on_beat") or {}
+    note = f"{sm['bpm']:.0f} BPM where the music has a beat" if sm.get("bpm") else "sections with a clear beat"
+    if cb.get("on_beat") is not None:
+        note += f"; {round(100 * cb['on_beat'])}% of cuts there land on a beat (chance {round(100 * cb['chance'])}%)"
+    return _lane("Beat", bands + ticks, 24, note)
+
+
 def _facts(rep: dict, pc: dict | None) -> list[tuple[str, str]]:
     i = rep["info"]
     fps = f"{i['fps']:.3f}".rstrip("0").rstrip(".")
@@ -157,6 +172,11 @@ def _facts(rep: dict, pc: dict | None) -> list[tuple[str, str]]:
         f += [("Loudness", f"{sd['integrated_lufs']} LUFS"), ("Loudness range", f"{sd['lra_lu']} LU")]
         if sd.get("speech_share") is not None:
             f.append(("Speech", f"{round(100 * sd['speech_share'])}%"))
+    rh = ((rep.get("extra") or {}).get("rhythm") or {}).get("summary") or {}
+    if rh.get("bpm"):
+        f.append(("Tempo", f"{rh['bpm']:.0f} BPM"))
+        if (rh.get("cuts_on_beat") or {}).get("on_beat") is not None:
+            f.append(("Cuts on the beat", f"{round(100 * rh['cuts_on_beat']['on_beat'])}%"))
     sy = ((rep.get("extra") or {}).get("story") or {}).get("summary") or {}
     if sy:
         f += [("Scenes", str(sy["scenes"])), ("Average scene", f"{sy['mean_scene_s']:.0f} s"),
@@ -232,6 +252,7 @@ h1{font-size:30px;margin:0 0 2px;letter-spacing:-.01em}h2{font-size:18px;margin:
 .area{fill:color-mix(in srgb,var(--accent) 40%,transparent)}.curve{fill:none;stroke:var(--accent);stroke-width:1.5;
 vector-effect:non-scaling-stroke}.peak{fill:#e05545;opacity:.25}.silence{fill:#4f7fbf;opacity:.25}
 .act1,.act3{fill:var(--fg);opacity:.04}.act2{fill:var(--fg);opacity:.09}.scene{stroke:var(--fg);stroke-width:1;opacity:.5;
+vector-effect:non-scaling-stroke}.rhythmic{fill:var(--accent);opacity:.15}.tick{stroke:var(--fg);stroke-width:1;opacity:.6;
 vector-effect:non-scaling-stroke}.beat{stroke:#e05545;stroke-width:1.5;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
 .chars{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 .char{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:8px;
@@ -262,7 +283,7 @@ def breakdown_html(rep: dict, root: str | Path, thumb_width: int = 200) -> str:
     desc = " ".join(d for d in (look.get("description"), comp.get("description")) if d)
     desc = f'<p class="desc">{_e(desc)}</p>' if desc else ""
     charts = _barcode(rep, dur) + _pace(pc, dur) + _look(rep, dur) + _loudness(extra.get("sound"), dur)
-    charts += _story(extra.get("story"), dur)
+    charts += _rhythm(extra.get("rhythm"), dur) + _story(extra.get("story"), dur)
     title = f"{rep['clip']}: CineScope breakdown"
     return (
         "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"

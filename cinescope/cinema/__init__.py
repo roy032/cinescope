@@ -13,6 +13,7 @@ editor or sound mixer would use:
     composition.py
                  saliency, centre of interest, rule of thirds, balance, headroom,
                  shallow or deep focus
+    rhythm.py    tempo, beats, sections with a beat, cuts on the beat
 
 No models, no training: every number is a few lines of NumPy over pixels, and
 every threshold is fixed up front (none are tuned on the public test clips).
