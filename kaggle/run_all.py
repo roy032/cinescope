@@ -16,6 +16,8 @@ What it does, in order (a job is skipped when its results are already on disk):
                     ImageNet-init and scratch ResNet-18, test-split predictions (~1-2 h GPU)
      (p1_movieshots   the same on MovieShots, once its frames are attached: --only p1_movieshots)
      (p9_tensorrt     the pipeline's TensorRT and CUDA backends on a T4: --only p9_tensorrt, ~30 min GPU)
+     p9_tensorrt_v2  the same again after the variable-length fix -> results/tensorrt_v2   (~40 min GPU)
+     p2_train_v3     CenterNet v3: no cut large faces in crops, low-light augmentation   (~4 h GPU)
   5. downloads each job's results into p1_cnn/results or p2_detection/results,
      fills in the README tables (tools/update_results.py), runs the tests and commits.
 Kaggle runs one job at a time here; the laptop only waits (it can sleep between jobs —
@@ -48,8 +50,12 @@ PLAN = {
     "p1_movieshots": (ROOT / "p1_cnn", "results/scratch/metrics.json", []),
     # the TensorRT / CUDA backends of the Phase 9 pipeline (no NVIDIA GPU on the laptop): --only p9_tensorrt
     "p9_tensorrt": (ROOT / "p9_production", "results/tensorrt/onnx_tensorrt.json", []),
+    # re-time after the variable-length-models fix (~40 min GPU)
+    "p9_tensorrt_v2": (ROOT / "p9_production", "results/tensorrt_v2/pipeline_goldeneye_kaggle-tensorrt.json", []),
+    # CenterNet v3: no cut large faces in training crops + low-light augmentation (~4 h GPU)
+    "p2_train_v3": (ROOT / "p2_detection", "results/centernet_r18_v3/wider_val.json", []),
 }
-DEFAULT = ["p2_diagnose", "p2_train_log", "p1_own"]
+DEFAULT = ["p2_diagnose", "p2_train_log", "p1_own", "p9_tensorrt_v2", "p2_train_v3"]
 OWN_ZIP = WORK / "dataset-own" / "own_shots.zip"
 
 
@@ -136,6 +142,20 @@ def upload_own_shots(user: str) -> None:
     marker.write_text(stamp)
 
 
+def job_source(name: str) -> str:
+    """The script Kaggle runs: the shared preamble, the job, and, when the job's first line is
+    "# extends: <base>", the base job after it (the job only sets the constants the base reads)."""
+    body = (JOBS / f"{name}.py").read_text(encoding="utf-8")
+    parts = [(JOBS / "_preamble.py").read_text(encoding="utf-8"), body]
+    first = body.splitlines()[0] if body else ""
+    if first.startswith("# extends:"):
+        base = first.split(":", 1)[1].strip()
+        if base == name or not (JOBS / f"{base}.py").exists():
+            raise SystemExit(f"{name}: extends unknown job {base!r}")
+        parts.append(job_source(base).split("# --- end of preamble ---", 1)[1])
+    return "\n".join(parts)
+
+
 def run_job(name: str, user: str) -> bool:
     dest_root, done_file, extra = PLAN[name]
     if (dest_root / done_file).exists():
@@ -145,8 +165,7 @@ def run_job(name: str, user: str) -> bool:
     shutil.rmtree(folder, ignore_errors=True)
     folder.mkdir(parents=True)
     script = folder / f"{name}.py"
-    script.write_text((JOBS / "_preamble.py").read_text(encoding="utf-8") + "\n"
-                      + (JOBS / f"{name}.py").read_text(encoding="utf-8"), encoding="utf-8")
+    script.write_text(job_source(name), encoding="utf-8")
     datasets = [f"{user}/cinescope-code"] + [f"{user}/{d}" for d in extra]
     ref = f"{user}/cinescope-{name.replace('_', '-')}"
     state = kr.status(ref)
