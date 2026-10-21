@@ -161,6 +161,11 @@ def _facts(rep: dict, pc: dict | None) -> list[tuple[str, str]]:
     if sy:
         f += [("Scenes", str(sy["scenes"])), ("Average scene", f"{sy['mean_scene_s']:.0f} s"),
               ("Arc", sy["arc"])]
+    cp = ((rep.get("extra") or {}).get("composition") or {}).get("summary") or {}
+    if cp:
+        f += [("On the thirds", f"{round(100 * cp['thirds_share'])}%"),
+              ("Centred", f"{round(100 * cp['share']['centre'])}%"),
+              ("Shallow focus", f"{round(100 * cp['shallow_share'])}%")]
     ch = (rep.get("characters") or {}).get("list")
     if ch:
         f.append(("Characters", str(len(ch))))
@@ -194,6 +199,9 @@ def _shots(rep: dict, root: Path, thumb_width: int) -> str:
         if lk:
             tags += [lk.get("key") if lk.get("key") != "normal" else None, lk.get("temperature")
                      if lk.get("temperature") != "neutral" else None]
+        cp = s.get("composition") or {}
+        if cp:
+            tags += [cp.get("placement"), "shallow focus" if cp.get("shallow") else None]
         ed = s.get("editing") or {}
         if ed.get("recurs"):
             tags.append(f"set-up {ed['setup'] + 1}")
@@ -250,7 +258,9 @@ def breakdown_html(rep: dict, root: str | Path, thumb_width: int = 200) -> str:
     extra = rep.get("extra") or {}
     look = (extra.get("look") or {}).get("summary") or {}
     facts = "".join(f'<div class="fact"><b>{_e(v)}</b><span>{_e(k)}</span></div>' for k, v in _facts(rep, pc))
-    desc = f'<p class="desc">{_e(look["description"])}</p>' if look.get("description") else ""
+    comp = (extra.get("composition") or {}).get("summary") or {}
+    desc = " ".join(d for d in (look.get("description"), comp.get("description")) if d)
+    desc = f'<p class="desc">{_e(desc)}</p>' if desc else ""
     charts = _barcode(rep, dur) + _pace(pc, dur) + _look(rep, dur) + _loudness(extra.get("sound"), dur)
     charts += _story(extra.get("story"), dur)
     title = f"{rep['clip']}: CineScope breakdown"
