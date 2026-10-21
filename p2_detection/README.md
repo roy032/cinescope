@@ -186,6 +186,16 @@ recall on crowd images). The likely suspects and the fix for each:
   undersized boxes;
 - duplicate peaks on large faces.
 
+The log-size run moved Easy only from 0.575 to 0.593, and post-processing moved it by
+0.001 (below), so the third suspect is next. **v3** (`kaggle/run_all.py --only p2_train_v3`,
+about 4 h on a T4) trains with log sizes plus two options of `train_faces.py`:
+`--keep-large 64` rejects a random crop that would cut through a face 64 px or taller
+(a large face is either whole in the crop or not in it at all), and `--low-light 0.3`
+turns 30% of the samples into night frames (gamma 1.8–3.2, a cool cast, sensor noise)
+for the dark clip below, where ours misses 7 of 30 faces. Its WIDER rows and diagnosis
+fill in the tables above by themselves; `python tools/run_everything.py p2` then scores
+`checkpoints/centernet_r18_v3.pt` on the movie frames.
+
 ## Week 8 — against production detectors, on movie frames
 
 Three clips that stress detectors differently — **dark**, **profile**,

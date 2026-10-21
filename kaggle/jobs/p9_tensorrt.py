@@ -7,7 +7,7 @@ find_code("tools/fetch_assets.py")          # one folder deep: find_code copies 
 shutil.copytree("/kaggle/working/cinescope", "/tmp/cinescope", dirs_exist_ok=True)
 os.chdir("/tmp/cinescope")
 shutil.rmtree("/kaggle/working/cinescope")
-OUT = "/kaggle/working/results/tensorrt"
+OUT = f"/kaggle/working/results/{globals().get('OUT_TAG', 'tensorrt')}"   # a job extending this one sets OUT_TAG
 os.makedirs(OUT, exist_ok=True)
 ERRORS = {}
 
@@ -53,8 +53,8 @@ for b in ("cuda", "tensorrt"):
     om(torch.randn(4, 3, 32, 32))
     res[b] = om.sess.get_providers()
 print(json.dumps(res))
-open("/kaggle/working/results/tensorrt/providers.json", "w").write(json.dumps(res, indent=1))
-"""
+open("OUT/providers.json", "w").write(json.dumps(res, indent=1))
+""".replace("OUT", OUT)
 step("providers", lambda: py("-c", probe))
 
 # 2. Every pipeline model: export, agreement with PyTorch on the GPU, timing (TensorRT, then CUDA).

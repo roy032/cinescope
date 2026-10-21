@@ -261,3 +261,27 @@ class TestExportApi(unittest.TestCase):
             self.assertEqual(c.get("/api/clips/demo/export/pdf").content[:5], b"%PDF-")
             self.assertEqual(c.get("/api/clips/demo/export/mov").status_code, 400)
             self.assertEqual(c.get("/api/clips/nope/export/edl").status_code, 404)
+
+
+def test_edl_and_fcpxml_read_back_by_opentimelineio_adapters():
+    """The EDL and FCPXML land on the same frames when OpenTimelineIO's own readers parse them
+    (otio-cmx3600-adapter, otio-fcpx-xml-adapter). The FCPXML reader truncates NTSC rates
+    (24000/1001 -> 23 fps), so that half runs on a 25 fps report."""
+    o = pytest.importorskip("opentimelineio")
+    names = o.adapters.available_adapter_names()
+
+    def ranges(tl):
+        return [(round(c.source_range.start_time.value), round(c.source_range.duration.value))
+                for c in tl.find_clips()]
+
+    def want(rep):
+        return [(s["start"], s["end"] - s["start"] + 1) for s in rep["shots"]]
+
+    if "cmx_3600" in names:
+        rep = make_report()
+        tl = o.adapters.read_from_string(edl(rep), "cmx_3600", rate=24000 / 1001)
+        assert ranges(tl) == want(rep)
+    if "fcpx_xml" in names:
+        rep = make_report(fps=25.0)
+        tl = o.adapters.read_from_string(fcpxml(rep), "fcpx_xml")
+        assert ranges(tl) == want(rep)

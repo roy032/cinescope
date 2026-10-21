@@ -239,3 +239,15 @@ One entry per week: what I built, what broke, what I would explain in an intervi
 - A clip with no faces crashed Phase 3; found on testvideo, fixed with a test.
 - FastAPI + React app: shot strip, barcode, character timeline, subtitles,
   scene search, camera path, cut-outs.
+
+## After week 26 — the next GPU runs
+
+- Two Kaggle jobs queued for the owner's account: the TensorRT pipeline re-timed
+  after the variable-length fix (`p9_tensorrt_v2`), and CenterNet v3
+  (`p2_train_v3`: crops that never cut a face 64 px or taller, 30% low-light
+  samples) aimed at Easy scoring below Hard and at the dark clip.
+- A job can now `# extends:` another and only set its constants, so a variant is
+  four lines, and a test assembles every job into valid Python.
+- OpenTimelineIO's own EDL and FCPXML readers now check the editorial exports in
+  CI. Its FCPXML reader truncates 24000/1001 to 23 fps (a 48-frame clip reads
+  back as 46), so that check runs at 25 fps.

@@ -74,6 +74,10 @@ def main(argv: list[str] | None = None) -> dict:
     ap.add_argument("--no-pretrained", action="store_true", help="random-init backbone")
     ap.add_argument("--size-mode", choices=["linear", "log"], default="linear",
                     help="regress box size directly (paper) or its log (scale-invariant)")
+    ap.add_argument("--keep-large", type=float, metavar="PX",
+                    help="never crop through a face at least PX tall (default: crops may cut any face)")
+    ap.add_argument("--low-light", type=float, default=0.0, metavar="P",
+                    help="probability of a darkened, noisy 'night' training sample (default 0)")
     ap.add_argument("--workers", type=int, default=4)
     ap.add_argument("--max-steps", type=int)
     ap.add_argument("--tag", default="centernet_r18")
@@ -107,7 +111,8 @@ def main(argv: list[str] | None = None) -> dict:
         root = Path(args.wider)
         items = [it for it in parse_annotations(root / "wider_face_split" / "wider_face_train_bbx_gt.txt")
                  if len(it.boxes)]
-        ds = WiderTrain(root / "WIDER_train" / "images", items, size=args.size)
+        ds = WiderTrain(root / "WIDER_train" / "images", items, size=args.size, keep_large=args.keep_large,
+                        low_light=args.low_light)
         pretrained = not args.no_pretrained
     workers = 0 if args.synthetic else args.workers
     dl = DataLoader(ds, args.bs, shuffle=True, drop_last=True, num_workers=workers,

@@ -14,8 +14,37 @@ cd $HOME\Desktop\cinescope
 Needs your Kaggle API token once: kaggle.com → Settings → API → **Create New Token**,
 then move the downloaded `kaggle.json` to `C:\Users\<you>\.kaggle\kaggle.json`.
 Jobs: `p2_diagnose` (~15 min), `p2_train_log` (~4 h), `p1_own` (~1–2 h; needs the key frames from
-`p1_cnn/build_own_shots.py`, which `RUN_OWN_SHOTS.bat` makes). `p1_movieshots` runs only on request
-(`--only p1_movieshots`) once MovieShots frames are attached.
+`p1_cnn/build_own_shots.py`, which `RUN_OWN_SHOTS.bat` makes), `p9_tensorrt_v2` (~40 min: the
+TensorRT pipeline re-timed after the variable-length fix) and `p2_train_v3` (~4 h: CenterNet with
+whole large faces in crops and low-light augmentation). A job whose results are already on disk is
+skipped, so on a machine that has run the earlier ones only the two new jobs run.
+`p1_movieshots` runs only on request (`--only p1_movieshots`) once MovieShots frames are attached.
+
+A job file whose first line is `# extends: <job>` sets a few constants and reuses that job's body
+(`p2_train_v3` extends `p2_train_log`, `p9_tensorrt_v2` extends `p9_tensorrt`);
+`tests/test_kaggle_jobs.py` checks that every job assembles into valid Python.
+
+## What only your account and hardware can run
+
+Everything else is built and tested in CI (lint, tests, front end, the Docker image with a
+smoke test of the web app, the pipeline and the editorial export). These need you:
+
+1. **Kaggle token, once.** kaggle.com → Settings → API → **Create New Token**; move the
+   downloaded `kaggle.json` to `C:\Users\<you>\.kaggle\kaggle.json`. Phone-verify the account
+   (Settings → Phone verification) or Kaggle gives no GPU or internet.
+2. **Run the new GPU jobs.** Double-click `RUN_KAGGLE_JOBS.bat`, or
+   `.venv\Scripts\python kaggle\run_all.py --only p9_tensorrt_v2 p2_train_v3`. About 5 h of
+   Kaggle GPU (of the free 30 a week); the laptop may sleep: run it again and it picks up
+   where Kaggle is. It downloads the results, fills in the README tables, runs the tests and
+   commits on your machine.
+3. **Score the new detector on movie frames.** `python tools/run_everything.py p2` (CPU,
+   a few minutes): adds a `CenterNet-R18 (ours, v3)` row to the week-8 table.
+4. **Push.** `git push` the commit run_all made. The TensorRT v2 numbers land in
+   `p9_production/results/tensorrt_v2/`; the README text around the first run's table is
+   written by hand, so ask Claude to write them up once they are pushed.
+5. **Docker on your machine (optional).** With Docker Desktop running: `docker build -t
+   cinescope .` then the `docker run` line at the top of the `Dockerfile`, and open
+   http://localhost:8000. CI already builds and smoke-tests this exact image on every push.
 Stopping the script is safe: running it again waits for, or fetches, what Kaggle
 already ran. Job sources are in `kaggle/jobs/`; the log is `outputs/run_all.log`.
 

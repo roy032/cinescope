@@ -27,7 +27,8 @@ jobs:
       # CPU wheels: the tests never need a GPU, and they are a fraction of the CUDA download.
       - run: pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
       # fastapi, python-multipart and httpx: without them the web app's back-end tests are skipped
-      - run: pip install -r requirements.txt scikit-learn pycocotools fastapi python-multipart httpx
+      # opentimelineio + its EDL / FCPXML adapters: the editorial exports are read back by them
+      - run: pip install -r requirements.txt scikit-learn pycocotools fastapi python-multipart httpx opentimelineio otio-cmx3600-adapter otio-fcpx-xml-adapter
       - run: python -m pytest -q
 
   frontend:
@@ -70,3 +71,9 @@ jobs:
           docker run --rm -v "$PWD/trailers:/clips" -v "$PWD/outputs:/out" cinescope:ci \
             python -m cinescope.pipeline /clips/testvideo.mp4 --stages shots palette camera --out /out
           test -s outputs/testvideo/report.json
+      - name: editorial export from the image
+        run: |
+          docker run -d --name app2 -p 8001:8000 -v "$PWD/trailers:/clips" -v "$PWD/outputs:/out" cinescope:ci
+          for i in $(seq 30); do curl -fsS http://localhost:8001/api/health >/dev/null && break; sleep 2; done
+          for f in edl fcpxml otio csv; do curl -fsS -o "testvideo.$f" "http://localhost:8001/api/clips/testvideo/export/$f"; done
+          grep -q "^001  AX" testvideo.edl && grep -q "<fcpxml" testvideo.fcpxml && head -1 testvideo.csv | grep -q "^shot,"

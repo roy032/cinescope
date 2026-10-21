@@ -197,3 +197,33 @@ class TestCenterNet(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_keep_large_crops_never_cut_a_large_face():
+    import random
+
+    from cinescope.detect.wider import _random_square_crop
+
+    img = np.zeros((400, 600, 3), np.uint8)
+    boxes = np.array([[250.0, 100.0, 150.0, 200.0], [20.0, 20.0, 10.0, 12.0]])   # xywh: one large face, one small
+    cut_seen = whole_seen = False
+    for i in range(200):
+        _, b = _random_square_crop(img, boxes, random.Random(i), keep_large=100)
+        h = b[:, 3] - b[:, 1]
+        assert all(x == 200 or x <= 12 for x in h), (i, b)       # the large face is whole, or not in the crop
+        whole_seen |= 200 in h
+        _, b = _random_square_crop(img, boxes, random.Random(i))
+        cut_seen |= any(12 < x < 200 for x in b[:, 3] - b[:, 1])
+    assert whole_seen and cut_seen                                # without the option, crops do cut it
+
+
+def test_low_light_darkens_and_keeps_shape():
+    import random
+
+    from cinescope.detect.wider import _low_light
+
+    img = np.full((32, 32, 3), 128, np.uint8)
+    out = _low_light(img, random.Random(0))
+    assert out.shape == img.shape and out.dtype == np.float32
+    assert out.mean() < 128 * 0.5
+    assert out[..., 2].mean() > out[..., 0].mean()        # a cool cast
