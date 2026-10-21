@@ -83,6 +83,7 @@ need no models and run in seconds on a CPU (`cinescope/cinema/`):
 | Stage | What it reports |
 |---|---|
 | `look` | Per shot and for the whole clip: lighting key (low-key / high-key), contrast, tonal range, saturation, colour temperature, teal-and-orange grade, symmetry, crushed blacks and blown highlights, and the aspect ratio inside any letterbox bars (2.39:1 scope, 1.85:1 flat, 16:9 ...) |
+| `editing` | Recurring camera set-ups; shot/reverse-shot exchanges, montages and long takes |
 
 ---
 
