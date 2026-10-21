@@ -1,62 +1,45 @@
-import { fmtTime } from "../util.js";
 import Scrub from "./Scrub.jsx";
 import { Fact } from "./ShotStats.jsx";
 
-// "How it was cut": the pacing curve (cuts per minute over time), the editing
-// patterns found (shot/reverse-shot exchanges, montages, long takes) and how much
-// of the clip cuts back to a camera set-up it has used before.
+// "How the cuts are put together": how many camera set-ups the editor cuts between
+// and how often a shot returns to one, and the patterns the cuts make over time
+// (shot/reverse-shot exchanges, montages, long takes). The cutting rate itself is
+// the pace curve in the Shots panel.
 const COLORS = { "shot/reverse-shot": "var(--on)", montage: "var(--talk)", "long take": "var(--ok)" };
 
 export default function Editing({ editing, duration, time, onSeek }) {
-  const { pacing, summary, timeline } = editing;
-  if (!pacing?.t?.length) return null;
+  const { summary, timeline } = editing;
+  if (!summary) return null;
   const W = 1000;
-  const H = 70;
-  const maxC = Math.max(...pacing.cpm, 1);
   const x = (t) => (W * t) / Math.max(duration, 1e-3);
-  const y = (c) => H - 2 - ((H - 6) * c) / maxC;
-  const line = pacing.t.map((t, i) => `${x(t).toFixed(1)},${y(pacing.cpm[i]).toFixed(1)}`).join(" ");
-  const at = (t) => {
-    const i = Math.min(pacing.t.length - 1, Math.max(0, Math.round((t / Math.max(duration, 1e-3)) * (pacing.t.length - 1))));
-    return pacing.cpm[i];
-  };
-  const pattern = (t) => timeline.find((e) => t >= e.t0 && t < e.t1);
   return (
     <div className="editing">
       <div className="facts five">
         <Fact k="camera set-ups" v={summary.setups} title="distinct camera angles the editor cuts between" />
         <Fact k="set-ups reused" v={summary.recurring_setups} title={`${summary.shots_in_recurring_setups} shots return to an angle used before`} />
-        <Fact k="shot/reverse-shot" v={summary.exchanges} />
-        <Fact k="montages" v={summary.montages} />
-        {summary.fastest_t != null ? (
-          <button className="fact as-button" onClick={() => onSeek(Math.max(0, summary.fastest_t - pacing.window_s / 2), true)} title="play the fastest-cut stretch">
-            <div className="v">{summary.fastest_cpm.toFixed(0)} cuts/min</div>
-            <div className="k">fastest, at {fmtTime(summary.fastest_t)} ▶</div>
-          </button>
-        ) : (
-          <Fact k="long takes" v={summary.long_takes} />
-        )}
+        <Fact k="shot/reverse-shot" v={summary.exchanges} title="runs of four or more shots alternating between two angles" />
+        <Fact k="montages" v={summary.montages} title="runs of five or more shots much shorter than this clip's median shot" />
+        <Fact k="long takes" v={summary.long_takes} title="shots at least four times the median and 15 s or longer" />
       </div>
       <h3>
-        Pacing <small className="dim">cuts per minute over a {pacing.window_s.toFixed(0)} s window</small>
+        Patterns <small className="dim">hover to read, click to jump</small>
       </h3>
       <Scrub
-        className="pacing"
+        className="lane"
         duration={duration}
         time={time}
         onSeek={onSeek}
-        label="pacing"
+        label="editing patterns"
         describe={(t) => {
-          const p = pattern(t);
-          return `${at(t).toFixed(0)} cuts/min${p ? ` · ${p.label}` : ""}`;
+          const e = timeline.find((it) => t >= it.t0 && t < it.t1);
+          return e ? `${e.label}, ${e.shots} shot${e.shots > 1 ? "s" : ""}` : null;
         }}
       >
-        <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+        <svg viewBox={`0 0 ${W} 28`} preserveAspectRatio="none">
+          <rect x="0" y="0" width={W} height="28" className="lane-bg" />
           {timeline.map((e, i) => (
-            <rect key={i} x={x(e.t0)} y="0" width={Math.max(x(e.t1) - x(e.t0), 2)} height={H} style={{ fill: COLORS[e.label] }} className="band" />
+            <rect key={i} x={x(e.t0)} y="6" width={Math.max(x(e.t1) - x(e.t0), 1.5)} height="16" rx="2" style={{ fill: COLORS[e.label] }} />
           ))}
-          <polygon points={`0,${H} ${line} ${W},${H}`} className="area" />
-          <polyline points={line} className="curve" />
         </svg>
       </Scrub>
       <div className="legend">

@@ -354,7 +354,7 @@ export default function App() {
           {editing && (
             <section className="panel" id="editing">
               <h2>
-                Editing <small>pacing, camera set-ups and the patterns the cuts make</small>
+                Editing <small>camera set-ups and the patterns the cuts make</small>
               </h2>
               <Editing editing={editing} duration={duration} time={time} onSeek={seekTo} />
             </section>

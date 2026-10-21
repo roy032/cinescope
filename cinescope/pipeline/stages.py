@@ -18,7 +18,7 @@
     scenes      6      post    search         scene type per shot (CLIP prompts on the key-frame vectors)
     cutouts     4      post    frames         opt-in: RGBA cut-out of the largest person per shot
     look        -      post    shots          exposure key, contrast, grade and symmetry per shot
-    editing     -      post    shots          pacing, camera set-ups, shot/reverse-shot, montages
+    editing     -      post    shots          camera set-ups, shot/reverse-shot, montages, long takes
 
 Model stages honour Options.backend (torch / onnx / tensorrt) through
 cinescope.pipeline.accel. Heavy per-shot loops (palettes, camera moves) use a
@@ -968,8 +968,7 @@ class Look(Stage):
 
 @register
 class Editing(Stage):
-    """Editing grammar (cinescope.cinema.editing): pacing curve, recurring camera
-    set-ups, shot/reverse-shot exchanges, montages and long takes. Reads the shot
+    """Editing grammar (cinescope.cinema.editing): recurring camera set-ups, shot/reverse-shot exchanges, montages and long takes. Reads the shot
     stage's thumbnails, so it needs no decoding."""
     name = "editing"
     version = "1"
@@ -988,4 +987,4 @@ class Editing(Stage):
             mid = {**s, "start": s["start"] + n // 5, "end": s["end"] - n // 5}
             fr = _shot_frames(th, mid, self.params["frames_per_shot"])
             descs.append(shot_descriptor(fr if len(fr) else np.zeros((1, 6, 8, 3), np.uint8)))
-        return analyse(shots, descs, ctx.duration)
+        return analyse(shots, descs)

@@ -11,7 +11,6 @@ from cinescope.cinema.editing import (
     find_setups,
     long_takes,
     montages,
-    pacing_curve,
     same_setup,
     shot_descriptor,
 )
@@ -68,24 +67,17 @@ class TestPatterns(unittest.TestCase):
         self.assertEqual(long_takes(d), [16])
         self.assertEqual(long_takes([3.0, 3.0, 11.0]), [])               # 15 s at least
 
-    def test_pacing_curve(self):
-        cuts = list(np.arange(1, 60, 1.0))                               # a cut every second
-        p = pacing_curve(cuts, 60.0, window=10.0, points=61)
-        self.assertAlmostEqual(p["cpm"][30], 66.0, delta=0.1)            # 11 cuts in [25, 35]
-        self.assertEqual(pacing_curve([], 0.0)["t"], [])
-
     def test_analyse(self):
         shots, t = [], 0.0
         for d in [3.0, 3.0, 3.0, 3.0, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 30.0]:
             shots.append({"t0": t, "t1": t + d, "duration_s": d})
             t += d
         seq = [A, B, A, B] + [angle(20 + k, (200, 200, 200)) for k in range(7)]
-        out = analyse(shots, [shot_descriptor(take(img, k)) for k, img in enumerate(seq)], t)
+        out = analyse(shots, [shot_descriptor(take(img, k)) for k, img in enumerate(seq)])
         self.assertEqual([e["label"] for e in out["timeline"]], ["shot/reverse-shot", "montage", "long take"])
         self.assertEqual(out["summary"]["recurring_setups"], 2)
         self.assertTrue(out["per_shot"][0]["recurs"])
-        self.assertLess(out["summary"]["fastest_t"], 20.0)                # not in the long take
-        self.assertGreater(out["summary"]["fastest_cpm"], 60 * 10 / t)  # faster than the average
+        self.assertAlmostEqual(out["summary"]["patterned_s"], 12.0 + 2.4 + 30.0)
 
 
 class TestEditingStage(unittest.TestCase):
@@ -101,4 +93,3 @@ class TestEditingStage(unittest.TestCase):
             rep = run(video, ["shots", "editing"], Path(d) / "out", log=None)
         self.assertEqual([s["editing"]["setup"] for s in rep["shots"]], [0, 1, 2])
         self.assertEqual(rep["extra"]["editing"]["summary"]["setups"], 3)
-        self.assertEqual(len(rep["extra"]["editing"]["pacing"]["t"]), 200)

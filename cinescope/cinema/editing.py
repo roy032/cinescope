@@ -1,7 +1,5 @@
 """Editing grammar: how the cuts are put together, in an editor's words.
 
-    pacing        cuts per minute over time (a sliding window over the cut times),
-                  and where the cutting is fastest
     setups        shots filmed from the same camera set-up: the editor cuts back to
                   the same angle, so the two shots look alike (same layout of light
                   and dark, same colours) even when far apart in time
@@ -11,6 +9,8 @@
     montage       a run of at least five consecutive shots much shorter than the
                   clip's own median shot
     long take     a shot at least four times the median shot and 15 s or longer
+
+The cutting-rate curve itself is cinescope.editorial.pacing (report["pacing"]).
 
 A shot's descriptor is a coarse 8 x 6 luma layout (z-normalised, so exposure
 changes do not matter) and a hue / saturation / value histogram of a few of its
@@ -128,24 +128,7 @@ def long_takes(durations: list[float]) -> list[int]:
     return [k for k, d in enumerate(durations) if d >= thr]
 
 
-def pacing_curve(cut_times: list[float], duration: float, window: float | None = None,
-                 points: int = 200) -> dict:
-    """Cuts per minute in a centred window, sampled at `points` times. The window is
-    30 s, or a third of the clip when that is shorter (but at least 2 s)."""
-    if duration <= 0:
-        return {"t": [], "cpm": [], "window_s": 0.0}
-    win = window or max(2.0, min(30.0, duration / 3))
-    t = np.linspace(0, duration, max(2, points))
-    c = np.sort(np.asarray(cut_times, np.float64))
-    lo = np.clip(t - win / 2, 0, None)
-    hi = np.clip(t + win / 2, None, duration)
-    count = np.searchsorted(c, hi, "right") - np.searchsorted(c, lo, "left")
-    span = np.maximum(hi - lo, 1e-6)
-    cpm = 60.0 * count / span
-    return {"t": np.round(t, 3).tolist(), "cpm": np.round(cpm, 2).tolist(), "window_s": round(win, 2)}
-
-
-def analyse(shots: list[dict], descs: list[dict], duration: float) -> dict:
+def analyse(shots: list[dict], descs: list[dict]) -> dict:
     """Everything above for one clip. shots: the pipeline's shot dicts (t0, t1, duration_s)."""
     setups = find_setups(descs)
     size: dict[int, int] = {}
@@ -158,13 +141,10 @@ def analyse(shots: list[dict], descs: list[dict], duration: float) -> dict:
                 + [{"t0": shots[i]["t0"], "t1": shots[j]["t1"], "label": "montage", "shots": j - i + 1} for i, j in mo]
                 + [{"t0": shots[k]["t0"], "t1": shots[k]["t1"], "label": "long take", "shots": 1} for k in lt])
     timeline.sort(key=lambda e: e["t0"])
-    pace = pacing_curve([s["t0"] for s in shots[1:]], duration)
-    peak = int(np.argmax(pace["cpm"])) if pace["cpm"] else None
     per_shot = [{"setup": s, "recurs": size[s] > 1} for s in setups]
     return {
         "per_shot": per_shot,
         "timeline": timeline,
-        "pacing": pace,
         "summary": {
             "setups": len(size),
             "recurring_setups": sum(1 for v in size.values() if v > 1),
@@ -172,7 +152,6 @@ def analyse(shots: list[dict], descs: list[dict], duration: float) -> dict:
             "exchanges": len(ex),
             "montages": len(mo),
             "long_takes": len(lt),
-            "fastest_t": pace["t"][peak] if peak is not None else None,
-            "fastest_cpm": pace["cpm"][peak] if peak is not None else None,
+            "patterned_s": round(sum(e["t1"] - e["t0"] for e in timeline), 2),
         },
     }
