@@ -1,4 +1,4 @@
-"""python -m cinescope.editorial outputs/<clip>/report.json [-f edl fcpxml otio csv vtt pdf png] [-o DIR]"""
+"""python -m cinescope.editorial outputs/<clip>/report.json [-f edl fcpxml otio csv vtt pdf png html] [-o DIR]"""
 from __future__ import annotations
 
 import argparse
@@ -10,14 +10,16 @@ from .exports import FORMATS
 from .pacing import pacing
 
 SHEETS = ("pdf", "png")
+PAGES = ("html",)
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m cinescope.editorial",
                                  description="Export a CineScope report for editing software, and print its pace.")
     ap.add_argument("report", help="outputs/<clip>/report.json (or its folder)")
-    ap.add_argument("-f", "--formats", nargs="+", choices=[*FORMATS, *SHEETS], default=[*FORMATS, "pdf"],
-                    help="what to write (default: every cut format, the subtitles and a PDF storyboard)")
+    ap.add_argument("-f", "--formats", nargs="+", choices=[*FORMATS, *SHEETS, *PAGES], default=[*FORMATS, "pdf", "html"],
+                    help="what to write (default: every cut format, the subtitles, a PDF storyboard and the "
+                         "shareable HTML breakdown)")
     ap.add_argument("-o", "--out", help="folder for the files (default: exports/ next to the report)")
     a = ap.parse_args(argv)
 
@@ -35,6 +37,11 @@ def main(argv: list[str] | None = None) -> int:
     out.mkdir(parents=True, exist_ok=True)
     stem = rep.get("clip", rp.parent.name)
     for f in a.formats:
+        if f in PAGES:
+            from .breakdown import save_breakdown
+
+            print(f"wrote {save_breakdown(rep, rp.parent, out / f'{stem}_breakdown.html')}")
+            continue
         if f in SHEETS:
             from .sheet import save_sheet
 
