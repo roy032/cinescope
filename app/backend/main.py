@@ -402,6 +402,20 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         fn, _, media = FORMATS[fmt]
         return Response(fn(rep), media_type=media, headers=disp)
 
+    @app.get("/api/compare")
+    def compare_clips(a: str = Query(..., min_length=1), b: str = Query(..., min_length=1),
+                      format: str = Query("json", pattern="^(json|html)$")):  # noqa: A002 - the query name
+        from cinescope.editorial.compare import compare, compare_html
+
+        for name in (a, b):          # query values, unlike path parameters, may hold a "/"
+            if Path(name).name != name or name in (".", ".."):
+                raise HTTPException(400, f"not a clip name: {name!r}")
+        ra, rb = load_report(a), load_report(b)
+        if format == "html":
+            return Response(compare_html(ra, rb), media_type="text/html; charset=utf-8",
+                            headers={"Content-Disposition": f'inline; filename="{a}_vs_{b}.html"'})
+        return JSONResponse(compare(ra, rb))
+
     cutout_lock = threading.Lock()
 
     @app.get("/api/clips/{clip}/cutout")
