@@ -21,6 +21,9 @@ Endpoints (all JSON unless noted):
     GET  /api/clips/{clip}/search?q=&k=     Phase 8 scene search over the clip's index
     GET  /api/clips/{clip}/ask?q=           Phase 8 "chat with the movie" (template answer, LLM optional)
     GET  /api/clips/{clip}/campath          the camera path of one shot (Phase 5)
+    GET  /api/clips/{clip}/export/{fmt}     the cut for editing software, as a download: edl (CMX 3600),
+                                            fcpxml (Final Cut / Resolve / Premiere), otio (OpenTimelineIO),
+                                            csv (shot list), vtt (subtitles), pdf (printable storyboard)
     GET  /api/clips/{clip}/cutout?t=&method=&box=x0,y0,x1,y1
                                             Phase 4: RGBA PNG cut-out of the person in `box` (default:
                                             the largest person YOLOv8n-seg finds) at time t; cached
@@ -365,6 +368,30 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         if "camera_path" not in rep:
             raise HTTPException(404, "no camera path for this clip")
         return JSONResponse(json.loads((out / clip / rep["camera_path"]["file"]).read_text(encoding="utf-8")))
+
+    @app.get("/api/clips/{clip}/export/{fmt}")
+    def export(clip: str, fmt: str, download: bool = True):
+        from cinescope.editorial import FORMATS
+
+        if fmt not in FORMATS and fmt != "pdf":
+            raise HTTPException(400, f"format must be one of {[*FORMATS, 'pdf']}")
+        rep = load_report(clip)
+        if fmt == "vtt":
+            if not rep.get("subtitles"):
+                raise HTTPException(404, f"{clip!r} has no subtitles (run the 'subtitles' stage)")
+        elif not rep.get("shots"):
+            raise HTTPException(404, f"{clip!r} has no shots (run the 'shots' stage)")
+        name = f"{clip}_storyboard.pdf" if fmt == "pdf" else f"{clip}.{FORMATS[fmt][1]}"
+        disp = {"Content-Disposition": f'{"attachment" if download else "inline"}; filename="{name}"'}
+        if fmt == "pdf":
+            from cinescope.editorial.sheet import save_sheet
+
+            dest = out / clip / "exports" / name
+            if not dest.exists() or dest.stat().st_mtime < report_path(clip).stat().st_mtime:
+                save_sheet(rep, out / clip, dest)
+            return FileResponse(dest, media_type="application/pdf", headers=disp)
+        fn, _, media = FORMATS[fmt]
+        return Response(fn(rep), media_type=media, headers=disp)
 
     cutout_lock = threading.Lock()
 

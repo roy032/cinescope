@@ -118,7 +118,11 @@ const Player = forwardRef(function Player({ clip, report, startAt = 0, onTime },
         onTimeUpdate={(e) => onTime(e.currentTarget.currentTime)}
         onSeeked={(e) => onTime(e.currentTarget.currentTime)}
         onError={() => setFallback(true)}
-      />
+      >
+        {report.subtitles?.cues?.length > 0 && (
+          <track kind="subtitles" src={api.exportUrl(clip, "vtt", true)} srcLang="und" label="Read from the picture" />
+        )}
+      </video>
     </div>
   );
 });

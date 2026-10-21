@@ -12,6 +12,7 @@ import Subtitles from "./components/Subtitles.jsx";
 import SearchPanel from "./components/SearchPanel.jsx";
 import CameraPath from "./components/CameraPath.jsx";
 import Timing from "./components/Timing.jsx";
+import Exports from "./components/Exports.jsx";
 import Timelines from "./components/Timelines.jsx";
 import Cutout from "./components/Cutout.jsx";
 import Look from "./components/Look.jsx";
@@ -214,6 +215,7 @@ export default function App() {
         otherTimelines && ["timelines", "Timelines"],
         report.subtitles && ["subtitles", "Subtitles"],
         report.camera_path && ["camera", "Camera path"],
+        report.shots && ["export", "Export"],
         report.timing && ["timing", "Timing"],
       ].filter(Boolean)
     : [];
@@ -341,7 +343,7 @@ export default function App() {
                   palette · press , and . to step through them
                 </small>
               </h2>
-              <ShotStats shots={report.shots} duration={duration} time={time} onSeek={seekTo} />
+              <ShotStats shots={report.shots} pacing={report.pacing} duration={duration} time={time} onSeek={seekTo} />
               <ShotStrip clip={clip} shots={report.shots} time={time} onSeek={seekTo} />
             </section>
           )}
@@ -394,6 +396,15 @@ export default function App() {
                   <CameraPath clip={clip} info={report.camera_path} time={time} onSeek={seekTo} />
                 </div>
               )}
+            </section>
+          )}
+
+          {report.shots && (
+            <section className="panel" id="export">
+              <h2>
+                Export <small>hand the cut to an editor: every format cuts the original file at the same frames</small>
+              </h2>
+              <Exports clip={clip} report={report} />
             </section>
           )}
 

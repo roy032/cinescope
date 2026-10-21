@@ -9,6 +9,7 @@ import {
   jobSteps,
   lumaColor,
   omitKeys,
+  pacePath,
   parseLocation,
   shotAt,
   shotStats,
@@ -110,4 +111,12 @@ test("warmthColor diverges from grey", () => {
   assert.equal(warmthColor(-100), "rgb(64, 156, 214)");
   assert.equal(lumaColor(1), "rgb(255, 255, 255)");
   assert.equal(lumaColor(-1), "rgb(0, 0, 0)");
+});
+
+test("pacePath: scaled to the box, fastest at the top, closed for a fill", () => {
+  const curve = { t: [0, 5, 10], cuts_per_min: [0, 12, 6] };
+  assert.equal(pacePath(curve, 10, 100, 42), "M 0.0 41.0 L 50.0 1.0 L 100.0 21.0");
+  assert.ok(pacePath(curve, 10, 100, 42, true).endsWith("L 100.0 42 L 0.0 42 Z"));
+  assert.equal(pacePath(null, 10, 100, 42), "");
+  assert.equal(pacePath({ t: [0], cuts_per_min: [1] }, 10, 100, 42), "");
 });
