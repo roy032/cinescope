@@ -311,3 +311,10 @@ button.who:hover { border-color: var(--line); background: var(--panel2); }
 
 footer { color: var(--dim); font-size: 12px; margin-top: 24px; text-align: center; }
 footer .link { font-size: 12px; color: var(--dim); }
+
+/* look & grade */
+.look-desc { font-size: 15px; margin: 0 0 10px; }
+.look-lane { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px; align-items: center; margin-top: 6px; }
+.look-lane svg { width: 100%; display: block; }
+.look-lane .sat { fill: var(--accent); opacity: 0.85; }
+@media (max-width: 700px) { .look-lane { grid-template-columns: 1fr; gap: 2px; } }

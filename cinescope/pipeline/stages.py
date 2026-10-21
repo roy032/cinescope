@@ -17,6 +17,7 @@
     pose        6      frame   960 px, 4 fps  people, poses, action events per shot (YOLOv8n-pose)
     scenes      6      post    search         scene type per shot (CLIP prompts on the key-frame vectors)
     cutouts     4      post    frames         opt-in: RGBA cut-out of the largest person per shot
+    look        -      post    shots          exposure key, contrast, grade and symmetry per shot
 
 Model stages honour Options.backend (torch / onnx / tensorrt) through
 cinescope.pipeline.accel. Heavy per-shot loops (palettes, camera moves) use a
@@ -929,3 +930,36 @@ class Cutouts(Stage):
             per_shot.append({"file": f"stages/cutouts/{name}", "t": float(store.t[pos]), "xy": [x0, y0],
                              "box": np.round(box, 1).tolist()})
         return {"method": p["method"], "per_shot": per_shot}
+
+
+# =========================================================================== film language
+def _shot_frames(th: np.ndarray, s: dict, n: int) -> np.ndarray:
+    """Up to n thumbnails spread evenly over a shot."""
+    a, b = int(s["start"]), int(min(s["end"], len(th) - 1))
+    if b < a:
+        return np.zeros((0, *th.shape[1:]), np.uint8)
+    idx = np.unique(np.linspace(a, b, min(n, b - a + 1)).round().astype(int))
+    return np.asarray(th[idx])
+
+
+@register
+class Look(Stage):
+    """Lighting and grade per shot (cinescope.cinema.look): exposure key, contrast,
+    saturation, colour temperature, teal-and-orange, symmetry; and the clip's
+    overall look. Reads the shot stage's thumbnails, so it needs no decoding."""
+    name = "look"
+    version = "1"
+    requires = ("shots",)
+    defaults = {"frames_per_shot": 12}
+
+    def end(self, ctx: Context) -> dict:
+        from ..cinema.look import film_look, key_timeline, shot_look
+
+        shots = ctx.results["shots"]["shots"]
+        th = _thumbs(ctx)
+        per_shot = []
+        for s in shots:
+            fr = _shot_frames(th, s, self.params["frames_per_shot"])
+            per_shot.append(shot_look(fr) if len(fr) else None)
+        return {"per_shot": per_shot, "summary": film_look(per_shot, [s["duration_s"] for s in shots]),
+                "timeline": key_timeline(shots, per_shot)}
