@@ -318,3 +318,10 @@ footer .link { font-size: 12px; color: var(--dim); }
 .look-lane svg { width: 100%; display: block; }
 .look-lane .sat { fill: var(--accent); opacity: 0.85; }
 @media (max-width: 700px) { .look-lane { grid-template-columns: 1fr; gap: 2px; } }
+
+/* sound */
+.loudness svg { width: 100%; height: 64px; display: block; }
+.loudness .area { fill: color-mix(in srgb, var(--accent) 55%, transparent); }
+.loudness .peak { fill: var(--talk); opacity: 0.25; }
+.loudness .silence { fill: var(--on); opacity: 0.25; }
+.spaced { margin-left: 10px; }

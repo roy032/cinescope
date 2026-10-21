@@ -17,11 +17,12 @@ import Timelines from "./components/Timelines.jsx";
 import Cutout from "./components/Cutout.jsx";
 import Look from "./components/Look.jsx";
 import Editing from "./components/Editing.jsx";
+import Sound from "./components/Sound.jsx";
 import JobPanel from "./components/JobPanel.jsx";
 import Shortcuts from "./components/Shortcuts.jsx";
 
 const START = parseLocation(window.location.search);
-const PANELLED = ["look", "editing"];
+const PANELLED = ["look", "editing", "sound"];
 
 export default function App() {
   const [clips, setClips] = useState(null); // null until the first answer
@@ -209,11 +210,13 @@ export default function App() {
   const otherTimelines = omitKeys(report?.timelines, PANELLED);
   const look = report?.extra?.look?.summary;
   const editing = report?.extra?.editing;
+  const sound = report?.extra?.sound;
   const sections = ready
     ? [
         report.shots && ["shots", "Shots"],
         editing && ["editing", "Editing"],
         look && ["look", "Look"],
+        sound && ["sound", "Sound"],
         report.characters && ["characters", "Characters"],
         otherTimelines && ["timelines", "Timelines"],
         report.subtitles && ["subtitles", "Subtitles"],
@@ -366,6 +369,15 @@ export default function App() {
                 Look <small>how it is lit and graded, shot by shot; hover to read a shot, click to jump</small>
               </h2>
               <Look shots={shots} summary={look} duration={duration} time={time} onSeek={seekTo} />
+            </section>
+          )}
+
+          {sound && (
+            <section className="panel" id="sound">
+              <h2>
+                Sound <small>loudness, dynamics, speech and how the cuts sit on the soundtrack</small>
+              </h2>
+              <Sound sound={sound} duration={duration} time={time} onSeek={seekTo} />
             </section>
           )}
 

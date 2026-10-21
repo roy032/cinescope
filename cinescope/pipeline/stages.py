@@ -19,6 +19,7 @@
     cutouts     4      post    frames         opt-in: RGBA cut-out of the largest person per shot
     look        -      post    shots          exposure key, contrast, grade and symmetry per shot
     editing     -      post    shots          camera set-ups, shot/reverse-shot, montages, long takes
+    sound       -      post    shots, audio   loudness (EBU R 128), peaks, silences, speech, cuts on sound
 
 Model stages honour Options.backend (torch / onnx / tensorrt) through
 cinescope.pipeline.accel. Heavy per-shot loops (palettes, camera moves) use a
@@ -988,3 +989,26 @@ class Editing(Stage):
             fr = _shot_frames(th, mid, self.params["frames_per_shot"])
             descs.append(shot_descriptor(fr if len(fr) else np.zeros((1, 6, 8, 3), np.uint8)))
         return analyse(shots, descs)
+
+
+@register
+class Sound(Stage):
+    """The soundtrack (cinescope.cinema.sound): EBU R 128 style loudness (integrated,
+    range, per shot, the envelope), peaks and silences, speech share (Phase 3's
+    voice-activity score) and how often the picture cuts on a sound onset. A clip
+    without audio gives {"audio": false}."""
+    name = "sound"
+    version = "1"
+    requires = ("shots",)
+
+    def end(self, ctx: Context) -> dict:
+        from ..cinema.sound import SR, analyse
+        from ..speaker.audio import load_audio, vad
+
+        x = load_audio(ctx.video, SR)
+        if x is not None and ctx.options.max_seconds:
+            x = x[:int(ctx.options.max_seconds * SR)]
+        ctx.report(self.name, 0.3, "loudness")
+        v = vad(x, SR) if x is not None and len(x) > SR else None
+        return analyse(x, ctx.results["shots"]["shots"], ctx.duration, SR,
+                       speech=None if v is None else v["score"], speech_fps=100.0 if v is None else v["fps"])
