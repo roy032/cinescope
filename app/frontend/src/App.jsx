@@ -15,11 +15,12 @@ import Timing from "./components/Timing.jsx";
 import Timelines from "./components/Timelines.jsx";
 import Cutout from "./components/Cutout.jsx";
 import Look from "./components/Look.jsx";
+import Editing from "./components/Editing.jsx";
 import JobPanel from "./components/JobPanel.jsx";
 import Shortcuts from "./components/Shortcuts.jsx";
 
 const START = parseLocation(window.location.search);
-const PANELLED = ["look"];
+const PANELLED = ["look", "editing"];
 
 export default function App() {
   const [clips, setClips] = useState(null); // null until the first answer
@@ -206,9 +207,11 @@ export default function App() {
   // stages with a panel of their own are left out of "More timelines"
   const otherTimelines = omitKeys(report?.timelines, PANELLED);
   const look = report?.extra?.look?.summary;
+  const editing = report?.extra?.editing;
   const sections = ready
     ? [
         report.shots && ["shots", "Shots"],
+        editing && ["editing", "Editing"],
         look && ["look", "Look"],
         report.characters && ["characters", "Characters"],
         otherTimelines && ["timelines", "Timelines"],
@@ -343,6 +346,15 @@ export default function App() {
               </h2>
               <ShotStats shots={report.shots} duration={duration} time={time} onSeek={seekTo} />
               <ShotStrip clip={clip} shots={report.shots} time={time} onSeek={seekTo} />
+            </section>
+          )}
+
+          {editing && (
+            <section className="panel" id="editing">
+              <h2>
+                Editing <small>pacing, camera set-ups and the patterns the cuts make</small>
+              </h2>
+              <Editing editing={editing} duration={duration} time={time} onSeek={seekTo} />
             </section>
           )}
 
