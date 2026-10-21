@@ -1,5 +1,6 @@
 """Editorial hand-off: a report's cuts as EDL / FCPXML / OpenTimelineIO / CSV,
-subtitles as WebVTT, a printable storyboard, and the editing pace.
+subtitles as WebVTT, a printable storyboard, a shareable one-file HTML breakdown,
+and the editing pace.
 
     python -m cinescope.editorial outputs/<clip>/report.json            # every format -> outputs/<clip>/exports/
     python -m cinescope.editorial outputs/<clip>/report.json -f edl fcpxml -o somewhere/

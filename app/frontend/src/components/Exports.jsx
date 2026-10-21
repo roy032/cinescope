@@ -2,8 +2,10 @@ import { api } from "../api.js";
 
 // Hand the cut to an editor: the shots CineScope found as files editing software
 // opens (each cuts the original video at the same frames, so the shot numbers match
-// across all of them), the subtitles as WebVTT, and a printable storyboard.
+// across all of them), the subtitles as WebVTT, a printable storyboard, and a
+// one-file HTML breakdown to send to anyone.
 const FORMATS = [
+  ["html", "Breakdown", "one shareable page: the facts, charts and every shot", "opens in any browser, offline"],
   ["edl", "EDL", "CMX 3600, one event per shot", "opens in Premiere, Resolve, Avid"],
   ["fcpxml", "FCPXML", "the clip cut at every shot, labels as keywords", "opens in Final Cut Pro, Resolve, Premiere"],
   ["otio", "OpenTimelineIO", "the cut with each shot's labels in its metadata", "opens in Resolve, Premiere, Avid, Nuke"],

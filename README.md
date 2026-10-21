@@ -86,6 +86,10 @@ need no models and run in seconds on a CPU (`cinescope/cinema/`):
 | `editing` | Recurring camera set-ups; shot/reverse-shot exchanges, montages and long takes |
 | `sound` | Loudness in broadcast units (EBU R 128 style integrated LUFS, loudness range, per shot), loud peaks and silences, the share that is speech, and how often the picture cuts on a sound onset compared with chance |
 
+`python -m cinescope.editorial outputs/<clip>/report.json -f html` (or **Export → Breakdown** in the app)
+writes a shareable one-file HTML breakdown: the facts, barcode, pace, look and loudness over time,
+the characters and every shot with its frame and timecode. It works offline and can be mailed as is.
+
 ---
 
 ## Repo structure
