@@ -142,6 +142,8 @@ python -m cinescope.editorial outputs/your_clip            # EDL, FCPXML, OTIO, 
 ```
 
 The web app (FastAPI + React) and the Docker image are described in [p9_production/](p9_production/).
+The GPU runs that need your Kaggle account (TensorRT timing, detector retraining) are one command:
+see [kaggle/README.md](kaggle/README.md).
 
 **Main tools:** Python · NumPy · PyTorch · OpenCV · PyAV · FAISS/Qdrant · FastAPI · React
 
