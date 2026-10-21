@@ -114,3 +114,26 @@ export function parseLocation(search) {
   const t = Number(p.get("t"));
   return { clip: p.get("clip") || "", t: Number.isFinite(t) && t > 0 ? t : 0 };
 }
+
+// A copy of `obj` without `keys` (timelines that have a panel of their own).
+export function omitKeys(obj, keys) {
+  if (!obj) return obj;
+  const out = Object.fromEntries(Object.entries(obj).filter(([k]) => !keys.includes(k)));
+  return Object.keys(out).length ? out : null;
+}
+
+// Colour temperature (Lab warmth, about -30..30) as a diverging colour: blue for
+// cool, neutral grey at 0, amber for warm.
+export function warmthColor(w) {
+  const x = clamp((Number(w) || 0) / 20, -1, 1);
+  const mix = (a, b) => a.map((v, i) => Math.round(v + (b[i] - v) * Math.abs(x)));
+  const grey = [128, 128, 128];
+  const [r, g, b] = mix(grey, x < 0 ? [64, 156, 214] : [235, 150, 50]);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
+// Luma 0..1 as a grey.
+export function lumaColor(y) {
+  const v = Math.round(255 * clamp(Number(y) || 0, 0, 1));
+  return `rgb(${v}, ${v}, ${v})`;
+}

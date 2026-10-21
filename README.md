@@ -57,6 +57,17 @@ Filled in as each phase ships.
 
 ---
 
+## Film language
+
+Beyond the roadmap, the pipeline describes a film the way its crew would. These stages
+need no models and run in seconds on a CPU (`cinescope/cinema/`):
+
+| Stage | What it reports |
+|---|---|
+| `look` | Per shot and for the whole clip: lighting key (low-key / high-key), contrast, tonal range, saturation, colour temperature, teal-and-orange grade, symmetry, crushed blacks and blown highlights, and the aspect ratio inside any letterbox bars (2.39:1 scope, 1.85:1 flat, 16:9 ...) |
+
+---
+
 ## Repo structure
 
 ```

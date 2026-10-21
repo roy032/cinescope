@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "./api.js";
 import { useJob, useKeys } from "./hooks.js";
-import { clamp, fmtSpeed, fmtTime, parseLocation, shotAt } from "./util.js";
+import { clamp, fmtSpeed, fmtTime, omitKeys, parseLocation, shotAt } from "./util.js";
 import ClipBar from "./components/ClipBar.jsx";
 import Player from "./components/Player.jsx";
 import Barcode from "./components/Barcode.jsx";
@@ -14,10 +14,12 @@ import CameraPath from "./components/CameraPath.jsx";
 import Timing from "./components/Timing.jsx";
 import Timelines from "./components/Timelines.jsx";
 import Cutout from "./components/Cutout.jsx";
+import Look from "./components/Look.jsx";
 import JobPanel from "./components/JobPanel.jsx";
 import Shortcuts from "./components/Shortcuts.jsx";
 
 const START = parseLocation(window.location.search);
+const PANELLED = ["look"];
 
 export default function App() {
   const [clips, setClips] = useState(null); // null until the first answer
@@ -201,11 +203,15 @@ export default function App() {
   });
 
   const ready = status === "ready" && report;
+  // stages with a panel of their own are left out of "More timelines"
+  const otherTimelines = omitKeys(report?.timelines, PANELLED);
+  const look = report?.extra?.look?.summary;
   const sections = ready
     ? [
         report.shots && ["shots", "Shots"],
+        look && ["look", "Look"],
         report.characters && ["characters", "Characters"],
-        report.timelines && ["timelines", "Timelines"],
+        otherTimelines && ["timelines", "Timelines"],
         report.subtitles && ["subtitles", "Subtitles"],
         report.camera_path && ["camera", "Camera path"],
         report.timing && ["timing", "Timing"],
@@ -340,6 +346,15 @@ export default function App() {
             </section>
           )}
 
+          {look && (
+            <section className="panel" id="look">
+              <h2>
+                Look <small>how it is lit and graded, shot by shot; hover to read a shot, click to jump</small>
+              </h2>
+              <Look shots={shots} summary={look} duration={duration} time={time} onSeek={seekTo} />
+            </section>
+          )}
+
           {report.characters && (
             <section className="panel" id="characters">
               <h2>
@@ -352,12 +367,12 @@ export default function App() {
             </section>
           )}
 
-          {report.timelines && (
+          {otherTimelines && (
             <section className="panel" id="timelines">
               <h2>
                 More timelines <small>scene types, cut-outs and other stages</small>
               </h2>
-              <Timelines timelines={report.timelines} duration={duration} time={time} onSeek={seekTo} />
+              <Timelines timelines={otherTimelines} duration={duration} time={time} onSeek={seekTo} />
             </section>
           )}
 

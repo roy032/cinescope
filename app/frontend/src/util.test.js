@@ -1,7 +1,19 @@
 // Unit tests for the pure helpers: `npm test` (Node's built-in runner, no extra packages).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { eta, fmtDuration, fmtSpeed, fmtTime, jobSteps, parseLocation, shotAt, shotStats } from "./util.js";
+import {
+  eta,
+  fmtDuration,
+  fmtSpeed,
+  fmtTime,
+  jobSteps,
+  lumaColor,
+  omitKeys,
+  parseLocation,
+  shotAt,
+  shotStats,
+  warmthColor,
+} from "./util.js";
 
 test("fmtTime: minutes, hours, rounding carry", () => {
   assert.equal(fmtTime(0), "0:00.0");
@@ -84,4 +96,18 @@ test("parseLocation", () => {
   assert.deepEqual(parseLocation("?clip=goldeneye&t=12.5"), { clip: "goldeneye", t: 12.5 });
   assert.deepEqual(parseLocation("?t=abc"), { clip: "", t: 0 });
   assert.deepEqual(parseLocation(""), { clip: "", t: 0 });
+});
+
+test("omitKeys drops the named keys and empties to null", () => {
+  assert.deepEqual(omitKeys({ a: 1, look: 2 }, ["look"]), { a: 1 });
+  assert.equal(omitKeys({ look: 2 }, ["look"]), null);
+  assert.equal(omitKeys(undefined, ["look"]), undefined);
+});
+
+test("warmthColor diverges from grey", () => {
+  assert.equal(warmthColor(0), "rgb(128, 128, 128)");
+  assert.equal(warmthColor(100), "rgb(235, 150, 50)");
+  assert.equal(warmthColor(-100), "rgb(64, 156, 214)");
+  assert.equal(lumaColor(1), "rgb(255, 255, 255)");
+  assert.equal(lumaColor(-1), "rgb(0, 0, 0)");
 });
