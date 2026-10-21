@@ -2,6 +2,22 @@
 
 One entry per week: what I built, what broke, what I would explain in an interview.
 
+## After the roadmap — editorial hand-off
+
+- A report now exports as CMX 3600 EDL, FCPXML 1.10 and OpenTimelineIO, plus a
+  shot-list CSV, WebVTT subtitles and a PDF storyboard. The EDL and OTIO files
+  read back through OpenTimelineIO with every cut on the right frame.
+- Timecode is harder than it looks: 23.976 counts in 24s, and 29.97 drop-frame
+  skips frame numbers ;00 and ;01 every minute except each tenth, so
+  01:00:00;00 is frame 107 892, not 108 000.
+- Cuts come from the shot times at the nominal rate (24000/1001, not the
+  float 23.976), and each out point is the next in point, so the events tile
+  the clip with no one-frame gaps.
+- OTIO's FCPXML reader rounds 24000/1001 down to 23 fps, so its durations
+  drift; the file itself is exact (FCPXML times are rationals).
+- The pace curve slides a full-length window inside the clip at its ends;
+  half windows at the edges made the last seconds look like the fastest cutting.
+
 ## Week 1 — images as arrays
 
 - Wrote correlation/convolution with a sliding-window sum (k² whole-image

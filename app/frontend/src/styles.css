@@ -216,6 +216,15 @@ main { display: flex; flex-direction: column; gap: 14px; }
 .rhythm rect.cur { fill: var(--accent); }
 .rhythm:hover rect { fill: #6c7582; }
 .rhythm:hover rect.cur { fill: var(--accent); }
+.pace svg { height: 42px; width: 100%; display: block; }
+.pace .fill { fill: color-mix(in srgb, var(--accent) 22%, transparent); }
+.pace .line { fill: none; stroke: var(--accent); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.exports { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; }
+.export { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border: 1px solid var(--line, #333);
+  border-radius: 10px; color: inherit; text-decoration: none; }
+.export:hover, .export:focus-visible { border-color: var(--accent); }
+.export .ext { font-family: ui-monospace, monospace; color: var(--accent); font-size: 13px; }
+.export .en { font-weight: 600; }
 .dists { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 4px 24px; }
 .drow { display: grid; grid-template-columns: 96px minmax(0, 1fr) 38px; gap: 8px; align-items: center; font-size: 12.5px; margin: 3px 0; }
 .dl { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
