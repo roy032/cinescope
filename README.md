@@ -55,6 +55,24 @@ Filled in as each phase ships.
 | 8 | Scene search Recall@5 (46 test queries, 9 public clips pooled) | 0.783 (own exact index) · 0.457 (own IVF-PQ) · 0.000 (own dual encoder) | 0.783 (open_clip + FAISS Flat) · 0.435 (FAISS IVF-PQ) |
 | 9 | Time to process a 2-hour film (4-core CPU, extrapolated from goldeneye) | 15.0 h (phase tools one after another, PyTorch) | 5.0 h (one-pass pipeline, ONNX Runtime) |
 
+### Beyond the roadmap: hand the cut to an editor
+
+A breakdown is most useful inside the tools editors already use. `cinescope.editorial`
+turns any report into:
+
+- **EDL** (CMX 3600), **FCPXML 1.10** and **OpenTimelineIO**: the original file cut at every
+  shot CineScope found, ready to relink in Premiere, DaVinci Resolve, Avid or Final Cut.
+  Framing, camera move, scene type and the characters on screen travel along as comments,
+  keywords and metadata; scene-type changes become chapter markers. Drop-frame timecode for
+  29.97 and 59.94 fps.
+- **Shot list CSV** and a **printable storyboard PDF**: every shot's frame, timecode, length
+  and labels, with shot numbers that match the cut files.
+- **WebVTT subtitles** from the text read off the picture (the web app's player shows them).
+- **Pace**: average and median shot length and a cuts-per-minute curve, in the report and the app.
+
+The web app has an Export panel with all of these. The EDL and OTIO files are checked with
+OpenTimelineIO's own readers.
+
 ---
 
 ## Repo structure
@@ -72,7 +90,8 @@ cinescope/
 │   ├── pose/ video/      # Phase 6: pose, action events, ViT/VideoMAE scene types
 │   ├── ocr/              # Phase 7: CRNN + CTC
 │   ├── search/           # Phase 8: CLIP index, scene search, chat
-│   └── pipeline/         # Phase 9: one-pass pipeline (python -m cinescope.pipeline)
+│   ├── pipeline/         # Phase 9: one-pass pipeline (python -m cinescope.pipeline)
+│   └── editorial/        # Hand-off to editors: EDL, FCPXML, OTIO, shot list, storyboard, pace
 ├── p0_classical/ … p9_production/   # One folder per phase: scripts, labels, results and README
 ├── app/                  # FastAPI back end + React front end (Phase 9)
 ├── kaggle/               # GPU training jobs that run on Kaggle
@@ -119,6 +138,7 @@ python -m cinescope.io.preview trailers/your_clip.mkv      # thumbnail grid -> o
 python p0_classical/analyse.py trailers/your_clip.mkv      # shots, camera moves, palettes
 python -m pytest                                           # the test suite
 python -m cinescope.pipeline trailers/your_clip.mkv       # every phase in one pass -> outputs/<clip>/report.json
+python -m cinescope.editorial outputs/your_clip            # EDL, FCPXML, OTIO, CSV, subtitles, PDF storyboard
 ```
 
 The web app (FastAPI + React) and the Docker image are described in [p9_production/](p9_production/).

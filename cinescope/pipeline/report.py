@@ -3,8 +3,9 @@
 The stages' own results stay in stages/<name>/result.json; the report merges
 the per-shot ones into one shot list (framing, camera move, palette and a
 thumbnail per shot), copies the timelines, and records the run's timing with
-its throughput (seconds of video per wall-clock second). Asset paths are
-relative to outputs/<clip>/.
+its throughput (seconds of video per wall-clock second), and the editing
+pace (average and median shot length, a cuts-per-minute curve). Asset paths
+are relative to outputs/<clip>/.
 
 Cross-stage links are made here because they are cheap and change whenever
 any of the stages they join changes: the search index's documents get the
@@ -116,6 +117,10 @@ def assemble(ctx: Context, names: list[str], run_info: dict) -> dict:
         if isinstance(r, dict) and isinstance(r.get("timeline"), list):
             rep.setdefault("timelines", {})[n] = r["timeline"]
     _link_search(ctx)
+    if "shots" in rep:
+        from ..editorial.pacing import pacing
+
+        rep["pacing"] = pacing(rep)
 
     dur = ctx.duration
     stages_t = run_info["stages"]

@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 import { fmtTime } from "../api.js";
-import { shotAt, shotStats } from "../util.js";
+import { pacePath, shotAt, shotStats } from "../util.js";
 import Scrub from "./Scrub.jsx";
 
 // "How it was shot": the editor's numbers (average shot length, cuts per minute),
 // the cutting rhythm (one bar per shot, as long as the shot lasts and as tall), and
-// how screen time splits across framings, camera moves and scene types.
-export default function ShotStats({ shots, duration, time, onSeek }) {
+// the pace (cuts per minute over time, from report.pacing), and how screen time
+// splits across framings, camera moves and scene types.
+export default function ShotStats({ shots, pacing, duration, time, onSeek }) {
   const st = useMemo(() => shotStats(shots, duration), [shots, duration]);
   if (!st) return null;
   const cur = shotAt(shots, time);
@@ -55,6 +56,37 @@ export default function ShotStats({ shots, duration, time, onSeek }) {
           })}
         </svg>
       </Scrub>
+      {pacing?.curve && (
+        <>
+          <h3>
+            Pace{" "}
+            <small className="dim">
+              cuts per minute over a {pacing.window_s.toFixed(0)} s window · fastest {pacing.fastest.cuts_per_min.toFixed(0)} at{" "}
+              <button className="link" onClick={() => onSeek(pacing.fastest.t, true)}>
+                {fmtTime(pacing.fastest.t)}
+              </button>
+            </small>
+          </h3>
+          <Scrub
+            className="pace"
+            duration={duration}
+            time={time}
+            onSeek={onSeek}
+            label="pace"
+            describe={(t) => {
+              const c = pacing.curve;
+              let i = 0;
+              while (i + 1 < c.t.length && c.t[i + 1] <= t) i += 1;
+              return `${c.cuts_per_min[i].toFixed(0)} cuts per minute`;
+            }}
+          >
+            <svg viewBox={`0 0 ${W} 42`} preserveAspectRatio="none">
+              <path className="fill" d={pacePath(pacing.curve, duration, W, 42, true)} />
+              <path className="line" d={pacePath(pacing.curve, duration, W, 42)} />
+            </svg>
+          </Scrub>
+        </>
+      )}
       <div className="dists">
         {st.framing.length > 0 && <Dist title="Framing" rows={st.framing} />}
         {st.camera.length > 0 && <Dist title="Camera" rows={st.camera} />}

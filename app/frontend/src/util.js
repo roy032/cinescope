@@ -83,6 +83,19 @@ export function shotStats(shots, duration) {
   };
 }
 
+// An SVG path ("M x y L ...") of the pacing curve (report.pacing.curve: cuts per minute over
+// time), on a W x H box with the fastest passage at the top. Empty when there is no curve.
+export function pacePath(curve, duration, W, H, closed = false) {
+  const t = curve?.t || [];
+  const r = curve?.cuts_per_min || [];
+  if (t.length < 2 || r.length !== t.length) return "";
+  const top = Math.max(...r, 1e-6);
+  const span = Math.max(duration || t[t.length - 1], 1e-6);
+  const pts = t.map((x, i) => `${((W * x) / span).toFixed(1)} ${(H - 1 - ((H - 2) * r[i]) / top).toFixed(1)}`);
+  const line = `M ${pts.join(" L ")}`;
+  return closed ? `${line} L ${((W * t[t.length - 1]) / span).toFixed(1)} ${H} L ${((W * t[0]) / span).toFixed(1)} ${H} Z` : line;
+}
+
 // The steps of a job as a checklist: done / running / cached / waiting.
 // `plan` is the back end's run order ("decode" first); a step that never reported
 // before a later one did was loaded from the cache (or had nothing to decode).

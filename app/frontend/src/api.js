@@ -75,4 +75,6 @@ export const api = {
   file: (clip, rel) => `/api/clips/${enc(clip)}/files/${rel}`,
   frame: (clip, t, width = 640) => `/api/clips/${enc(clip)}/frame?t=${t.toFixed(2)}&width=${width}`,
   video: (clip) => `/api/clips/${enc(clip)}/video`,
+  // editing-software hand-off: edl | fcpxml | otio | csv | vtt | pdf (a download unless inline)
+  exportUrl: (clip, fmt, inline = false) => `/api/clips/${enc(clip)}/export/${fmt}${inline ? "?download=false" : ""}`,
 };

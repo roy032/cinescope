@@ -1,7 +1,7 @@
 // Unit tests for the pure helpers: `npm test` (Node's built-in runner, no extra packages).
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { eta, fmtDuration, fmtSpeed, fmtTime, jobSteps, parseLocation, shotAt, shotStats } from "./util.js";
+import { eta, fmtDuration, fmtSpeed, fmtTime, jobSteps, pacePath, parseLocation, shotAt, shotStats } from "./util.js";
 
 test("fmtTime: minutes, hours, rounding carry", () => {
   assert.equal(fmtTime(0), "0:00.0");
@@ -84,4 +84,12 @@ test("parseLocation", () => {
   assert.deepEqual(parseLocation("?clip=goldeneye&t=12.5"), { clip: "goldeneye", t: 12.5 });
   assert.deepEqual(parseLocation("?t=abc"), { clip: "", t: 0 });
   assert.deepEqual(parseLocation(""), { clip: "", t: 0 });
+});
+
+test("pacePath: scaled to the box, fastest at the top, closed for a fill", () => {
+  const curve = { t: [0, 5, 10], cuts_per_min: [0, 12, 6] };
+  assert.equal(pacePath(curve, 10, 100, 42), "M 0.0 41.0 L 50.0 1.0 L 100.0 21.0");
+  assert.ok(pacePath(curve, 10, 100, 42, true).endsWith("L 100.0 42 L 0.0 42 Z"));
+  assert.equal(pacePath(null, 10, 100, 42), "");
+  assert.equal(pacePath({ t: [0], cuts_per_min: [1] }, 10, 100, 42), "");
 });
