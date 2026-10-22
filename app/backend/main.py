@@ -25,6 +25,8 @@ Endpoints (all JSON unless noted):
                                             fcpxml (Final Cut / Resolve / Premiere), otio (OpenTimelineIO),
                                             csv (shot list), vtt (subtitles), pdf (printable storyboard),
                                             html (one-file shareable breakdown)
+    GET  /api/compare?a=&b=&format=json|html
+                                            two processed clips' style side by side
     GET  /api/clips/{clip}/cutout?t=&method=&box=x0,y0,x1,y1
                                             Phase 4: RGBA PNG cut-out of the person in `box` (default:
                                             the largest person YOLOv8n-seg finds) at time t; cached
