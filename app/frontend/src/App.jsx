@@ -21,12 +21,13 @@ import Sound from "./components/Sound.jsx";
 import Story from "./components/Story.jsx";
 import Composition from "./components/Composition.jsx";
 import Beat from "./components/Beat.jsx";
+import Highlights from "./components/Highlights.jsx";
 import Compare from "./components/Compare.jsx";
 import JobPanel from "./components/JobPanel.jsx";
 import Shortcuts from "./components/Shortcuts.jsx";
 
 const START = parseLocation(window.location.search);
-const PANELLED = ["look", "editing", "sound", "story", "rhythm"];
+const PANELLED = ["look", "editing", "sound", "story", "rhythm", "highlights"];
 
 export default function App() {
   const [clips, setClips] = useState(null); // null until the first answer
@@ -218,9 +219,11 @@ export default function App() {
   const story = report?.extra?.story;
   const composition = report?.extra?.composition?.summary;
   const rhythm = report?.extra?.rhythm;
+  const highlights = report?.extra?.highlights;
   const sections = ready
     ? [
         report.shots && ["shots", "Shots"],
+        highlights?.moments?.length > 0 && ["highlights", "Highlights"],
         story?.summary && ["story", "Story"],
         editing && ["editing", "Editing"],
         look && ["look", "Look"],
@@ -370,6 +373,23 @@ export default function App() {
                 Editing <small>camera set-ups and the patterns the cuts make</small>
               </h2>
               <Editing editing={editing} duration={duration} time={time} onSeek={seekTo} />
+            </section>
+          )}
+
+          {highlights?.moments?.length > 0 && (
+            <section className="panel" id="highlights">
+              <h2>
+                Highlights <small>the strongest moments as a short reel; play it here or download it</small>
+              </h2>
+              <Highlights
+                clip={clip}
+                highlights={highlights}
+                shots={shots}
+                duration={duration}
+                time={time}
+                onSeek={seekTo}
+                onPause={() => player.current?.pause()}
+              />
             </section>
           )}
 

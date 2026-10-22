@@ -154,6 +154,18 @@ def _rhythm(rh: dict | None, dur: float) -> str:
     return _lane("Beat", bands + ticks, 24, note)
 
 
+def _highlights(hl: dict | None, dur: float) -> str:
+    if not hl or not hl.get("moments"):
+        return ""
+    bands = "".join(f'<rect x="{_x(m["t0"], dur):.1f}" y="0" width="{max(_x(m["t1"], dur) - _x(m["t0"], dur), 2):.1f}" '
+                    f'height="24" class="{"climax" if m.get("climax") else "hl"}"><title>'
+                    f'{_clock(m["t0"])} – {_clock(m["t1"])}</title></rect>' for m in hl["moments"])
+    sm = hl.get("summary") or {}
+    note = (f"{sm.get('moments', len(hl['moments']))} moments, a {_clock(sm.get('duration_s', 0))} reel "
+            f"({round(100 * sm.get('share', 0))}% of the clip); red: the climax")
+    return _lane("Highlights", bands, 24, note)
+
+
 def _facts(rep: dict, pc: dict | None) -> list[tuple[str, str]]:
     i = rep["info"]
     fps = f"{i['fps']:.3f}".rstrip("0").rstrip(".")
@@ -253,7 +265,7 @@ h1{font-size:30px;margin:0 0 2px;letter-spacing:-.01em}h2{font-size:18px;margin:
 vector-effect:non-scaling-stroke}.peak{fill:#e05545;opacity:.25}.silence{fill:#4f7fbf;opacity:.25}
 .act1,.act3{fill:var(--fg);opacity:.04}.act2{fill:var(--fg);opacity:.09}.scene{stroke:var(--fg);stroke-width:1;opacity:.5;
 vector-effect:non-scaling-stroke}.rhythmic{fill:var(--accent);opacity:.15}.tick{stroke:var(--fg);stroke-width:1;opacity:.6;
-vector-effect:non-scaling-stroke}.beat{stroke:#e05545;stroke-width:1.5;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
+vector-effect:non-scaling-stroke}.hl{fill:var(--accent);opacity:.55}.climax{fill:#e05545;opacity:.75}.beat{stroke:#e05545;stroke-width:1.5;stroke-dasharray:3 2;vector-effect:non-scaling-stroke}
 .chars{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px}
 .char{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:8px;
 padding:6px}.char img,.char .noimg{width:48px;height:48px;border-radius:6px;object-fit:cover;background:var(--lane)}
@@ -284,6 +296,7 @@ def breakdown_html(rep: dict, root: str | Path, thumb_width: int = 200) -> str:
     desc = f'<p class="desc">{_e(desc)}</p>' if desc else ""
     charts = _barcode(rep, dur) + _pace(pc, dur) + _look(rep, dur) + _loudness(extra.get("sound"), dur)
     charts += _rhythm(extra.get("rhythm"), dur) + _story(extra.get("story"), dur)
+    charts += _highlights(extra.get("highlights"), dur)
     title = f"{rep['clip']}: CineScope breakdown"
     return (
         "<!doctype html>\n<html lang=\"en\"><head><meta charset=\"utf-8\">"

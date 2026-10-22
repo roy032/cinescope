@@ -105,6 +105,33 @@ def edl(report: dict, title: str | None = None, reel: str = "AX", drop_frame: bo
     return "\n".join(lines)
 
 
+def highlights_edl(report: dict, reel: str = "AX", drop_frame: bool | None = None) -> str:
+    """The highlights reel (the 'highlights' stage's moments) as a CMX 3600 EDL: each
+    moment's in and out on the source, laid end to end on the record side, so an
+    editor can rebuild and refine the reel from the original file."""
+    moments = ((report.get("extra") or {}).get("highlights") or {}).get("moments") or []
+    if not moments:
+        raise ValueError("the report has no highlights (run the 'highlights' stage)")
+    rate = rate_of(report)
+    df = _drop_frame(rate, drop_frame)
+    tc = lambda f: to_timecode(f, rate, df)  # noqa: E731
+    rec = record_start(rate, df)
+    name = report.get("video") or report.get("clip", "clip")
+    lines = [f"TITLE: {report.get('clip', 'clip')[:56]} CineScope highlights",
+             f"FCM: {'DROP FRAME' if df else 'NON-DROP FRAME'}", ""]
+    for n, m in enumerate(moments, start=1):
+        f0 = rate.frames(m["t0"])
+        f1 = max(rate.frames(m["t1"]), f0 + 1)
+        lines.append(f"{n:03d}  {reel[:8]:<8} AA/V  C        {tc(f0)} {tc(f1)} {tc(rec)} {tc(rec + f1 - f0)}")
+        lines.append(f"* FROM CLIP NAME: {name}")
+        a, b = m.get("shots", [None, None])
+        what = "CLIMAX" if m.get("climax") else "HIGHLIGHT"
+        lines.append(f"* COMMENT: {what} | SHOTS {a}-{b} | SCORE {m.get('score', 0):.2f}")
+        lines.append("")
+        rec += f1 - f0
+    return "\n".join(lines)
+
+
 # -------------------------------------------------------------------------- FCPXML
 def _file_url(path: str | None) -> str:
     if not path:
@@ -247,4 +274,5 @@ FORMATS = {
     "otio": (otio, "otio", "application/json"),
     "csv": (shot_csv, "csv", "text/csv; charset=utf-8"),
     "vtt": (webvtt, "vtt", "text/vtt; charset=utf-8"),
+    "highlights": (highlights_edl, "highlights.edl", "text/plain; charset=utf-8"),
 }

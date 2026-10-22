@@ -88,6 +88,7 @@ need no models and run in seconds on a CPU (`cinescope/cinema/`):
 | `story` | Scenes (shots in one place and time: no shared camera set-up and no shared colours across the cut, or a silence), an intensity curve from cutting rate, loudness and motion, the three acts, plot points 1 and 2, the midpoint and the climax |
 | `composition` | Per shot, from a saliency map (spectral residual + colour contrast) of its key frames: the centre of interest, rule-of-thirds placement (centre, thirds, power point, edge), left/right balance, headroom and shallow or deep focus; a heat map of where the eye goes |
 | `rhythm` | The soundtrack's beat: tempo (BPM) and pulse clarity from the onset envelope's autocorrelation, dynamic-programming beat tracking, the sections that are music with a beat, and how often the picture cuts on the beat compared with chance |
+| `highlights` | The strongest moments as a short reel (30 s, at most a quarter of the clip): shots scored by story intensity, loudness peaks and cutting rate, the climax always in, long shots trimmed around their loudest point with edges moved onto the beat, spread across the running time |
 
 `python -m cinescope.editorial outputs/<clip>/report.json -f html` (or **Export → Breakdown** in the app)
 writes a shareable one-file HTML breakdown: the facts, barcode, pace, look, loudness, beat and story structure over time,
@@ -97,6 +98,10 @@ the characters and every shot with its frame and timecode. It works offline and 
 (or `GET /api/compare?a=<clip>&b=<clip>&format=html`) compares the style of any two analysed clips:
 a style-similarity score, the biggest differences in words, both barcodes, pace and story intensity on
 a shared start-to-end axis, and every metric side by side.
+
+`python -m cinescope.editorial outputs/<clip>/report.json -f mp4 highlights` renders the highlights reel as an
+MP4 with sound (H.264 + AAC) and lists it as a CMX 3600 EDL to refine in an editor. In the app, the
+**Highlights** panel plays the reel in the player and offers both downloads.
 
 ---
 

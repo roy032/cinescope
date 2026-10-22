@@ -155,3 +155,13 @@ export function lumaColor(y) {
   return `rgb(${v}, ${v}, ${v})`;
 }
 
+// Playing the highlights reel in the player: given the moment being played (index)
+// and the player's time, keep going, jump to the next moment's start, or stop
+// after the last. A time before the moment (the seek has not landed yet) waits.
+export function reelStep(moments, i, t) {
+  const m = moments?.[i];
+  if (!m) return { action: "stop" };
+  if (t < m.t1 - 0.04) return { action: "stay" };
+  if (i + 1 < moments.length) return { action: "jump", index: i + 1, t: moments[i + 1].t0 };
+  return { action: "stop" };
+}
