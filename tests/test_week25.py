@@ -125,6 +125,86 @@ class TestRun(PipelineCase):
             STAGES.pop("_count")
 
 
+    def _broken(self, where: str):
+        """A frame stage that raises in setup / frame / end, and a post stage that needs it."""
+        @register
+        class Broken(Stage):
+            name = "_broken"
+            requires = ("shots",)
+            streams = {"rgb": Stream(width=32, fps=6.0)}
+
+            def setup(self, ctx):
+                if where == "setup":
+                    raise FileNotFoundError("model.onnx")
+
+            def begin(self, ctx):
+                self.n = 0
+
+            def frame(self, ctx, views):
+                self.n += 1
+                if where == "frame" and self.n == 5:
+                    raise ValueError("bad frame")
+
+            def end(self, ctx):
+                if where == "end":
+                    raise ZeroDivisionError("no data")
+                return {"n": self.n}
+
+        @register
+        class NeedsBroken(Stage):
+            name = "_after"
+            requires = ("_broken",)
+
+            def end(self, ctx):
+                return {"ok": True}
+
+    def test_a_failing_stage_does_not_lose_the_others(self):
+        for where in ("setup", "frame", "end"):
+            for workers in (1, 2):
+                with self.subTest(where=where, workers=workers):
+                    self._broken(where)
+                    try:
+                        out = self.out(f"f_{where}_{workers}")
+                        rep = run(self.video, ["shots", "palette", "_broken", "_after"], out,
+                                  options=Options(workers=workers), log=None)
+                        self.assertEqual(set(rep["errors"]), {"_broken"})
+                        self.assertEqual(rep["errors"]["_broken"]["where"], where)
+                        self.assertEqual(rep["skipped"], {"_after": "needs _broken"})
+                        self.assertEqual(len(rep["shots"]), 3)                   # the others finished
+                        self.assertIn("palette", rep["shots"][0])
+                        self.assertTrue(rep["timing"]["stages"]["_broken"]["failed"])
+                        saved = json.loads((out / "synth" / "report.json").read_text())
+                        self.assertIn("_broken", saved["errors"])
+                        self.assertFalse((out / "synth" / "stages" / "_broken" / "result.json").exists())
+                        again = run(self.video, ["shots", "palette"], out, log=None)   # the rest is cached
+                        self.assertTrue(all(t["cached"] for t in again["timing"]["stages"].values()))
+                        self.assertNotIn("errors", again)
+                    finally:
+                        STAGES.pop("_broken")
+                        STAGES.pop("_after")
+
+    def test_strict_raises(self):
+        self._broken("frame")
+        try:
+            with self.assertRaises(ValueError):
+                run(self.video, ["_broken"], self.out("g"), options=Options(strict=True), log=None)
+        finally:
+            STAGES.pop("_broken")
+            STAGES.pop("_after")
+
+    def test_summary_lists_failures(self):
+        from cinescope.pipeline.report import summary
+
+        self._broken("end")
+        try:
+            rep = run(self.video, ["_broken", "_after"], self.out("h"), log=None)
+        finally:
+            STAGES.pop("_broken")
+            STAGES.pop("_after")
+        text = summary(rep)
+        self.assertIn("_broken failed in end: ZeroDivisionError: no data", text)
+        self.assertIn("_after skipped: needs _broken", text)
+
     def test_pose_stage_with_a_stand_in_detector(self):
         """Phase 6 pose stage: batched detection during the pass, per-shot people counts."""
         from unittest import mock

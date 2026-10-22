@@ -169,6 +169,15 @@ def summary(rep: dict) -> str:
     lines.append(f"  wall {t['wall_s']:.1f} s ({t['video_s_per_wall_s']} s of video per second; "
                  f"a 2-hour film at this rate: {t['extrapolated_2h_film_s'] / 3600:.2f} h)")
     for n, st in t["stages"].items():
-        tag = "cached" if st.get("cached") else f"{st.get('total_s', 0):.1f} s"
+        if st.get("failed"):
+            tag = "FAILED"
+        elif st.get("skipped"):
+            tag = "skipped"
+        else:
+            tag = "cached" if st.get("cached") else f"{st.get('total_s', 0):.1f} s"
         lines.append(f"    {n:<11} {tag}")
+    for n, e in (rep.get("errors") or {}).items():
+        lines.append(f"  ! {n} failed in {e['where']}: {e['error']}")
+    for n, why in (rep.get("skipped") or {}).items():
+        lines.append(f"  - {n} skipped: {why}")
     return "\n".join(lines)

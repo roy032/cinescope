@@ -36,6 +36,13 @@ it requires (so changing the shot detector invalidates everything built on
 its shots). A run loads every stage whose key matches and computes only the
 rest; if no frame stage is left, the video is not decoded at all.
 
+Failures. One stage failing (a model file missing, a frame its code cannot
+handle, out of memory) does not lose the others: its error is recorded in
+the report's "errors", the stages that require it are listed in "skipped",
+and every other stage finishes and is cached, so fixing the problem and
+running again only computes what is missing. Options.strict re-raises the
+first error instead (tests, debugging).
+
 Resume. The decoding pass is the long part (a film is hours of frames), so it
 saves a checkpoint every `checkpoint_s` seconds of video: the stages' state
 (everything except models, see Stage.transient) and the position. After an
@@ -51,6 +58,7 @@ import pickle
 import queue
 import threading
 import time
+import traceback
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -122,6 +130,7 @@ class Options:
     force: tuple[str, ...] = ()     # stages to recompute even if cached ("all" for every one)
     onnx_dir: str | None = None     # where exported .onnx files are cached (default outputs/onnx)
     max_seconds: float | None = None  # only the first N seconds of the clip (quick looks, tests)
+    strict: bool = False            # re-raise a stage's error instead of recording it and going on
 
 
 @dataclass
@@ -135,6 +144,7 @@ class Context:
     progress: Callable[[str, float, str], None] | None = None
     log: Callable[[str], None] | None = print
     keys: dict = field(default_factory=dict)
+    errors: dict = field(default_factory=dict)      # stage -> {"error", "where", "traceback"}
 
     def stage_dir(self, name: str) -> Path:
         d = self.out / "stages" / name
@@ -205,6 +215,14 @@ def load_cached(ctx: Context, name: str, key: str) -> dict | None:
     return doc if doc.get("key") == key else None
 
 
+# --------------------------------------------------------------------------- failures
+def failure(e: BaseException, where: str) -> dict:
+    """What the report keeps of a stage's exception: the message, the phase it
+    failed in (setup | frame | end) and the last frames of the traceback."""
+    tb = traceback.format_exception(type(e), e, e.__traceback__)
+    return {"error": f"{type(e).__name__}: {e}", "where": where, "traceback": "".join(tb[-3:])[-2000:]}
+
+
 # --------------------------------------------------------------------------- planning
 def resolve(names: list[str]) -> list[str]:
     """Requested stages plus everything they require, in dependency order."""
@@ -273,14 +291,11 @@ class _StageThread:
                 self.q.task_done()
 
     def put(self, views) -> None:
-        if self.error is not None:
-            raise self.error
-        self.q.put(views)
+        if self.error is None:
+            self.q.put(views)
 
     def drain(self) -> None:
         self.q.join()
-        if self.error is not None:
-            raise self.error
 
     def close(self) -> None:
         self.q.put(None)
@@ -293,7 +308,11 @@ class Interrupted(RuntimeError):
 
 def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
                 stop: Callable[[int, float], bool] | None = None) -> dict:
-    """Decode the clip once and feed every frame stage. Returns timing (s)."""
+    """Decode the clip once and feed every frame stage. Returns timing (s).
+
+    A stage that raises (in setup, begin or frame) is dropped from the pass and
+    its error recorded in ctx.errors; the others carry on (Options.strict:
+    the error is re-raised)."""
     ckpt_path = ctx.out / "stages" / "_decode" / "checkpoint.pkl"
     ckpt_path.parent.mkdir(parents=True, exist_ok=True)
     want = {s.name: keys[s.name] for s in stages}
@@ -302,6 +321,7 @@ def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
     timing = {s.name: 0.0 for s in stages}
     timing["_decode"] = 0.0
     start_s, n_done = 0.0, 0
+    ck = None
     if ckpt_path.exists():
         try:
             with open(ckpt_path, "rb") as f:
@@ -310,27 +330,58 @@ def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
             ck = None
         if ck and ck.get("keys") == want:
             for s in stages:
-                s.restore(ck["states"][s.name])
-                s.setup(ctx)
+                if s.name in ck["states"]:
+                    s.restore(ck["states"][s.name])
             for k, nt in ck["samplers"].items():
                 samplers[k].next_t = nt
             start_s, n_done = ck["next_t"], ck["n_done"]
             timing.update(ck.get("timing", {}))
             ctx.say(f"  resuming the decoding pass at {start_s:.1f} s")
-    if n_done == 0:
-        for s in stages:
-            s.setup(ctx)
-            s.begin(ctx)
+    alive = list(stages)
 
-    threads = [_StageThread(s, ctx, timing) for s in stages] if ctx.options.workers > 1 else None
+    def drop(s: Stage, e: BaseException, where: str) -> None:
+        if ctx.options.strict:
+            raise e
+        ctx.errors[s.name] = failure(e, where)
+        ctx.say(f"  {s.name} failed ({where}): {type(e).__name__}: {e}")
+        if s in alive:
+            alive.remove(s)
+
+    for s in list(stages):
+        try:
+            if n_done == 0:
+                s.setup(ctx)
+                s.begin(ctx)
+            elif s.name in ck.get("failed", {}):
+                drop(s, RuntimeError(ck["failed"][s.name]["error"]), ck["failed"][s.name]["where"])
+        except Exception as e:      # noqa: BLE001 - recorded, the other stages go on
+            drop(s, e, "setup")
+
+    threads = {s.name: _StageThread(s, ctx, timing) for s in stages} if ctx.options.workers > 1 else None
+
+    def reap() -> None:
+        """Drop the stages whose thread caught an error."""
+        for s in list(alive):
+            th = threads[s.name] if threads else None
+            if th is not None and th.error is not None:
+                drop(s, th.error, "frame")
+
+    if n_done:                       # resumed: models are loaded again after the restore
+        for s in list(alive):
+            try:
+                s.setup(ctx)
+            except Exception as e:  # noqa: BLE001
+                drop(s, e, "setup")
 
     def checkpoint(next_t: float) -> None:
         if threads:
-            for th in threads:
+            for th in threads.values():
                 th.drain()
+            reap()
         tmp = ckpt_path.with_suffix(".tmp")
         with open(tmp, "wb") as f:
-            pickle.dump({"keys": want, "states": {s.name: s.state() for s in stages},
+            pickle.dump({"keys": want, "states": {s.name: s.state() for s in stages if s in alive},
+                         "failed": {n: ctx.errors[n] for n in want if n in ctx.errors},
                          "samplers": {k: v.next_t for k, v in samplers.items()},
                          "next_t": next_t, "n_done": n, "timing": dict(timing)}, f,
                         protocol=pickle.HIGHEST_PROTOCOL)
@@ -354,7 +405,9 @@ def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
                     raise Interrupted(f"stopped at frame {n} ({f.t:.2f} s)")
                 resized = {w: (f.rgb if w == 0 else _resize(f.rgb, w)) for w in widths}
                 timing["_decode"] += time.perf_counter() - t0
-                for s in stages:
+                if threads:
+                    reap()
+                for s in list(alive):
                     views = {}
                     for k, st in s.streams.items():
                         if samplers[(s.name, k)].take(f.t):
@@ -362,10 +415,13 @@ def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
                     if not views:
                         continue
                     if threads:
-                        threads[stages.index(s)].put(views)
+                        threads[s.name].put(views)
                     else:
                         t1 = time.perf_counter()
-                        s.frame(ctx, views)
+                        try:
+                            s.frame(ctx, views)
+                        except Exception as e:  # noqa: BLE001
+                            drop(s, e, "frame")
                         timing[s.name] += time.perf_counter() - t1
                 n += 1
                 t_frame = f.t
@@ -373,11 +429,12 @@ def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
                     ctx.report("decode", t_frame / dur, f"{t_frame:.0f} / {dur:.0f} s")
                 t0 = time.perf_counter()
         if threads:
-            for th in threads:
+            for th in threads.values():
                 th.drain()
+            reap()
     finally:
         if threads:
-            for th in threads:
+            for th in threads.values():
                 th.close()
     ctx.report("decode", 1.0, f"{n} frames")
     timing["_frames"] = n - n_done          # decoded by this run (a resumed run starts at n_done)
@@ -431,14 +488,35 @@ def run(video: str | Path, stages: list[str] | None = None, out: str | Path = "o
     decode_t: dict = {}
     if frame_stages:
         decode_t = decode_pass(ctx, frame_stages, ctx.keys, stop=stop)
+    skipped: dict[str, str] = {}
     for n in todo:
         s = objs[n]
-        if not s.streams:
-            s.setup(ctx)
-            s.begin(ctx)
+        missing = [d for d in s.requires if d not in ctx.results]
+        if missing or n in ctx.errors:
+            if missing:
+                skipped[n] = f"needs {', '.join(missing)}"
+                ctx.say(f"  {n}: skipped, {skipped[n]}")
+            timing[n] = {"frame_s": round(decode_t.get(n, 0.0), 3), "cached": False,
+                         "failed": n in ctx.errors, "skipped": bool(missing)}
+            ctx.report(n, 1.0, "failed" if n in ctx.errors else "skipped")
+            continue
         ctx.report(n, 0.0, "running")
         t0 = time.perf_counter()
-        result = s.end(ctx)
+        where = "setup"
+        try:
+            if not s.streams:
+                s.setup(ctx)
+                s.begin(ctx)
+            where = "end"
+            result = s.end(ctx)
+        except Exception as e:      # noqa: BLE001 - recorded, the other stages go on
+            if options.strict:
+                raise
+            ctx.errors[n] = failure(e, where)
+            timing[n] = {"frame_s": round(decode_t.get(n, 0.0), 3), "cached": False, "failed": True}
+            ctx.say(f"  {n} failed ({where}): {type(e).__name__}: {e}")
+            ctx.report(n, 1.0, "failed")
+            continue
         t_end = time.perf_counter() - t0
         frame_s = round(decode_t.get(n, 0.0), 3)
         tm = {"frame_s": frame_s, "end_s": round(t_end, 3), "total_s": round(frame_s + t_end, 3), "cached": False}
@@ -457,6 +535,10 @@ def run(video: str | Path, stages: list[str] | None = None, out: str | Path = "o
                 "stages": timing,
                 "backend": options.backend, "workers": options.workers, "threads": options.threads}
     report = assemble(ctx, names, run_info)
+    if ctx.errors:
+        report["errors"] = ctx.errors
+    if skipped:
+        report["skipped"] = skipped
     _write_json(ctx.out / "report.json", report)
     ctx.report("done", 1.0, f"{wall:.1f} s")
     return report

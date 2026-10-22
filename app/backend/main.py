@@ -79,7 +79,7 @@ class Job:
     clip: str
     stages: list[str] | None
     backend: str
-    status: str = "queued"            # queued | running | done | error | cancelled
+    status: str = "queued"            # queued | running | done | error | cancelled (done may carry errors)
     stage: str = ""
     progress: float = 0.0
     message: str = ""
@@ -89,6 +89,8 @@ class Job:
     finished: float | None = None
     stage_progress: dict = field(default_factory=dict)
     plan: list[str] = field(default_factory=list)   # "decode", then the resolved stages in run order
+    errors: dict = field(default_factory=dict)      # stage -> error message, for stages that failed
+    skipped: dict = field(default_factory=dict)     # stage -> why it did not run (a stage it needs failed)
 
     def to_json(self) -> dict:
         d = asdict(self)
@@ -253,8 +255,11 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
                 opts = Options(backend=req.backend or backend, workers=req.workers or 1,
                                threads=int(os.environ.get("OMP_NUM_THREADS", 2) or 2))
                 fn = runner or run
-                fn(video=str(clip_path(req.clip)), stages=req.stages, out=out, params=req.params or {},
-                   options=opts, progress=progress, log=None, stop=stop)
+                rep = fn(video=str(clip_path(req.clip)), stages=req.stages, out=out, params=req.params or {},
+                         options=opts, progress=progress, log=None, stop=stop)
+                if isinstance(rep, dict):
+                    job.errors = {n: e["error"] for n, e in (rep.get("errors") or {}).items()}
+                    job.skipped = dict(rep.get("skipped") or {})
                 job.status, job.progress, job.stage = "done", 1.0, "done"
             except Interrupted:
                 job.status = "cancelled"

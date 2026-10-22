@@ -238,5 +238,27 @@ class TestCancel(unittest.TestCase):
             self.assertEqual(wait(c, j["id"])["status"], "cancelled")
 
 
+    def test_stage_errors_reach_the_job(self):
+        pytest.importorskip("fastapi")
+        pytest.importorskip("httpx")
+        pytest.importorskip("multipart")
+        from fastapi.testclient import TestClient
+
+        from app.backend.main import create_app
+
+        def runner(stop, progress, **kw):
+            progress("faces", 1.0, "failed")
+            return {"errors": {"faces": {"error": "FileNotFoundError: yunet.onnx", "where": "setup"}},
+                    "skipped": {"characters": "needs faces"}}
+
+        with tempfile.TemporaryDirectory() as d:
+            (Path(d) / "a.mp4").write_bytes(b"\0" * 10)
+            c = TestClient(create_app(clip_dirs=[d], out_dir=Path(d) / "out", runner=runner,
+                                      frontend_dist=Path(d) / "x"))
+            j = wait(c, c.post("/api/jobs", json={"clip": "a"}).json()["id"])
+            self.assertEqual(j["status"], "done")                   # the rest of the run is usable
+            self.assertEqual(j["errors"], {"faces": "FileNotFoundError: yunet.onnx"})
+            self.assertEqual(j["skipped"], {"characters": "needs faces"})
+
 if __name__ == "__main__":
     unittest.main()

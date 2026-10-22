@@ -1,6 +1,6 @@
 import { eta, fmtDuration, jobSteps } from "../util.js";
 
-const MARK = { done: "✓", cached: "✓", running: "", waiting: "", skipped: "–", stopped: "■" };
+const MARK = { done: "✓", cached: "✓", running: "", waiting: "", skipped: "–", stopped: "■", failed: "✕" };
 const TITLE = {
   queued: "Waiting for the previous analysis to finish…",
   running: "Analysing",
@@ -16,11 +16,13 @@ export default function JobPanel({ job, onCancel, onDismiss }) {
   const active = ["queued", "running"].includes(job.status);
   const left = active ? eta(job.elapsed_s, job.progress) : null;
   const pct = Math.round((job.status === "done" ? 1 : job.progress || 0) * 100);
+  const nFailed = Object.keys(job.errors || {}).length;
+  const title = job.status === "done" && nFailed ? `Analysis finished, ${nFailed} stage${nFailed > 1 ? "s" : ""} failed` : TITLE[job.status] || job.status;
   return (
-    <div className={`panel jobpanel ${job.status}`} role="status" aria-live="polite">
+    <div className={`panel jobpanel ${job.status}${nFailed ? " partial" : ""}`} role="status" aria-live="polite">
       <div className="job-head">
         <div>
-          <h2>{TITLE[job.status] || job.status}</h2>
+          <h2>{title}</h2>
           <div className="dim small">
             {job.status === "running" && job.stage && (
               <>
@@ -64,6 +66,11 @@ export default function JobPanel({ job, onCancel, onDismiss }) {
                 </span>
               )}
               {s.state === "cached" && <span className="dim small">cached</span>}
+              {s.note && (
+                <span className={`small snote${s.state === "failed" ? " bad" : " dim"}`} title={s.note}>
+                  {s.note}
+                </span>
+              )}
             </li>
           ))}
         </ol>
