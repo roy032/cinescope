@@ -24,6 +24,10 @@ export default function Compare({ clip, clips }) {
         Open the comparison
       </a>
       <span className="dim small">style similarity, the biggest differences, pace and intensity side by side</span>
+      <a className="export-btn" href={api.libraryUrl()} target="_blank" rel="noreferrer">
+        Open the library
+      </a>
+      <span className="dim small">every analysed clip on one page, sortable</span>
     </div>
   );
 }
