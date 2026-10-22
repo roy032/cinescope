@@ -93,6 +93,11 @@ need no models and run in seconds on a CPU (`cinescope/cinema/`):
 writes a shareable one-file HTML breakdown: the facts, barcode, pace, look, loudness, beat and story structure over time,
 the characters and every shot with its frame and timecode. It works offline and can be mailed as is.
 
+`python -m cinescope.editorial.compare outputs/<a>/report.json outputs/<b>/report.json -o a_vs_b.html`
+(or `GET /api/compare?a=<clip>&b=<clip>&format=html`) compares the style of any two analysed clips:
+a style-similarity score, the biggest differences in words, both barcodes, pace and story intensity on
+a shared start-to-end axis, and every metric side by side.
+
 ---
 
 ## Repo structure
