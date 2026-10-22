@@ -421,6 +421,15 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         fn, _, media = FORMATS[fmt]
         return Response(fn(rep), media_type=media, headers=disp)
 
+    @app.get("/api/library")
+    def library_page():
+        from urllib.parse import quote
+
+        from cinescope.pipeline.library import library_html, scan
+
+        page = library_html(scan(out), link=lambda c: f"/api/clips/{quote(c)}/export/html?download=false")
+        return Response(page, media_type="text/html; charset=utf-8")
+
     @app.get("/api/compare")
     def compare_clips(a: str = Query(..., min_length=1), b: str = Query(..., min_length=1),
                       format: str = Query("json", pattern="^(json|html)$")):  # noqa: A002 - the query name

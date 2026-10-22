@@ -169,7 +169,16 @@ python p0_classical/analyse.py trailers/your_clip.mkv      # shots, camera moves
 python -m pytest                                           # the test suite
 python -m cinescope.pipeline trailers/your_clip.mkv       # every phase in one pass -> outputs/<clip>/report.json
 python -m cinescope.editorial outputs/your_clip            # EDL, FCPXML, OTIO, CSV, subtitles, PDF storyboard
+python -m cinescope.pipeline trailers/ more/clip.mp4      # a batch: every video, then outputs/library.html
+python -m cinescope.pipeline --cache                      # disk space per clip and stage
+python -m cinescope.pipeline --clear your_clip --clear-stages faces   # drop cached results to recompute
 ```
+
+A stage that fails (a missing model file, say) no longer stops a run: the report lists it under
+`errors`, the stages that need it are skipped, and everything else is finished and cached
+(`--strict` stops at the first error instead). In a batch a file that cannot be read is reported
+and the rest go on. `library.html` puts every analysed clip on one page with its barcode and key
+numbers, a sortable table, and a link to each clip's breakdown (also at `/api/library` in the app).
 
 The web app (FastAPI + React) and the Docker image are described in [p9_production/](p9_production/).
 The GPU runs that need your Kaggle account (TensorRT timing, detector retraining) are one command:
