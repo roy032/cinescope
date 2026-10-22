@@ -22,6 +22,7 @@
     sound       -      post    shots, audio   loudness (EBU R 128), peaks, silences, speech, cuts on sound
     story       -      post    shots,editing, scenes, intensity curve, three acts, turning points, climax
                                sound
+    composition -      post    shots,frames   centre of interest, rule of thirds, balance, headroom, focus
 
 Model stages honour Options.backend (torch / onnx / tensorrt) through
 cinescope.pipeline.accel. Heavy per-shot loops (palettes, camera moves) use a
@@ -1074,3 +1075,35 @@ class Story(Stage):
             loud = (env["t0"] + env["dt"] * np.arange(len(lv)), np.maximum(lv, -60.0))
         ctx.report(self.name, 0.5, "motion")
         return analyse(shots, hists, ctx.duration, setups, silences, loud, _motion_signal(ctx, shots))
+
+
+@register
+class Composition(Stage):
+    """Composition per shot (cinescope.cinema.composition): the centre of interest
+    from a saliency map, rule-of-thirds placement, left/right balance, headroom and
+    shallow or deep focus. Reads up to `frames_per_shot` stored key frames inside
+    each shot (the shot stage's thumbnail when it has none)."""
+    name = "composition"
+    version = "1"
+    requires = ("shots", "frames")
+    defaults = {"frames_per_shot": 3}
+
+    def end(self, ctx: Context) -> dict:
+        from ..cinema.composition import shot_composition, summarise
+
+        shots = ctx.results["shots"]["shots"]
+        store = FrameStore(ctx)
+        th = _thumbs(ctx)
+        k = self.params["frames_per_shot"]
+        per_shot = []
+        for i, s in enumerate(shots):
+            if i % 20 == 0:
+                ctx.report(self.name, i / max(len(shots), 1), f"shot {i + 1}/{len(shots)}")
+            pos = np.flatnonzero((store.idx >= s["start"]) & (store.idx <= s["end"])) if len(store.idx) else []
+            if len(pos):
+                pick = pos[np.unique(np.linspace(0, len(pos) - 1, min(k, len(pos))).round().astype(int))]
+                frames = [store.load(int(p)) for p in pick]
+            else:
+                frames = list(_shot_frames(th, s, 1))
+            per_shot.append(shot_composition(frames) if len(frames) else None)
+        return {"per_shot": per_shot, "summary": summarise(per_shot, [s["duration_s"] for s in shots])}
