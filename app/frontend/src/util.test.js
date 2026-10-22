@@ -10,6 +10,7 @@ import {
   lumaColor,
   omitKeys,
   pacePath,
+  reelStep,
   parseLocation,
   shotAt,
   shotStats,
@@ -138,3 +139,14 @@ test("pacePath: scaled to the box, fastest at the top, closed for a fill", () =>
   assert.equal(pacePath({ t: [0], cuts_per_min: [1] }, 10, 100, 42), "");
 });
 
+test("reelStep: plays moments in order, then stops", () => {
+  const ms = [
+    { t0: 2, t1: 4 },
+    { t0: 10, t1: 12 },
+  ];
+  assert.deepEqual(reelStep(ms, 0, 3), { action: "stay" });
+  assert.deepEqual(reelStep(ms, 0, 4), { action: "jump", index: 1, t: 10 });
+  assert.deepEqual(reelStep(ms, 1, 11.9), { action: "stay" });
+  assert.deepEqual(reelStep(ms, 1, 12.5), { action: "stop" });
+  assert.deepEqual(reelStep([], 0, 1), { action: "stop" });
+});

@@ -12,15 +12,23 @@ const FORMATS = [
   ["csv", "Shot list", "timecodes, length, framing, camera, characters", "opens in Excel or Google Sheets"],
   ["pdf", "Storyboard", "every shot's frame with its timecode and labels", "to print and mark up"],
   ["vtt", "Subtitles", "the subtitles read off the picture", "for players, YouTube and editors"],
+  ["mp4", "Highlights reel", "the strongest moments cut together, with sound", "plays anywhere; rendered on first download"],
+  ["highlights", "Highlights EDL", "the reel's moments as a CMX 3600 EDL", "rebuild and refine it in an editor"],
 ];
 
+const EXT = { highlights: "edl" };
+
 export default function Exports({ clip, report }) {
-  const has = (fmt) => (fmt === "vtt" ? report.subtitles?.cues?.length > 0 : report.shots?.length > 0);
+  const has = (fmt) => {
+    if (fmt === "vtt") return report.subtitles?.cues?.length > 0;
+    if (fmt === "mp4" || fmt === "highlights") return report.extra?.highlights?.moments?.length > 0;
+    return report.shots?.length > 0;
+  };
   return (
     <div className="exports">
       {FORMATS.filter(([fmt]) => has(fmt)).map(([fmt, name, what, opens]) => (
         <a key={fmt} className="export" href={api.exportUrl(clip, fmt)} download>
-          <span className="ext">.{fmt}</span>
+          <span className="ext">.{EXT[fmt] || fmt}</span>
           <span className="en">{name}</span>
           <span className="dim small">{what}</span>
           <span className="dim small">{opens}</span>

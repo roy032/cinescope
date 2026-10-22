@@ -1,4 +1,4 @@
-"""python -m cinescope.editorial outputs/<clip>/report.json [-f edl fcpxml otio csv vtt pdf png html] [-o DIR]"""
+"""python -m cinescope.editorial outputs/<clip>/report.json [-f edl fcpxml otio csv vtt highlights pdf png html mp4] [-o DIR]"""
 from __future__ import annotations
 
 import argparse
@@ -11,15 +11,16 @@ from .pacing import pacing
 
 SHEETS = ("pdf", "png")
 PAGES = ("html",)
+REELS = ("mp4",)
 
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(prog="python -m cinescope.editorial",
                                  description="Export a CineScope report for editing software, and print its pace.")
     ap.add_argument("report", help="outputs/<clip>/report.json (or its folder)")
-    ap.add_argument("-f", "--formats", nargs="+", choices=[*FORMATS, *SHEETS, *PAGES], default=[*FORMATS, "pdf", "html"],
+    ap.add_argument("-f", "--formats", nargs="+", choices=[*FORMATS, *SHEETS, *PAGES, *REELS], default=[*FORMATS, "pdf", "html"],
                     help="what to write (default: every cut format, the subtitles, a PDF storyboard and the "
-                         "shareable HTML breakdown)")
+                         "shareable HTML breakdown; 'mp4' renders the highlights reel)")
     ap.add_argument("-o", "--out", help="folder for the files (default: exports/ next to the report)")
     a = ap.parse_args(argv)
 
@@ -37,6 +38,15 @@ def main(argv: list[str] | None = None) -> int:
     out.mkdir(parents=True, exist_ok=True)
     stem = rep.get("clip", rp.parent.name)
     for f in a.formats:
+        if f in REELS:
+            moments = ((rep.get("extra") or {}).get("highlights") or {}).get("moments")
+            if not moments:
+                print("skipped mp4: no highlights in the report (run the 'highlights' stage)")
+                continue
+            from .reel import render_reel
+
+            print(f"wrote {render_reel(rep['video_path'], moments, out / f'{stem}_highlights.mp4')}")
+            continue
         if f in PAGES:
             from .breakdown import save_breakdown
 
@@ -51,6 +61,9 @@ def main(argv: list[str] | None = None) -> int:
         fn, ext, _ = FORMATS[f]
         if f == "vtt" and not rep.get("subtitles"):
             print("skipped vtt: no subtitles in the report (run the 'subtitles' stage)")
+            continue
+        if f == "highlights" and not ((rep.get("extra") or {}).get("highlights") or {}).get("moments"):
+            print("skipped highlights: none in the report (run the 'highlights' stage)")
             continue
         p = out / f"{stem}.{ext}"
         p.write_text(fn(rep), encoding="utf-8", newline="\n")

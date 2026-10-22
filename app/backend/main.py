@@ -381,15 +381,20 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
     def export(clip: str, fmt: str, download: bool = True):
         from cinescope.editorial import FORMATS
 
-        if fmt not in FORMATS and fmt not in ("pdf", "html"):
-            raise HTTPException(400, f"format must be one of {[*FORMATS, 'pdf', 'html']}")
+        if fmt not in FORMATS and fmt not in ("pdf", "html", "mp4"):
+            raise HTTPException(400, f"format must be one of {[*FORMATS, 'pdf', 'html', 'mp4']}")
         rep = load_report(clip)
-        if fmt == "vtt":
+        moments = ((rep.get("extra") or {}).get("highlights") or {}).get("moments")
+        if fmt in ("mp4", "highlights"):
+            if not moments:
+                raise HTTPException(404, f"{clip!r} has no highlights (run the 'highlights' stage)")
+        elif fmt == "vtt":
             if not rep.get("subtitles"):
                 raise HTTPException(404, f"{clip!r} has no subtitles (run the 'subtitles' stage)")
         elif not rep.get("shots"):
             raise HTTPException(404, f"{clip!r} has no shots (run the 'shots' stage)")
-        name = {"pdf": f"{clip}_storyboard.pdf", "html": f"{clip}_breakdown.html"}.get(fmt) \
+        name = {"pdf": f"{clip}_storyboard.pdf", "html": f"{clip}_breakdown.html",
+                "mp4": f"{clip}_highlights.mp4"}.get(fmt) \
             or f"{clip}.{FORMATS[fmt][1]}"
         disp = {"Content-Disposition": f'{"attachment" if download else "inline"}; filename="{name}"'}
         if fmt == "pdf":
@@ -399,6 +404,13 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
             if not dest.exists() or dest.stat().st_mtime < report_path(clip).stat().st_mtime:
                 save_sheet(rep, out / clip, dest)
             return FileResponse(dest, media_type="application/pdf", headers=disp)
+        if fmt == "mp4":
+            from cinescope.editorial.reel import render_reel
+
+            dest = out / clip / "exports" / name
+            if not dest.exists() or dest.stat().st_mtime < report_path(clip).stat().st_mtime:
+                render_reel(clip_path(clip), moments, dest)
+            return FileResponse(dest, media_type="video/mp4", headers=disp)
         if fmt == "html":
             from cinescope.editorial.breakdown import save_breakdown
 

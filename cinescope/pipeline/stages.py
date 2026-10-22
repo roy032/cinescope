@@ -1128,3 +1128,22 @@ class Rhythm(Stage):
             x = x[:int(ctx.options.max_seconds * SR)]
         ctx.report(self.name, 0.3, "beats")
         return analyse(x, ctx.results["shots"]["shots"], ctx.duration, SR)
+
+
+@register
+class Highlights(Stage):
+    """The strongest moments, cut down to a short reel (cinescope.cinema.highlights):
+    shots scored by the story's intensity, their loudest moment and the cutting
+    rate around them; the climax always in; trimmed edges moved onto the beat.
+    cinescope.editorial.reel renders the moments as an MP4."""
+    name = "highlights"
+    version = "1"
+    requires = ("shots", "story", "sound", "rhythm")
+    defaults = {"target_s": 30.0, "max_share": 0.25, "max_moment_s": 6.0, "min_moment_s": 1.5}
+
+    def end(self, ctx: Context) -> dict:
+        from ..cinema.highlights import analyse
+
+        R = ctx.results
+        return analyse(R["shots"]["shots"], ctx.duration, R.get("story"), R.get("sound"), R.get("rhythm"),
+                       **self.params)

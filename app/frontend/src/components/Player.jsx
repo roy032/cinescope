@@ -7,7 +7,7 @@ import { clamp, fmtTime } from "../util.js";
 // cannot play, the player shows frames decoded by the back end instead, with its
 // own play button and scrubber, at whatever rate the back end decodes them.
 //
-// The parent drives it through a ref: toggle() plays or pauses, seek(t, play).
+// The parent drives it through a ref: toggle() plays or pauses, pause(), seek(t, play).
 const Player = forwardRef(function Player({ clip, report, startAt = 0, onTime }, ref) {
   const video = useRef(null);
   const [fallback, setFallback] = useState(false);
@@ -41,6 +41,10 @@ const Player = forwardRef(function Player({ clip, report, startAt = 0, onTime },
         if (video.current.paused) video.current.play().catch(() => {});
         else video.current.pause();
       }
+    },
+    pause() {
+      if (fallback) play(false);
+      else video.current?.pause();
     },
     seek: go,
     time: () => (fallback || !video.current ? t : video.current.currentTime),
