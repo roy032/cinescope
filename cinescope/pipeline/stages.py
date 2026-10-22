@@ -20,6 +20,8 @@
     look        -      post    shots          exposure key, contrast, grade and symmetry per shot
     editing     -      post    shots          camera set-ups, shot/reverse-shot, montages, long takes
     sound       -      post    shots, audio   loudness (EBU R 128), peaks, silences, speech, cuts on sound
+    story       -      post    shots,editing, scenes, intensity curve, three acts, turning points, climax
+                               sound
 
 Model stages honour Options.backend (torch / onnx / tensorrt) through
 cinescope.pipeline.accel. Heavy per-shot loops (palettes, camera moves) use a
@@ -1012,3 +1014,63 @@ class Sound(Stage):
         v = vad(x, SR) if x is not None and len(x) > SR else None
         return analyse(x, ctx.results["shots"]["shots"], ctx.duration, SR,
                        speech=None if v is None else v["score"], speech_fps=100.0 if v is None else v["fps"])
+
+
+def _motion_signal(ctx: Context, shots: list[dict], step: int = 1) -> tuple[np.ndarray, np.ndarray] | None:
+    """(times, mean absolute luma difference between consecutive thumbnails), leaving
+    out the frame pairs that straddle a cut (a cut is not motion)."""
+    th = _thumbs(ctx)
+    if len(th) < 3:
+        return None
+    times = np.load(ctx.out / "stages" / "shots" / "times.npy")[:len(th)]
+    cut = np.zeros(len(th), bool)
+    for s in shots[1:]:
+        cut[max(0, s["start"] - 1):s["start"] + 1] = True
+    ts, vs = [], []
+    prev = None
+    for i in range(0, len(th), 64):
+        blk = np.asarray(th[i:i + 64], np.float32).mean(-1)
+        if prev is not None:
+            blk = np.concatenate([prev[None], blk])
+        d = np.abs(np.diff(blk, axis=0)).mean((1, 2))
+        j0 = i if prev is not None else i + 1
+        idx = np.arange(j0, j0 + len(d))
+        keep = ~cut[idx]
+        ts.append(times[idx][keep])
+        vs.append(d[keep])
+        prev = blk[-1]
+    t, v = np.concatenate(ts), np.concatenate(vs)
+    return (t, v) if len(t) >= 2 else None
+
+
+@register
+class Story(Stage):
+    """Story structure (cinescope.cinema.story): scenes, an intensity curve from the
+    cutting rate, the loudness and the motion, the three acts, turning points and
+    the climax. Reads the shots' thumbnails and the editing and sound results."""
+    name = "story"
+    version = "1"
+    requires = ("shots", "editing", "sound")
+    defaults = {"frames_per_shot": 5}
+
+    def end(self, ctx: Context) -> dict:
+        from ..cinema.editing import shot_descriptor
+        from ..cinema.story import analyse
+
+        shots = ctx.results["shots"]["shots"]
+        th = _thumbs(ctx)
+        hists = []
+        for s in shots:
+            fr = _shot_frames(th, s, self.params["frames_per_shot"])
+            hists.append(shot_descriptor(fr if len(fr) else np.zeros((1, 6, 8, 3), np.uint8))["hist"])
+        ed = ctx.results["editing"].get("per_shot") or []
+        setups = [e["setup"] for e in ed] if len(ed) == len(shots) else None
+        snd = ctx.results["sound"]
+        silences = [(e["t0"], e["t1"]) for e in snd.get("timeline", []) if e.get("label") == "silence"]
+        loud = None
+        env = snd.get("envelope")
+        if env and len(env.get("lufs", [])) >= 2:
+            lv = np.asarray(env["lufs"], float)
+            loud = (env["t0"] + env["dt"] * np.arange(len(lv)), np.maximum(lv, -60.0))
+        ctx.report(self.name, 0.5, "motion")
+        return analyse(shots, hists, ctx.duration, setups, silences, loud, _motion_signal(ctx, shots))
