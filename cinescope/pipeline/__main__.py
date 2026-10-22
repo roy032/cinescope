@@ -11,6 +11,9 @@
 Stages already computed with the same clip, version and parameters are loaded
 from the cache; --force NAME (or --force all) recomputes. An interrupted run
 resumes its decoding pass from the last checkpoint.
+
+A stage that fails is reported (and the stages that need it skipped) while
+the rest finish; the exit status is then 1. --strict stops at the first error.
 """
 from __future__ import annotations
 
@@ -44,6 +47,7 @@ def main(argv: list[str] | None = None) -> dict | None:
                     help="stage parameter (JSON value), e.g. faces.max_side=640")
     ap.add_argument("--max-seconds", type=float, help="only the first N seconds")
     ap.add_argument("--checkpoint-s", type=float, default=60.0)
+    ap.add_argument("--strict", action="store_true", help="stop at the first stage that fails")
     ap.add_argument("--list", action="store_true", help="list the registered stages")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
@@ -60,7 +64,8 @@ def main(argv: list[str] | None = None) -> dict | None:
         stage, _, p = k.partition(".")
         params.setdefault(stage, {})[p] = _value(v)
     opts = core.Options(backend=args.backend, threads=args.threads, workers=args.workers,
-                        force=tuple(args.force), checkpoint_s=args.checkpoint_s, max_seconds=args.max_seconds)
+                        force=tuple(args.force), checkpoint_s=args.checkpoint_s, max_seconds=args.max_seconds,
+                        strict=args.strict)
     try:                                          # the classical stages (shots, palette ...) run without PyTorch
         import torch
     except ImportError:
@@ -74,4 +79,7 @@ def main(argv: list[str] | None = None) -> dict | None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    rep = main()
+    sys.exit(1 if rep and rep.get("errors") else 0)

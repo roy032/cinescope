@@ -104,14 +104,18 @@ export function jobSteps(job) {
   const seen = job?.stage_progress || {};
   const finished = job && !["queued", "running"].includes(job.status);
   const last = Math.max(-1, ...plan.map((s, i) => (s in seen ? i : -1)));
+  const errors = job?.errors || {};
+  const skipped = job?.skipped || {};
   return plan.map((name, i) => {
     const p = seen[name];
     let state;
-    if (p >= 1) state = "done";
+    if (name in errors) state = "failed";
+    else if (name in skipped) state = "skipped";
+    else if (p >= 1) state = "done";
     else if (p !== undefined) state = finished ? (job.status === "done" ? "done" : "stopped") : "running";
     else if (i < last || (finished && job.status === "done")) state = "cached";
     else state = finished ? "skipped" : "waiting";
-    return { name, state, progress: p ?? 0 };
+    return { name, state, progress: p ?? 0, note: errors[name] || skipped[name] || "" };
   });
 }
 
@@ -150,3 +154,4 @@ export function lumaColor(y) {
   const v = Math.round(255 * clamp(Number(y) || 0, 0, 1));
   return `rgb(${v}, ${v}, ${v})`;
 }
+

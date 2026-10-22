@@ -63,6 +63,23 @@ test("shotStats: ASL, median, cuts per minute, screen-time shares", () => {
   assert.equal(shotStats([], 0), null);
 });
 
+test("jobSteps: failed and skipped stages of a finished run", () => {
+  const job = {
+    status: "done",
+    plan: ["decode", "shots", "faces", "characters", "palette"],
+    stage_progress: { decode: 1, shots: 1, faces: 1, characters: 1, palette: 1 },
+    errors: { faces: "FileNotFoundError: yunet.onnx" },
+    skipped: { characters: "needs faces" },
+  };
+  const steps = jobSteps(job);
+  assert.deepEqual(
+    steps.map((s) => s.state),
+    ["done", "done", "failed", "skipped", "done"],
+  );
+  assert.equal(steps[2].note, "FileNotFoundError: yunet.onnx");
+  assert.equal(steps[3].note, "needs faces");
+});
+
 test("jobSteps: done, running, cached and waiting steps", () => {
   const job = {
     status: "running",
@@ -120,3 +137,4 @@ test("pacePath: scaled to the box, fastest at the top, closed for a fill", () =>
   assert.equal(pacePath(null, 10, 100, 42), "");
   assert.equal(pacePath({ t: [0], cuts_per_min: [1] }, 10, 100, 42), "");
 });
+

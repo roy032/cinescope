@@ -519,6 +519,24 @@ function Summary({ report }) {
         {t && <Fact k="analysed at" v={`${fmtSpeed(t.video_s_per_wall_s)} speed`} title={`${t.wall_s.toFixed(1)} s for ${i.duration_s.toFixed(1)} s of video`} />}
       </div>
       {report.stages && <div className="dim small ran">Stages run: {report.stages.join(", ")}</div>}
+      {report.errors && (
+        <div className="stage-errors small" role="note">
+          <b>Some stages failed</b>, the rest of the analysis is complete. Fix the cause and run again: only the
+          missing stages are computed.
+          <ul>
+            {Object.entries(report.errors).map(([name, e]) => (
+              <li key={name} title={e.traceback}>
+                <b>{name}</b> ({e.where}): {e.error}
+              </li>
+            ))}
+            {Object.entries(report.skipped || {}).map(([name, why]) => (
+              <li key={name} className="dim">
+                <b>{name}</b> skipped, {why}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
