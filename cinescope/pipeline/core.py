@@ -82,6 +82,9 @@ class Stage:
     defaults: dict = {}
     uses_backend: bool = False      # result depends on the model backend (torch / onnx / tensorrt)
     transient: tuple[str, ...] = ()  # attributes left out of decode checkpoints (models, sessions)
+    # What the stage needs with its default parameters, for `cinescope doctor`: "py:<module>",
+    # "weight:<file in the weights folder>", "file:<path from the repo root>"; "a|b" = either.
+    needs: tuple[str, ...] = ()
 
     def __init__(self, params: dict | None = None):
         unknown = set(params or {}) - set(self.defaults)

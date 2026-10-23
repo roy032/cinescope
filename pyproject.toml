@@ -29,6 +29,7 @@ dev = ["pytest>=8.0", "ruff==0.16.8", "scipy>=1.11", "matplotlib>=3.8", "httpx"]
 [project.scripts]
 cinescope = "cinescope.pipeline.__main__:main"
 cinescope-preview = "cinescope.io.preview:main"
+cinescope-doctor = "cinescope.doctor:main"
 
 [project.urls]
 Homepage = "https://github.com/roy032/cinescope"

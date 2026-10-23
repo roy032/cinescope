@@ -10,6 +10,7 @@ import {
   lumaColor,
   omitKeys,
   pacePath,
+  readyDefaults,
   reelStep,
   parseLocation,
   shotAt,
@@ -149,4 +150,17 @@ test("reelStep: plays moments in order, then stops", () => {
   assert.deepEqual(reelStep(ms, 1, 11.9), { action: "stay" });
   assert.deepEqual(reelStep(ms, 1, 12.5), { action: "stop" });
   assert.deepEqual(reelStep([], 0, 1), { action: "stop" });
+});
+
+test("readyDefaults: ready default stages, in order", () => {
+  const d = {
+    stages: {
+      shots: { ready: true, default: true },
+      faces: { ready: false, default: true },
+      cutouts: { ready: true, default: false },
+      palette: { ready: true },
+    },
+  };
+  assert.deepEqual(readyDefaults(d), ["shots", "palette"]);
+  assert.deepEqual(readyDefaults(null), []);
 });
