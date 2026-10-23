@@ -65,7 +65,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ..io.video import Frame, VideoReader, _resize
+from ..io.video import Frame, VideoReader
 
 
 @dataclass(frozen=True)
@@ -126,7 +126,10 @@ class Options:
     backend: str = "torch"          # torch | onnx | tensorrt (model inference for stages that use models)
     threads: int = 2                # intra-op threads for torch / onnxruntime
     workers: int = 1                # >1: frame stages run in their own threads; post stages may use processes
-    checkpoint_s: float = 60.0      # decode checkpoint period, seconds of video
+    checkpoint_s: float = 60.0      # decode checkpoint period, seconds of video ...
+    checkpoint_wall_s: float = 30.0  # ... and at least this many seconds of wall time apart: a
+    #                                  checkpoint pickles the stages' growing state (hundreds of MB
+    #                                  late in a film), so a fast pass must not take one every 60 s of video
     force: tuple[str, ...] = ()     # stages to recompute even if cached ("all" for every one)
     onnx_dir: str | None = None     # where exported .onnx files are cached (default outputs/onnx)
     max_seconds: float | None = None  # only the first N seconds of the clip (quick looks, tests)
@@ -316,7 +319,6 @@ def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
     ckpt_path = ctx.out / "stages" / "_decode" / "checkpoint.pkl"
     ckpt_path.parent.mkdir(parents=True, exist_ok=True)
     want = {s.name: keys[s.name] for s in stages}
-    widths = sorted({st.width or 0 for s in stages for st in s.streams.values()})
     samplers = {(s.name, k): _Sampler(st.fps) for s in stages for k, st in s.streams.items()}
     timing = {s.name: 0.0 for s in stages}
     timing["_decode"] = 0.0
@@ -389,29 +391,36 @@ def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
 
     dur = max(ctx.duration, 1e-6)
     next_ck = start_s + ctx.options.checkpoint_s
+    last_ck = time.perf_counter()
     n = n_done
     t_frame = start_s
     end_s = ctx.options.max_seconds
     try:
         with VideoReader(ctx.video) as vr:
             t0 = time.perf_counter()
-            for f in vr.frames(start_s=start_s, end_s=end_s):
-                if f.t >= next_ck:
+            for idx, ft, pic in vr.pictures(start_s=start_s, end_s=end_s):
+                if ft >= next_ck and time.perf_counter() - last_ck >= ctx.options.checkpoint_wall_s:
                     timing["_decode"] += time.perf_counter() - t0
-                    checkpoint(f.t)
-                    next_ck = f.t + ctx.options.checkpoint_s
-                    t0 = time.perf_counter()
-                if stop is not None and stop(n, f.t):
-                    raise Interrupted(f"stopped at frame {n} ({f.t:.2f} s)")
-                resized = {w: (f.rgb if w == 0 else _resize(f.rgb, w)) for w in widths}
+                    checkpoint(ft)
+                    next_ck = ft + ctx.options.checkpoint_s
+                    last_ck = t0 = time.perf_counter()
+                if stop is not None and stop(n, ft):
+                    raise Interrupted(f"stopped at frame {n} ({ft:.2f} s)")
+                # Each width is converted once, only when a stage's stream takes this frame.
+                resized: dict[int, np.ndarray] = {}
                 timing["_decode"] += time.perf_counter() - t0
                 if threads:
                     reap()
                 for s in list(alive):
                     views = {}
                     for k, st in s.streams.items():
-                        if samplers[(s.name, k)].take(f.t):
-                            views[k] = Frame(f.index, f.t, resized[st.width or 0])
+                        if samplers[(s.name, k)].take(ft):
+                            w = st.width or 0
+                            if w not in resized:
+                                t1 = time.perf_counter()
+                                resized[w] = pic.rgb(w)
+                                timing["_decode"] += time.perf_counter() - t1
+                            views[k] = Frame(idx, ft, resized[w])
                     if not views:
                         continue
                     if threads:
@@ -424,7 +433,7 @@ def decode_pass(ctx: Context, stages: list[Stage], keys: dict[str, str],
                             drop(s, e, "frame")
                         timing[s.name] += time.perf_counter() - t1
                 n += 1
-                t_frame = f.t
+                t_frame = ft
                 if n % 50 == 0:
                     ctx.report("decode", t_frame / dur, f"{t_frame:.0f} / {dur:.0f} s")
                 t0 = time.perf_counter()
