@@ -285,3 +285,17 @@ def test_edl_and_fcpxml_read_back_by_opentimelineio_adapters():
         rep = make_report(fps=25.0)
         tl = o.adapters.read_from_string(fcpxml(rep), "fcpx_xml")
         assert ranges(tl) == want(rep)
+
+
+@pytest.mark.parametrize("path, url", [
+    ("/films/demo & co.mp4", "file:///films/demo%20%26%20co.mp4"),
+    ("C:\\Users\\me\\My Films\\a.mkv", "file:///C:/Users/me/My%20Films/a.mkv"),
+    ("\\\\nas\\media\\a.mp4", "file://nas/media/a.mp4"),
+    ("clips\\a b.mp4", "clips/a%20b.mp4"),
+    (None, ""),
+])
+def test_file_url_does_not_depend_on_the_os(path, url):
+    """A report written on Linux may be exported on Windows and the other way round."""
+    from cinescope.editorial.exports import _file_url
+
+    assert _file_url(path) == url
