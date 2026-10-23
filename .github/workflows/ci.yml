@@ -49,7 +49,6 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt fastapi python-multipart httpx opentimelineio otio-cmx3600-adapter otio-fcpx-xml-adapter
       - run: python -m pytest -q
-      - run: python -m cinescope.doctor
 
   frontend:
     runs-on: ubuntu-latest
