@@ -111,16 +111,17 @@ def main(argv: list[str] | None = None) -> dict | None:
     if not files:
         raise SystemExit(f"no videos in {args.clips} (looked for {', '.join(library.VIDEO_EXT)})")
     log = None if args.quiet else print
+    names = library.clip_names(files)
     if len(files) == 1:
         rep = core.run(files[0], args.stages, args.out, params, opts, log=log)
         print(summary(rep))
         print(f"-> {os.path.join(args.out, rep['clip'], 'report.json')}")
         return rep
     reports, failed = [], {}
-    for k, f in enumerate(files, 1):
-        print(f"[{k}/{len(files)}] {f}")
+    for k, (f, name) in enumerate(zip(files, names, strict=True), 1):
+        print(f"[{k}/{len(files)}] {f}" + (f"  -> {name}" if name != f.stem else ""))
         try:
-            reports.append(core.run(f, args.stages, args.out, params, opts, log=log))
+            reports.append(core.run(f, args.stages, args.out, params, opts, log=log, name=name))
         except core.Interrupted:
             raise
         except Exception as e:                   # noqa: BLE001 - one bad file does not stop the batch

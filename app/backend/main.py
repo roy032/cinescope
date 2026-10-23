@@ -18,7 +18,9 @@ Endpoints (all JSON unless noted):
     GET  /api/clips/{clip}/report           outputs/<clip>/report.json
     GET  /api/clips/{clip}/files/{path}     any asset under outputs/<clip>/ (thumbnails, barcode ...)
     GET  /api/clips/{clip}/frame?t=&width=  one frame as JPEG, decoded on demand
-    GET  /api/clips/{clip}/video            the video file (HTTP range requests, for <video>)
+    GET  /api/clips/{clip}/video            the video file (HTTP range requests, for <video>); its
+                                            browser-playable copy once made (?original=1: the file)
+    POST /api/clips/{clip}/proxy            make that copy (H.264 MP4) in the background; GET: progress
     GET  /api/clips/{clip}/search?q=&k=     Phase 8 scene search over the clip's index
     GET  /api/clips/{clip}/ask?q=           Phase 8 "chat with the movie" (template answer, LLM optional)
     GET  /api/clips/{clip}/campath          the camera path of one shot (Phase 5)
@@ -163,14 +165,13 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
 
     # ------------------------------------------------------------------ clips
     def clips() -> dict[str, Path]:
-        found: dict[str, Path] = {}
-        for d in dirs:
-            if not d.is_dir():
-                continue
-            for p in sorted(d.iterdir()):
-                if p.suffix.lower() in VIDEO_EXT and p.stem not in found:
-                    found[p.stem] = p
-        return found
+        """name -> file. A file whose name is taken by one in an earlier folder is
+        listed as <stem>-<folder> (as the CLI names it), not hidden."""
+        from cinescope.pipeline.library import clip_names
+
+        files = [p for d in dirs if d.is_dir() for p in sorted(d.iterdir())
+                 if p.is_file() and p.suffix.lower() in VIDEO_EXT]
+        return dict(zip(clip_names(files), files, strict=True))
 
     def clip_path(clip: str) -> Path:
         p = clips().get(check_clip_name(clip))
@@ -298,7 +299,7 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
                                threads=int(os.environ.get("OMP_NUM_THREADS", 2) or 2))
                 fn = runner or run
                 rep = fn(video=str(clip_path(req.clip)), stages=req.stages, out=out, params=req.params or {},
-                         options=opts, progress=progress, log=None, stop=stop)
+                         options=opts, progress=progress, log=None, stop=stop, name=req.clip)
                 if isinstance(rep, dict):
                     job.errors = {n: e["error"] for n, e in (rep.get("errors") or {}).items()}
                     job.skipped = dict(rep.get("skipped") or {})
@@ -356,9 +357,62 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
             raise HTTPException(404, "not found")
         return FileResponse(p, headers={"Cache-Control": "max-age=3600"})
 
+    def proxy_path(clip: str) -> Path:
+        return clip_dir(clip) / "proxy.mp4"
+
+    proxies: dict[str, dict] = {}                # clip -> {"status", "progress", "error"}
+
     @app.get("/api/clips/{clip}/video")
-    def get_video(clip: str):
-        return FileResponse(clip_path(clip))
+    def get_video(clip: str, original: bool = False):
+        """The clip for <video>: its browser-playable copy when one was made (POST .../proxy)."""
+        src = clip_path(clip)
+        px = proxy_path(clip)
+        if not original and px.exists() and px.stat().st_mtime >= src.stat().st_mtime:
+            return FileResponse(px, media_type="video/mp4")
+        return FileResponse(src)
+
+    def proxy_state(clip: str) -> dict:
+        st = proxies.get(clip)
+        if st is None or st["status"] == "done":
+            st = {"status": "done" if proxy_path(clip).exists() else "none", "progress": 1.0
+                  if proxy_path(clip).exists() else 0.0, "error": None}
+        return {"clip": clip, **st}
+
+    @app.get("/api/clips/{clip}/proxy")
+    def get_proxy(clip: str):
+        clip_path(clip)
+        return proxy_state(clip)
+
+    @app.post("/api/clips/{clip}/proxy")
+    def make_proxy(clip: str, width: int = Query(1280, ge=320, le=3840)):
+        """Start rendering a browser-playable copy (H.264 + AAC MP4) in the background,
+        for files the browser cannot play (MKV with HEVC, AVI, ProRes ...). Poll GET."""
+        src = clip_path(clip)
+        with queue_lock:
+            cur = proxy_state(clip)
+            if cur["status"] in ("running", "done"):
+                return cur
+            proxies[clip] = {"status": "running", "progress": 0.0, "error": None}
+
+        def work() -> None:
+            from cinescope.editorial.reel import render_proxy
+
+            dest = proxy_path(clip)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            tmp = dest.with_name(f".proxy.{uuid.uuid4().hex[:8]}.mp4")
+            try:
+                render_proxy(src, tmp, width=width,
+                             progress=lambda f: proxies[clip].update(progress=round(min(f, 0.99), 3)))
+                os.replace(tmp, dest)
+                proxies[clip].update(status="done", progress=1.0)
+            except Exception as e:                   # noqa: BLE001 - reported to the client
+                proxies[clip].update(status="error", error=f"{type(e).__name__}: {e}")
+                traceback.print_exc()
+            finally:
+                tmp.unlink(missing_ok=True)
+
+        threading.Thread(target=work, daemon=True, name=f"proxy-{clip}").start()
+        return proxy_state(clip)
 
     @app.get("/api/clips/{clip}/frame")
     def get_frame(clip: str, t: float = Query(0.0, ge=0), width: int = Query(480, ge=16, le=1920)):

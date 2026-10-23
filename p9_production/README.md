@@ -359,6 +359,13 @@ Environment: `CINESCOPE_CLIPS` (clip folders, `;`-separated on Windows), `CINESC
 `CINESCOPE_WEIGHTS`, `CINESCOPE_ONNX_DIR` (exported models, default `outputs/onnx`),
 `CINESCOPE_MAX_UPLOAD_MB` (largest upload, default 65536).
 
+Files a browser cannot play (MKV with HEVC, AVI, ProRes ...) first show as frames decoded on the
+server; the player then offers **Make a browser-playable copy**, which renders an H.264 + AAC MP4
+on the same timeline in the background (`POST /api/clips/{clip}/proxy`, about 3x real time for
+720p on a laptop CPU) and plays it with sound once ready. Two clips with the same file name in
+different folders are listed as `name` and `name-<folder>` (the CLI names a batch's outputs the
+same way), so neither hides the other.
+
 Security: the app has no login and is meant for your own machine. Plain `uvicorn` listens on
 127.0.0.1 only; the Docker image listens on all interfaces, so publish it as
 `-p 127.0.0.1:8000:8000` unless everyone on your network may use it. Clip names in URLs are

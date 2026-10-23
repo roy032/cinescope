@@ -92,9 +92,11 @@ def _fade(x: np.ndarray, rate: int = AUDIO_RATE) -> np.ndarray:
 
 
 def render_reel(video: str | Path, moments: list[dict], dest: str | Path, width: int | None = None,
-                progress=None) -> Path:
+                progress=None, fade: bool = True) -> Path:
     """Cut `moments` ([{"t0", "t1"}], in order) out of `video` into one MP4 at `dest`.
-    width: scale the picture down to this width (None: the source size)."""
+    width: scale the picture down to this width (None: the source size).
+    fade: fade each moment's sound in and out (joins between unrelated moments
+    would click); off when the moments are back to back (render_proxy)."""
     import av
 
     if not moments:
@@ -137,7 +139,7 @@ def render_reel(video: str | Path, moments: list[dict], dest: str | Path, width:
                 seg = _audio(video, first_t, first_t + k / float(fps))
                 if seg is None:
                     seg = np.zeros((2, int(round(k / float(fps) * AUDIO_RATE))), np.float32)
-                seg = _fade(seg)
+                seg = _fade(seg) if fade else seg
                 step = 1024
                 for i in range(0, seg.shape[1], step):
                     chunk = np.ascontiguousarray(seg[:, i:i + step])
@@ -162,3 +164,18 @@ def render_reel(video: str | Path, moments: list[dict], dest: str | Path, width:
         raise ValueError("the highlight moments contain no frames")
     tmp.replace(dest)
     return dest
+
+
+def render_proxy(video: str | Path, dest: str | Path, width: int = 1280, chunk_s: float = 60.0,
+                 progress=None) -> Path:
+    """A browser-playable copy of the whole clip (H.264 + AAC MP4, at most `width` px
+    wide) for files a browser cannot play (MKV with HEVC, AVI, ProRes ...). Same
+    timeline as the source, so every time in the report still lines up. Rendered
+    as back-to-back chunks, so the sound is never held in memory whole."""
+    with VideoReader(str(video)) as vr:
+        dur = float(vr.info.duration_s)
+    if dur <= 0:
+        raise ValueError(f"{video}: unknown duration")
+    edges = [i * chunk_s for i in range(int(dur // chunk_s) + 1)] + [dur + 1.0]
+    moments = [{"t0": a, "t1": b} for a, b in zip(edges, edges[1:], strict=False) if b > a]
+    return render_reel(video, moments, dest, width=width, progress=progress, fade=False)

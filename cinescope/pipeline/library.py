@@ -42,6 +42,25 @@ def videos(paths: list[str | Path], recursive: bool = True) -> list[Path]:
     return out
 
 
+def clip_names(files: list[Path], taken: set[str] | None = None) -> list[str]:
+    """One output name per file: its stem, or, when an earlier file already has that
+    stem (Season 1/ep01.mp4, Season 2/ep01.mp4), the stem plus its folder's name, so
+    no clip's results overwrite another's. The first file keeps the plain stem, as it
+    always did, so its cached results stay where they are. Numbered if still taken."""
+    used = set(taken or ())
+    names: list[str] = []
+    for f in files:
+        n = f.stem
+        if n in used:
+            n = base = f"{f.stem}-{f.parent.name or 'root'}"
+            k = 2
+            while n in used:
+                n, k = f"{base}-{k}", k + 1
+        used.add(n)
+        names.append(n)
+    return names
+
+
 def _size(p: Path) -> int:
     if p.is_file():
         return p.stat().st_size

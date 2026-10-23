@@ -464,8 +464,9 @@ def remove_checkpoint(ctx: Context) -> None:
 def run(video: str | Path, stages: list[str] | None = None, out: str | Path = "outputs",
         params: dict[str, dict] | None = None, options: Options | None = None,
         progress: Callable[[str, float, str], None] | None = None, log: Callable[[str], None] | None = print,
-        stop: Callable[[int, float], bool] | None = None) -> dict:
-    """Run the stages on one clip; returns the report (also written to outputs/<clip>/report.json)."""
+        stop: Callable[[int, float], bool] | None = None, name: str | None = None) -> dict:
+    """Run the stages on one clip; returns the report (also written to outputs/<clip>/report.json).
+    name: the clip's name (its output folder); default the file name without extension."""
     from . import stages as _builtin  # noqa: F401  (registers the built-in stages)
     from .report import assemble
 
@@ -475,7 +476,9 @@ def run(video: str | Path, stages: list[str] | None = None, out: str | Path = "o
     t_start = time.perf_counter()
     with VideoReader(video) as vr:
         info = vr.info
-    clip = Path(video).stem
+    clip = name or Path(video).stem
+    if Path(clip).name != clip or clip in (".", ".."):
+        raise ValueError(f"not a clip name: {clip!r}")
     ctx = Context(video, clip, info, Path(out) / clip, options, progress=progress, log=log)
     ctx.out.mkdir(parents=True, exist_ok=True)
     names = resolve(stages or default_stages())

@@ -16,13 +16,47 @@ const Player = forwardRef(function Player({ clip, report, startAt = 0, onTime },
   const [shown, setShown] = useState("");
   const shownAt = useRef(0);
   const dur = report.info.duration_s;
+  const [proxy, setProxy] = useState(null); // the browser copy's state, once asked for
+  const [version, setVersion] = useState(0); // bumps the <video> src when the copy is ready
 
   useEffect(() => {
     setFallback(false);
     setPlaying(false);
     setT(startAt);
+    setProxy(null);
     // startAt is read once per clip, on purpose
   }, [clip]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // while the browser copy renders, poll its progress; when done, play it
+  useEffect(() => {
+    if (proxy?.status !== "running") return undefined;
+    const id = setInterval(async () => {
+      try {
+        const p = await api.proxy(clip);
+        setProxy(p);
+        if (p.status === "done") {
+          setVersion(Date.now());
+          setFallback(false);
+        }
+      } catch (e) {
+        setProxy({ status: "error", error: e.message });
+      }
+    }, 2000);
+    return () => clearInterval(id);
+  }, [proxy?.status, clip]);
+
+  const makeProxy = async () => {
+    try {
+      const p = await api.makeProxy(clip);
+      setProxy(p);
+      if (p.status === "done") {
+        setVersion(Date.now());
+        setFallback(false);
+      }
+    } catch (e) {
+      setProxy({ status: "error", error: e.message });
+    }
+  };
 
   const go = (v, play) => {
     const x = clamp(v, 0, Math.max(dur - 0.05, 0));
@@ -104,7 +138,23 @@ const Player = forwardRef(function Player({ clip, report, startAt = 0, onTime },
             {fmtTime(t)} <span className="dim">/ {fmtTime(dur)}</span>
           </span>
         </div>
-        <div className="note">This browser cannot play this file, so the app shows frames decoded on the server (no sound).</div>
+        <div className="note" role="status" aria-live="polite">
+          This browser cannot play this file, so the app shows frames decoded on the server (no sound).{" "}
+          {!proxy || proxy.status === "none" ? (
+            <button className="link" onClick={makeProxy}>
+              Make a browser-playable copy
+            </button>
+          ) : proxy.status === "running" ? (
+            <span>Making a browser-playable copy… {Math.round((proxy.progress || 0) * 100)}%</span>
+          ) : proxy.status === "error" ? (
+            <span className="bad">
+              The copy failed: {proxy.error}{" "}
+              <button className="link" onClick={makeProxy}>
+                Try again
+              </button>
+            </span>
+          ) : null}
+        </div>
       </div>
     );
   }
@@ -112,7 +162,7 @@ const Player = forwardRef(function Player({ clip, report, startAt = 0, onTime },
     <div className="player">
       <video
         ref={video}
-        src={api.video(clip)}
+        src={api.video(clip, version)}
         controls
         preload="metadata"
         style={{ aspectRatio: aspect }}
@@ -121,7 +171,10 @@ const Player = forwardRef(function Player({ clip, report, startAt = 0, onTime },
         }}
         onTimeUpdate={(e) => onTime(e.currentTarget.currentTime)}
         onSeeked={(e) => onTime(e.currentTarget.currentTime)}
-        onError={() => setFallback(true)}
+        onError={() => {
+          setFallback(true);
+          api.proxy(clip).then(setProxy, () => {});
+        }}
       >
         {report.subtitles?.cues?.length > 0 && (
           <track kind="subtitles" src={api.exportUrl(clip, "vtt", true)} srcLang="und" label="Read from the picture" />
