@@ -75,7 +75,7 @@ class TestRun(PipelineCase):
 
     def test_resume_after_interruption(self):
         out = self.out("c")
-        opts = Options(checkpoint_s=0.5)
+        opts = Options(checkpoint_s=0.5, checkpoint_wall_s=0.0)
         with self.assertRaises(Interrupted):
             run(self.video, ["shots", "palette"], out, options=opts, log=None, stop=lambda n, t: n == 50)
         self.assertTrue((out / "synth" / "stages" / "_decode" / "checkpoint.pkl").exists())

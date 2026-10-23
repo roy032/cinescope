@@ -15,7 +15,7 @@ from pathlib import Path
 
 import numpy as np
 
-from ..io.video import VideoReader, _resize
+from ..io.video import VideoReader
 
 AUDIO_RATE = 48000
 FADE_S = 0.012
@@ -121,11 +121,10 @@ def render_reel(video: str | Path, moments: list[dict], dest: str | Path, width:
         for m in moments:
             first_t, k = None, 0
             with VideoReader(video) as vr:
-                for f in vr.frames(start_s=float(m["t0"]), end_s=float(m["t1"])):
+                for _, ft, pic in vr.pictures(start_s=float(m["t0"]), end_s=float(m["t1"])):
                     if first_t is None:
-                        first_t = f.t
-                    rgb = f.rgb if f.rgb.shape[1] == w and f.rgb.shape[0] == h else \
-                        _resize(f.rgb, w)[:h, :w]
+                        first_t = ft
+                    rgb = pic.rgb(w)[:h, :w]           # swscale does the scaling (fast)
                     if rgb.shape[:2] != (h, w):      # rounding: pad a row / column
                         rgb = np.pad(rgb, ((0, h - rgb.shape[0]), (0, w - rgb.shape[1]), (0, 0)), mode="edge")
                     vf = av.VideoFrame.from_ndarray(np.ascontiguousarray(rgb), format="rgb24")
