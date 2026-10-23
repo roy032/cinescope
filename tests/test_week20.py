@@ -3,7 +3,8 @@ from __future__ import annotations
 
 import numpy as np
 import pytest
-import torch
+
+torch = pytest.importorskip("torch")
 from torch import nn
 
 from cinescope.video.scenes import CLASSES, accuracy, softmax

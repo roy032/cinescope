@@ -71,6 +71,14 @@ def score(name: str, keys: list[str], y: np.ndarray, probs: dict[str, np.ndarray
     return m
 
 
+def _rel(p) -> str:
+    """p relative to the repo, or absolute when it is on another drive (Windows)."""
+    try:
+        return os.path.relpath(p, ROOT).replace(os.sep, "/")
+    except ValueError:
+        return Path(p).resolve().as_posix()
+
+
 def main(argv: list[str] | None = None) -> None:
     global RES, LABELS
     import argparse
@@ -128,7 +136,7 @@ def main(argv: list[str] | None = None) -> None:
                      f"{m['n']} ({m['coverage']:.0%}) |")
     RES.mkdir(parents=True, exist_ok=True)
     (RES / "hand_eval.json").write_text(json.dumps({"n": len(keys), "distribution": dist, "teacher": meta,
-                                                    "labels": os.path.relpath(LABELS, ROOT).replace(os.sep, "/"),
+                                                    "labels": _rel(LABELS),
                                                     "systems": results},
                                                    indent=1), encoding="utf-8")
     (RES / "hand_eval.md").write_text("\n".join(lines) + "\n", encoding="utf-8")

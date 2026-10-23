@@ -18,7 +18,6 @@ from __future__ import annotations
 import csv
 import io
 import json
-from pathlib import Path
 from urllib.parse import quote
 from xml.sax.saxutils import escape, quoteattr
 
@@ -136,10 +135,15 @@ def highlights_edl(report: dict, reel: str = "AX", drop_frame: bool | None = Non
 def _file_url(path: str | None) -> str:
     if not path:
         return ""
-    p = Path(path)
-    if len(path) > 1 and path[1] == ":":                     # a Windows path, as recorded by the report
+    # Judged from the string, not the OS this runs on: a report written on Linux (or in
+    # Docker) is often exported on Windows and the other way round.
+    if len(path) > 1 and path[1] == ":":                     # C:\films\a.mp4
         return "file:///" + quote(path.replace("\\", "/"), safe="/:")
-    return p.as_uri() if p.is_absolute() else quote(path)
+    if path.startswith(("\\\\", "//")):                       # \\server\share\a.mp4
+        return "file:" + quote(path.replace("\\", "/"), safe="/:")
+    if path.startswith("/"):                                 # /films/a.mp4
+        return "file://" + quote(path, safe="/")
+    return quote(path.replace("\\", "/"))
 
 
 def fcpxml(report: dict, event: str = "CineScope") -> str:

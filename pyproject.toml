@@ -47,5 +47,8 @@ extend-exclude = ["kaggle/*.ipynb", "kaggle/jobs"]   # Kaggle glue: notebooks, a
 select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
 ignore = ["E501"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["E402"]   # pytest.importorskip("torch") must run before the imports that need torch
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

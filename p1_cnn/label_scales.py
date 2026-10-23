@@ -106,9 +106,12 @@ def main(argv: list[str] | None = None) -> None:
     rows = rows[:args.n]
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
-    rel = Path(os.path.relpath(shots.parent.resolve(), out.resolve()))
+    try:
+        rel = Path(os.path.relpath(shots.parent.resolve(), out.resolve())).as_posix()
+    except ValueError:                       # another drive (Windows): link the frames by absolute URL
+        rel = shots.parent.resolve().as_uri()
     items = [{"key": f"{r['episode']}/{r['shot']}",
-              "frames": [(rel / p).as_posix() for p in r["frames"].split(";")]} for r in rows]
+              "frames": [f"{rel}/{p}" for p in r["frames"].split(";")]} for r in rows]
     page = PAGE.replace("__ITEMS__", json.dumps(items)).replace("__SET__", args.set)
     (out / "index.html").write_text(page, encoding="utf-8")
     print(f"{len(items)} {args.split} shots -> {out / 'index.html'}")
