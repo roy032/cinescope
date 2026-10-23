@@ -31,6 +31,26 @@ jobs:
       - run: pip install -r requirements.txt scikit-learn pycocotools fastapi python-multipart httpx opentimelineio otio-cmx3600-adapter otio-fcpx-xml-adapter
       - run: python -m pytest -q
 
+  # Without PyTorch, on the OS CineScope is used on (Windows) and the oldest supported Python:
+  # the classical stages, the app, the exports and the pipeline engine. Tests that need torch skip.
+  test-lite:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: windows-latest, python: "3.12" }
+          - { os: ubuntu-latest, python: "3.10" }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - run: pip install -r requirements.txt fastapi python-multipart httpx opentimelineio otio-cmx3600-adapter otio-fcpx-xml-adapter
+      - run: python -m pytest -q
+      - run: python -m cinescope.doctor
+
   frontend:
     runs-on: ubuntu-latest
     defaults:

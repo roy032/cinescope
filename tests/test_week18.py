@@ -7,7 +7,8 @@ import io
 
 import numpy as np
 import pytest
-import torch
+
+torch = pytest.importorskip("torch")
 
 from cinescope.pose import COCO_SIGMAS, FLIP_PAIRS, K
 from cinescope.pose.heatmaps import (

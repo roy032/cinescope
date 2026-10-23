@@ -6,6 +6,9 @@ import random
 import unittest
 
 import numpy as np
+import pytest
+
+pytest.importorskip("torch")                     # cinescope.ocr.ctc is the PyTorch CTC
 
 from cinescope.ocr import charset
 from cinescope.ocr.ctc import ctc_numpy, greedy_decode, prefix_beam_search

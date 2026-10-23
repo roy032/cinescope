@@ -209,6 +209,8 @@ class TestRun(PipelineCase):
         """Phase 6 pose stage: batched detection during the pass, per-shot people counts."""
         from unittest import mock
 
+        __import__("pytest").importorskip("torch")      # cinescope.pose imports it
+
         from cinescope.pose.yolo import People
 
         class FakePose:
