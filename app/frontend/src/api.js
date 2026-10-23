@@ -42,6 +42,7 @@ const enc = encodeURIComponent;
 export const api = {
   clips: () => get("/api/clips"),
   stages: () => get("/api/stages"),
+  doctor: () => get("/api/doctor"),
   report: (clip) => get(`/api/clips/${enc(clip)}/report`),
   startJob: (clip, stages, backend) => post("/api/jobs", { clip, stages, backend }),
   job: (id) => get(`/api/jobs/${id}`),

@@ -6,6 +6,7 @@
     python -m cinescope.pipeline clip.mp4 --backend onnx --workers 2 --threads 2
     python -m cinescope.pipeline clip.mp4 --set search.encoder=openclip --set faces.max_side=640
     python -m cinescope.pipeline --list
+    python -m cinescope.pipeline --doctor                          # what can run here, and how to fix the rest
     python -m cinescope.pipeline --library                         # rebuild outputs/library.html
     python -m cinescope.pipeline --cache                           # disk use per clip and stage
     python -m cinescope.pipeline --clear CLIP [--clear-stages faces search]
@@ -63,8 +64,16 @@ def main(argv: list[str] | None = None) -> dict | None:
     ap.add_argument("--cache", action="store_true", help="show the disk space each clip's results use")
     ap.add_argument("--clear", metavar="CLIP", help="delete a clip's cached results")
     ap.add_argument("--clear-stages", nargs="+", metavar="STAGE", help="with --clear: only these stages")
+    ap.add_argument("--doctor", action="store_true",
+                    help="check packages, codecs, weights and disk; say which stages can run (and the fix)")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
+
+    if args.doctor:
+        from ..doctor import diagnose, render
+
+        print(render(diagnose(args.out)))
+        return None
 
     from . import library
 

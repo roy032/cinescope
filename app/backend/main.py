@@ -7,6 +7,7 @@ Endpoints (all JSON unless noted):
 
     GET  /api/health
     GET  /api/stages                        the registered pipeline stages
+    GET  /api/doctor                        packages, codecs, weights, disk; which stages can run here
     GET  /api/clips                         clips found in the clip folders, and whether processed
     POST /api/clips/upload                  multipart file -> saved to the uploads folder (renamed if the
                                             name is taken, so an upload never replaces or hides a clip)
@@ -168,6 +169,13 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
     @app.get("/api/health")
     def health():
         return {"ok": True, "backend": backend, "clip_dirs": [str(d) for d in dirs]}
+
+    @app.get("/api/doctor")
+    def doctor():
+        """Which stages can run on this machine, and the command that fixes each one that cannot."""
+        from cinescope.doctor import diagnose
+
+        return diagnose(out)
 
     @app.get("/api/stages")
     def stages():

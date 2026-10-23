@@ -274,6 +274,7 @@ class Faces(Stage):
     at the shot cuts) and writes the kept tracks' crops in Phase 3's format.
     """
     name = "faces"
+    needs = ("py:cv2", "weight:yunet.onnx")
     version = "1"
     requires = ("shots",)
     streams = {"full": Stream(None)}
@@ -393,6 +394,7 @@ class Speaking(Stage):
     """Who is talking, per face track: Light-ASD (default when its weights are
     present) or the from-scratch audio-visual score of Phase 3."""
     name = "speaking"
+    needs = ("py:av",)
     version = "1"
     requires = ("faces",)
     defaults = {"asd": "auto", "batched": True}
@@ -434,6 +436,7 @@ class Speaking(Stage):
 @register
 class Characters(Stage):
     name = "characters"
+    needs = ("py:cv2", "weight:sface.onnx")
     version = "1"
     requires = ("faces", "speaking")
     defaults = {"embedder": "sface", "embed_ckpt": None}
@@ -472,6 +475,7 @@ class Characters(Stage):
 @register
 class Subtitles(Stage):
     name = "subtitles"
+    needs = ("py:torch", "file:p7_ocr/checkpoints/crnn.pt|py:rapidocr_onnxruntime")
     version = "1"
     streams = {"sub": Stream(None, fps=8.0), "credits": Stream(None, fps=4.0)}
     defaults = {"reader": "auto", "ckpt": None, "credits": True}
@@ -553,6 +557,7 @@ def _keyframes_for(store: FrameStore, start: int, end: int, n: int) -> list[int]
 class Search(Stage):
     """Phase 8's index, built from the stored key frames instead of a new decode."""
     name = "search"
+    needs = ("py:torch", "py:open_clip", "weight:vit_b_32-quickgelu-laion400m_e32.pt")
     version = "1"
     requires = ("shots", "frames")
     defaults = {"encoder": "openclip", "max_segment_s": 6.0, "keyframes": 3, "thumb_width": 320, "tags": True,
@@ -761,6 +766,7 @@ class Pose(Stage):
     pass, batched; end() tracks people within each shot and detects strikes,
     falls and runs (cinescope/pose/events.py)."""
     name = "pose"
+    needs = ("py:torch", "py:ultralytics", "weight:yolov8n-pose.pt|file:outputs/p6/pose_sb.pt")
     version = "1"
     requires = ("shots",)
     streams = {"pose": Stream(width=960, fps=4.0)}
@@ -851,6 +857,7 @@ class Scenes(Stage):
     establishing / crowd / text), from the key-frame vectors the search stage
     already computed: only the prompts go through the text tower."""
     name = "scenes"
+    needs = ("py:torch", "py:open_clip", "weight:vit_b_32-quickgelu-laion400m_e32.pt")
     version = "1"
     requires = ("shots", "search")
     uses_backend = True
@@ -897,6 +904,7 @@ class Cutouts(Stage):
     max-flow plus closed-form matting takes seconds per frame on a CPU. The web
     app also cuts out any frame on demand (/api/clips/{clip}/cutout)."""
     name = "cutouts"
+    needs = ("py:torch", "py:ultralytics", "weight:yolov8n-seg.pt")
     version = "1"
     requires = ("shots", "frames")
     defaults = {"method": "grabcut", "matting": True, "min_height": 0.2, "width": 640}
@@ -1002,6 +1010,7 @@ class Sound(Stage):
     voice-activity score) and how often the picture cuts on a sound onset. A clip
     without audio gives {"audio": false}."""
     name = "sound"
+    needs = ("py:av",)
     version = "1"
     requires = ("shots",)
 

@@ -159,7 +159,14 @@ python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\act
 pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
 pip install -r requirements.txt -r requirements-full.txt
 python tools/fetch_assets.py                        # public clips -> trailers/, weights -> data/weights/
+python -m cinescope.doctor                          # which stages can run here, and the fix for the rest
 ```
+
+`fetch_assets.py` tries each weight's mirrors in turn and checks its SHA-256, so a truncated
+download or an HTML error page never lands under a weight's name (`--check` re-verifies the
+files you have). `cinescope.doctor` checks packages, FFmpeg codecs, weights and disk space and
+lists, stage by stage, what is missing; the web app shows the same list (`/api/doctor`) with a
+button to analyse with only the stages that can run.
 
 Put a video clip in `trailers/` (or `data/clips/`) and run:
 

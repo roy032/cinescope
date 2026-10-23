@@ -365,3 +365,9 @@ footer .link { font-size: 12px; color: var(--dim); }
 .hl-list li button { display: flex; flex-direction: column; gap: 2px; align-items: flex-start; text-decoration: none; color: var(--fg); width: 100%; text-align: left; }
 .hl-list li img { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 4px; border: 2px solid transparent; }
 .hl-list li.now img { border-color: var(--accent); }
+
+/* what this machine can run (Setup) */
+.setup { margin: 16px auto 0; max-width: 720px; text-align: left; font-size: 13px; }
+.setup summary { cursor: pointer; color: var(--dim); }
+.setup ul { margin: 8px 0; padding-left: 20px; }
+.setup li { margin: 4px 0; word-break: break-word; }

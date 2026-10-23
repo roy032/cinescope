@@ -165,3 +165,9 @@ export function reelStep(moments, i, t) {
   if (i + 1 < moments.length) return { action: "jump", index: i + 1, t: moments[i + 1].t0 };
   return { action: "stop" };
 }
+
+// The default stages a /api/doctor answer says can run here, in its order.
+export function readyDefaults(doctor) {
+  const st = doctor?.stages || {};
+  return Object.keys(st).filter((n) => st[n].ready && st[n].default !== false);
+}

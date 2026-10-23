@@ -25,6 +25,7 @@ import Highlights from "./components/Highlights.jsx";
 import Compare from "./components/Compare.jsx";
 import JobPanel from "./components/JobPanel.jsx";
 import Shortcuts from "./components/Shortcuts.jsx";
+import Setup from "./components/Setup.jsx";
 
 const START = parseLocation(window.location.search);
 const PANELLED = ["look", "editing", "sound", "story", "rhythm", "highlights"];
@@ -308,6 +309,7 @@ export default function App() {
                   Quick look (cuts and colour only)
                 </button>
               </div>
+              <Setup onStart={job.start} />
             </>
           )}
         </div>
