@@ -356,7 +356,14 @@ stage would have failed in it). CI builds the image on every push and smoke-test
 
 Environment: `CINESCOPE_CLIPS` (clip folders, `;`-separated on Windows), `CINESCOPE_OUT`
 (default `outputs/app`), `CINESCOPE_BACKEND` (`onnx` default, `torch`, `tensorrt`),
-`CINESCOPE_WEIGHTS`, `CINESCOPE_ONNX_DIR` (exported models, default `outputs/onnx`).
+`CINESCOPE_WEIGHTS`, `CINESCOPE_ONNX_DIR` (exported models, default `outputs/onnx`),
+`CINESCOPE_MAX_UPLOAD_MB` (largest upload, default 65536).
+
+Security: the app has no login and is meant for your own machine. Plain `uvicorn` listens on
+127.0.0.1 only; the Docker image listens on all interfaces, so publish it as
+`-p 127.0.0.1:8000:8000` unless everyone on your network may use it. Clip names in URLs are
+checked to be a single file name, uploads are capped and written under a temporary name until
+complete, and exports are rendered once per file and swapped in atomically.
 
 ## Design notes
 
