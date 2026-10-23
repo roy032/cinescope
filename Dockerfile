@@ -1,7 +1,7 @@
 # CineScope web app + pipeline, CPU only.
 #
 #   docker build -t cinescope .
-#   docker run --rm -p 8000:8000 -v "$PWD/trailers:/clips" -v "$PWD/data/weights:/weights" \
+#   docker run --rm -p 127.0.0.1:8000:8000 -v "$PWD/trailers:/clips" -v "$PWD/data/weights:/weights" \
 #              -v "$PWD/outputs:/out" cinescope
 #   # then open http://localhost:8000
 #

@@ -37,6 +37,12 @@ Configuration (environment):
     CINESCOPE_OUT      where results go (default outputs/app)
     CINESCOPE_BACKEND  default model backend for jobs: torch | onnx | tensorrt (default onnx)
     CINESCOPE_WEIGHTS  model weights (default data/weights)
+    CINESCOPE_MAX_UPLOAD_MB  largest upload accepted (default 65536, i.e. 64 GiB)
+
+Security: there is no login. The app is meant for your own machine; run uvicorn with
+--host 127.0.0.1 (its default) unless you trust everyone on the network. Clip names in
+URLs are checked to be one plain file name, so no request reaches outside the clip
+and output folders.
 
 Jobs run one at a time in a background thread: the stages already use the
 CPU's cores, and two pipelines at once would only fight over them.
@@ -54,6 +60,7 @@ from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
+MAX_FINISHED_JOBS = 200
 VIDEO_EXT = {".mp4", ".mkv", ".avi", ".mov", ".webm", ".m4v"}
 
 try:
@@ -110,9 +117,23 @@ def plan_progress(plan: list[str], seen: dict[str, float]) -> float:
 
 def _safe_join(root: Path, rel: str) -> Path:
     p = (root / rel).resolve()
-    if root.resolve() not in p.parents and p != root.resolve():
+    if not p.is_relative_to(root.resolve()):
         raise HTTPException(404, "not found")
     return p
+
+
+def check_clip_name(name: str) -> str:
+    """A clip name is one plain path component. Path parameters arrive URL-decoded,
+    so "%2e%2e" is "..", which would put out / clip outside the outputs folder."""
+    if (not name or name in (".", "..") or Path(name).name != name or "/" in name or "\\" in name
+            or "\0" in name):
+        raise HTTPException(400, f"not a clip name: {name!r}")
+    return name
+
+
+def max_upload_bytes() -> int:
+    """CINESCOPE_MAX_UPLOAD_MB (default 64 GiB: a feature film in high bitrate fits)."""
+    return int(float(os.environ.get("CINESCOPE_MAX_UPLOAD_MB", 65536)) * 2**20)
 
 
 def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | None = None,
@@ -151,13 +172,16 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         return found
 
     def clip_path(clip: str) -> Path:
-        p = clips().get(clip)
+        p = clips().get(check_clip_name(clip))
         if p is None:
             raise HTTPException(404, f"no clip {clip!r}")
         return p
 
+    def clip_dir(clip: str) -> Path:
+        return out / check_clip_name(clip)
+
     def report_path(clip: str) -> Path:
-        return out / clip / "report.json"
+        return clip_dir(clip) / "report.json"
 
     def load_report(clip: str) -> dict:
         p = report_path(clip)
@@ -219,9 +243,19 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         while dest.stem in taken or dest.exists():      # never overwrite, never hide a clip of the same name
             i += 1
             dest = uploads / f"{stem}-{i}{ext}"
-        with open(dest, "wb") as f:
-            while chunk := await file.read(1 << 20):
-                f.write(chunk)
+        limit, size = max_upload_bytes(), 0
+        part = dest.with_name(dest.name + ".part")       # not a video suffix: never listed half-written
+        try:
+            with open(part, "wb") as f:
+                while chunk := await file.read(1 << 20):
+                    size += len(chunk)
+                    if size > limit:
+                        raise HTTPException(413, f"upload larger than {limit / 2**20:.0f} MB "
+                                                 "(set CINESCOPE_MAX_UPLOAD_MB to raise the limit)")
+                    f.write(chunk)
+            os.replace(part, dest)
+        finally:
+            part.unlink(missing_ok=True)
         return {"clip": dest.stem, "file": dest.name, "size_mb": round(dest.stat().st_size / 2**20, 1)}
 
     # ------------------------------------------------------------------ jobs
@@ -278,6 +312,9 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
                     return j.to_json()                   # already on its way
             job = Job(uuid.uuid4().hex[:12], req.clip, req.stages, req.backend or backend)
             jobs[job.id] = job
+            done = [j for j in jobs.values() if j.status not in ("queued", "running")]
+            for j in sorted(done, key=lambda j: j.created)[:max(0, len(done) - MAX_FINISHED_JOBS)]:
+                del jobs[j.id]                           # a server left running for weeks stays small
         threading.Thread(target=work, args=(job, req), daemon=True).start()
         return job.to_json()
 
@@ -306,7 +343,7 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
 
     @app.get("/api/clips/{clip}/files/{rel:path}")
     def get_file(clip: str, rel: str):
-        p = _safe_join(out / clip, rel)
+        p = _safe_join(clip_dir(clip), rel)
         if not p.is_file():
             raise HTTPException(404, "not found")
         return FileResponse(p, headers={"Cache-Control": "max-age=3600"})
@@ -343,7 +380,7 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         rep = load_report(clip)
         if "search" not in rep:
             raise HTTPException(404, f"{clip!r} has no search index (run the 'search' stage)")
-        return ShotIndex.load(out / clip / rep["search"]["index"]), rep["search"].get("spec", "openclip")
+        return ShotIndex.load(_safe_join(clip_dir(clip), rep["search"]["index"])), rep["search"].get("spec", "openclip")
 
     def hit_json(clip: str, rel: str, h: dict) -> dict:
         frames = [f"/api/clips/{clip}/files/{rel}/{f['file']}" for f in h.get("frames", [])]
@@ -375,7 +412,26 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         rep = load_report(clip)
         if "camera_path" not in rep:
             raise HTTPException(404, "no camera path for this clip")
-        return JSONResponse(json.loads((out / clip / rep["camera_path"]["file"]).read_text(encoding="utf-8")))
+        return JSONResponse(json.loads((_safe_join(clip_dir(clip), rep["camera_path"]["file"])).read_text(encoding="utf-8")))
+
+    export_locks: dict[tuple[str, str], threading.Lock] = {}
+
+    def fresh(clip: str, dest: Path, render) -> Path:
+        """dest, rendered again when the report is newer. One render per file at a time
+        (two clicks on Download share it), and render(tmp) writes beside dest, so a
+        crash never leaves a half file that the mtime check would then serve."""
+        with queue_lock:
+            lock = export_locks.setdefault((clip, dest.name), threading.Lock())
+        with lock:
+            if not dest.exists() or dest.stat().st_mtime < report_path(clip).stat().st_mtime:
+                dest.parent.mkdir(parents=True, exist_ok=True)
+                tmp = dest.with_name(f".{dest.stem}.{uuid.uuid4().hex[:8]}{dest.suffix}")
+                try:
+                    render(tmp)
+                    os.replace(tmp, dest)
+                finally:
+                    tmp.unlink(missing_ok=True)
+        return dest
 
     @app.get("/api/clips/{clip}/export/{fmt}")
     def export(clip: str, fmt: str, download: bool = True):
@@ -400,23 +456,17 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         if fmt == "pdf":
             from cinescope.editorial.sheet import save_sheet
 
-            dest = out / clip / "exports" / name
-            if not dest.exists() or dest.stat().st_mtime < report_path(clip).stat().st_mtime:
-                save_sheet(rep, out / clip, dest)
+            dest = fresh(clip, clip_dir(clip) / "exports" / name, lambda p: save_sheet(rep, clip_dir(clip), p))
             return FileResponse(dest, media_type="application/pdf", headers=disp)
         if fmt == "mp4":
             from cinescope.editorial.reel import render_reel
 
-            dest = out / clip / "exports" / name
-            if not dest.exists() or dest.stat().st_mtime < report_path(clip).stat().st_mtime:
-                render_reel(clip_path(clip), moments, dest)
+            dest = fresh(clip, clip_dir(clip) / "exports" / name, lambda p: render_reel(clip_path(clip), moments, p))
             return FileResponse(dest, media_type="video/mp4", headers=disp)
         if fmt == "html":
             from cinescope.editorial.breakdown import save_breakdown
 
-            dest = out / clip / "exports" / name
-            if not dest.exists() or dest.stat().st_mtime < report_path(clip).stat().st_mtime:
-                save_breakdown(rep, out / clip, dest)
+            dest = fresh(clip, clip_dir(clip) / "exports" / name, lambda p: save_breakdown(rep, clip_dir(clip), p))
             return FileResponse(dest, media_type="text/html; charset=utf-8", headers=disp)
         fn, _, media = FORMATS[fmt]
         return Response(fn(rep), media_type=media, headers=disp)
@@ -435,9 +485,8 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
                       format: str = Query("json", pattern="^(json|html)$")):  # noqa: A002 - the query name
         from cinescope.editorial.compare import compare, compare_html
 
-        for name in (a, b):          # query values, unlike path parameters, may hold a "/"
-            if Path(name).name != name or name in (".", ".."):
-                raise HTTPException(400, f"not a clip name: {name!r}")
+        for name in (a, b):
+            check_clip_name(name)
         ra, rb = load_report(a), load_report(b)
         if format == "html":
             return Response(compare_html(ra, rb), media_type="text/html; charset=utf-8",
@@ -466,7 +515,7 @@ def create_app(clip_dirs: list[str | Path] | None = None, out_dir: str | Path | 
         if method not in SEGMENTERS:
             raise HTTPException(400, f"method must be one of {SEGMENTERS}")
         key = f"{t:.2f}_{method}_{width}_{box or 'auto'}_{int(matting)}".replace(",", "-")
-        dest = out / clip / "assets" / "cutouts" / f"{key}.png"
+        dest = clip_dir(clip) / "assets" / "cutouts" / f"{key}.png"
         if not dest.exists():
             with cutout_lock:
                 with VideoReader(clip_path(clip), width=width) as vr:
