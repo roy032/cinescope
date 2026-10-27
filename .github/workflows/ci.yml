@@ -49,6 +49,7 @@ jobs:
           cache: pip
       - run: pip install -r requirements.txt fastapi python-multipart httpx opentimelineio otio-cmx3600-adapter otio-fcpx-xml-adapter
       - run: python -m pytest -q
+      - run: python -m cinescope.doctor          # prints what can run on a bare install; fails only on a broken one
 
   frontend:
     runs-on: ubuntu-latest
